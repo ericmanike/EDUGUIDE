@@ -9,9 +9,7 @@ import {
   Circle,
   Play,
   ArrowRight,
-  BookOpen,
   Check,
-  ChevronRight,
   Code2,
   Database,
   Layers,
@@ -107,26 +105,23 @@ export const PathVisualizer: React.FC = () => {
   };
 
   return (
-    <Card variant="slate" hoverEffect={false} className="relative overflow-hidden">
-      {/* Background Accent Glow */}
-      <div className="absolute top-0 right-0 w-96 h-96 bg-orange-500/10 rounded-full blur-3xl pointer-events-none" />
-
+    <Card variant="white" hoverEffect={false} className="relative overflow-hidden border border-slate-100/90 shadow-lg shadow-slate-200/80">
       <CardHeader>
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <Badge variant="orange" icon={<Zap className="w-3 h-3" />}>
+            <Badge variant="indigo" icon={<Zap className="w-3 h-3" />}>
               Interactive Learning Roadmap
             </Badge>
             <span className="text-xs font-semibold text-slate-400">
               Updated by EduGuide Engine
             </span>
           </div>
-          <CardTitle className="text-white text-xl">
+          <CardTitle className="text-slate-900 text-xl font-black">
             Full-Stack Spring Boot + Next.js Track
           </CardTitle>
         </div>
         <Button
-          variant="orange"
+          variant="primary"
           size="sm"
           icon={<Play className="w-3.5 h-3.5 fill-white" />}
           onClick={() => toggleComplete(selectedNode.id)}
@@ -136,7 +131,7 @@ export const PathVisualizer: React.FC = () => {
       </CardHeader>
 
       {/* Nodes Timeline / Steps Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-3 my-6 relative">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-3.5 my-6 relative">
         {nodes.map((node, index) => {
           const isSelected = selectedNode.id === node.id;
           const isCompleted = node.status === "completed";
@@ -146,66 +141,66 @@ export const PathVisualizer: React.FC = () => {
             <div
               key={node.id}
               onClick={() => setSelectedNode(node)}
-              className={`relative p-4 rounded-xl transition-all duration-200 cursor-pointer border ${
+              className={`relative p-4 rounded-2xl transition-all duration-200 cursor-pointer border ${
                 isSelected
-                  ? "bg-slate-800 border-orange-500 shadow-lg shadow-orange-500/20 scale-[1.02]"
+                  ? "bg-white border-indigo-600 shadow-xl shadow-indigo-600/15 ring-2 ring-indigo-600/20 scale-[1.02]"
                   : isCompleted
-                  ? "bg-slate-800/60 border-slate-700/80 hover:bg-slate-800"
+                  ? "bg-emerald-50/50 border-emerald-200 shadow-sm hover:shadow-md"
                   : isCurrent
-                  ? "bg-slate-800/80 border-orange-400/60 hover:bg-slate-800"
-                  : "bg-slate-900/50 border-slate-800 opacity-60 hover:opacity-100"
+                  ? "bg-white border-indigo-400 shadow-md shadow-indigo-500/10"
+                  : "bg-slate-50/60 border-slate-200/70 shadow-2xs hover:shadow-md hover:bg-white"
               }`}
             >
               <div className="flex items-center justify-between mb-2">
                 <span
-                  className={`p-2 rounded-lg ${
+                  className={`p-2 rounded-xl ${
                     isCompleted
-                      ? "bg-emerald-500/20 text-emerald-400"
+                      ? "bg-emerald-100 text-emerald-700"
                       : isCurrent
-                      ? "bg-orange-500 text-white shadow-md shadow-orange-500/40"
-                      : "bg-slate-800 text-slate-400"
+                      ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/30"
+                      : "bg-slate-100 text-slate-500"
                   }`}
                 >
                   {node.icon}
                 </span>
 
                 {isCompleted ? (
-                  <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600" />
                 ) : isCurrent ? (
-                  <span className="w-2.5 h-2.5 rounded-full bg-orange-500 animate-ping" />
+                  <span className="w-2.5 h-2.5 rounded-full bg-indigo-600 animate-ping" />
                 ) : (
-                  <Circle className="w-4 h-4 text-slate-600" />
+                  <Circle className="w-4 h-4 text-slate-300" />
                 )}
               </div>
 
               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">
                 Node {index + 1}
               </p>
-              <h4 className="text-xs font-bold text-white line-clamp-1">
+              <h4 className="text-xs font-bold text-slate-900 line-clamp-1">
                 {node.title}
               </h4>
-              <p className="text-[10px] text-slate-400 mt-1">{node.duration}</p>
+              <p className="text-[10px] text-slate-500 mt-1 font-semibold">{node.duration}</p>
             </div>
           );
         })}
       </div>
 
-      {/* Selected Node Details Box */}
-      <div className="p-4 rounded-xl bg-slate-800/90 border border-slate-700/80 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+      {/* Selected Node Details Box - Pure White Card with Elevated Shadow */}
+      <div className="p-5 rounded-2xl bg-white border border-slate-100 shadow-md shadow-slate-200/70 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <span className="text-xs font-bold text-orange-400 uppercase">
+            <span className="text-xs font-bold text-indigo-600 uppercase tracking-wider">
               {selectedNode.category} Module
             </span>
-            <span className="text-slate-500">•</span>
-            <span className="text-xs text-slate-300 font-semibold">
+            <span className="text-slate-300">•</span>
+            <span className="text-xs text-slate-500 font-semibold">
               {selectedNode.duration} Estimated
             </span>
           </div>
-          <h4 className="text-sm font-bold text-white mb-1">
+          <h4 className="text-base font-bold text-slate-900 mb-1">
             {selectedNode.title}
           </h4>
-          <p className="text-xs text-slate-300 max-w-2xl">
+          <p className="text-xs text-slate-600 max-w-2xl leading-relaxed">
             {selectedNode.description}
           </p>
 
@@ -214,7 +209,7 @@ export const PathVisualizer: React.FC = () => {
             {selectedNode.topics.map((t, idx) => (
               <span
                 key={idx}
-                className="text-[10px] font-semibold bg-slate-900 text-slate-300 px-2 py-0.5 rounded border border-slate-700"
+                className="text-[11px] font-semibold bg-slate-50 text-slate-700 px-2.5 py-1 rounded-lg border border-slate-200/60 shadow-2xs"
               >
                 {t}
               </span>
@@ -224,7 +219,7 @@ export const PathVisualizer: React.FC = () => {
 
         <div className="shrink-0 flex items-center gap-2">
           <Button
-            variant={selectedNode.status === "completed" ? "slate" : "orange"}
+            variant={selectedNode.status === "completed" ? "outline" : "primary"}
             size="sm"
             onClick={() => toggleComplete(selectedNode.id)}
             icon={
