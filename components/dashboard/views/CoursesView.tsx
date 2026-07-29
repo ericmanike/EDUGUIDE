@@ -2,8 +2,7 @@
 
 import React, { useState } from "react";
 import { RecommendedCourses } from "@/components/dashboard/RecommendedCourses";
-import { Badge } from "@/components/ui/Badge";
-import { BookOpen, Sparkles, Layers, Zap, Database, Cpu, Filter } from "lucide-react";
+import { Layers, Zap, Database, Cpu, Filter } from "lucide-react";
 
 const topics = [
   { id: "All", label: "All Modules", icon: Filter },
@@ -18,23 +17,8 @@ export const CoursesView: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <Badge variant="indigo" icon={<BookOpen className="w-3 h-3" />}>
-              Course Catalog
-            </Badge>
-          </div>
-          <h1 className="text-2xl font-black text-slate-900 tracking-tight">
-            Course Modules & Learning Nodes
-          </h1>
-          <p className="text-xs text-slate-500 font-medium">
-            Curated hands-on modules recommended by the EduGuide engine
-          </p>
-        </div>
-
-        {/* Filter Pills with Lucide Icons */}
+      {/* Filter Pills with Lucide Icons */}
+      <div className="flex justify-center w-full">
         <div className="flex items-center gap-2 overflow-x-auto pb-1">
           {topics.map((t) => {
             const Icon = t.icon;

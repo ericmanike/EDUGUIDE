@@ -1,4 +1,5 @@
 import React from "react";
+import { useRouter } from "next/navigation";
 import { Card, CardFooter } from "../ui/Card";
 import { Badge } from "../ui/Badge";
 import { Button } from "../ui/Button";
@@ -53,6 +54,7 @@ const courses: Course[] = [
 ];
 
 export const RecommendedCourses: React.FC = () => {
+  const router = useRouter();
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -121,6 +123,7 @@ export const RecommendedCourses: React.FC = () => {
                 size="sm"
                 fullWidth
                 icon={<ArrowRight className="w-3.5 h-3.5" />}
+                onClick={() => router.push(`/dashboard/courses/${course.id}`)}
               >
                 Start Module
               </Button>

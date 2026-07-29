@@ -2,11 +2,9 @@
 
 import React, { useState } from "react";
 import { Badge } from "@/components/ui/Badge";
-import { Button } from "@/components/ui/Button";
 import { LearningPathCard, LearningPathData } from "@/components/dashboard/LearningPathCard";
 import { PathProgressBarChart } from "@/components/dashboard/AnalyticsCharts";
-import { GeneratePathModal } from "@/components/dashboard/GeneratePathModal";
-import { Sparkles, SlidersHorizontal, Plus } from "lucide-react";
+import { Sparkles, SlidersHorizontal } from "lucide-react";
 
 const allPaths: LearningPathData[] = [
   {
@@ -66,7 +64,6 @@ const allPaths: LearningPathData[] = [
 export const PathsView: React.FC = () => {
   const [paths, setPaths] = useState<LearningPathData[]>(allPaths);
   const [filter, setFilter] = useState<string>("All");
-  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const filteredPaths = paths.filter((p) => {
     if (filter === "Active") return p.isActive;
@@ -81,21 +78,8 @@ export const PathsView: React.FC = () => {
     );
   };
 
-  const handlePathGenerated = (newPath: LearningPathData) => {
-    setPaths((prev) => [
-      newPath,
-      ...prev.map((p) => ({ ...p, isActive: false })),
-    ]);
-  };
-
   return (
     <div className="space-y-6">
-      {/* Modal */}
-      <GeneratePathModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onPathGenerated={handlePathGenerated}
-      />
 
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -112,14 +96,6 @@ export const PathsView: React.FC = () => {
             Personalized career roadmaps generated dynamically for your skill profile
           </p>
         </div>
-
-        <Button
-          variant="primary"
-          icon={<Plus className="w-4 h-4" />}
-          onClick={() => setIsModalOpen(true)}
-        >
-          Generate New Path
-        </Button>
       </div>
 
       {/* Recharts Module Progress Comparison Chart */}

@@ -66,24 +66,6 @@ export const Sidebar: React.FC = () => {
         </div>
       </div>
 
-      {/* Recommender Widget Box */}
-      <div className="p-4 rounded-2xl bg-slate-900 text-white relative overflow-hidden shadow-lg shadow-slate-900/15 my-2">
-        <div className="absolute -right-4 -bottom-4 w-24 h-24 bg-indigo-500/20 rounded-full blur-xl pointer-events-none" />
-        <div className="flex items-center gap-2 text-indigo-400 text-xs font-bold mb-1">
-          <Sparkles className="w-4 h-4" />
-          <span>EduGuide Recommender</span>
-        </div>
-        <p className="text-[11px] text-slate-300 mb-3 leading-relaxed">
-          Get an updated student learning path based on your latest quiz score!
-        </p>
-        <Link
-          href="/dashboard/paths"
-          className="w-full bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold py-2 px-3 rounded-xl transition-all flex items-center justify-center gap-1.5 shadow-md shadow-indigo-600/20 cursor-pointer"
-        >
-          <span>Generate Path</span>
-          <ChevronRight className="w-3.5 h-3.5" />
-        </Link>
-      </div>
     </aside>
   );
 };

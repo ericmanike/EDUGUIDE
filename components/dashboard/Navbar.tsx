@@ -2,7 +2,6 @@
 
 import React from "react";
 import { Search, Bell, GraduationCap, User } from "lucide-react";
-import { BackendStatusBadge } from "./BackendStatusBadge";
 
 export const Navbar: React.FC = () => {
   return (
@@ -32,10 +31,7 @@ export const Navbar: React.FC = () => {
 
       {/* Right Controls */}
       <div className="flex items-center gap-4">
-        {/* Backend Status */}
-        <div className="hidden lg:block">
-          <BackendStatusBadge />
-        </div>
+
 
         {/* Notifications */}
         <button className="relative p-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-600 transition-all cursor-pointer border border-slate-200/60">

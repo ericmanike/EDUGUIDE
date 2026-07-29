@@ -12,7 +12,6 @@ import {
   WeeklyActivityChart,
   SkillRadarChart,
 } from "@/components/dashboard/AnalyticsCharts";
-import { GeneratePathModal } from "@/components/dashboard/GeneratePathModal";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import {
@@ -21,7 +20,6 @@ import {
   Clock,
   Sparkles,
   TrendingUp,
-  Plus,
 } from "lucide-react";
 
 const initialPaths: LearningPathData[] = [
@@ -68,7 +66,6 @@ const initialPaths: LearningPathData[] = [
 
 export const OverviewView: React.FC = () => {
   const [paths, setPaths] = useState<LearningPathData[]>(initialPaths);
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [activeTitle, setActiveTitle] = useState("Full-Stack Spring Boot + Next.js Specialist");
 
   const handleSelectPath = (id: string) => {
@@ -83,29 +80,8 @@ export const OverviewView: React.FC = () => {
     );
   };
 
-  const handlePathGenerated = (newPath: LearningPathData) => {
-    setActiveTitle(newPath.title);
-    setPaths((prev) => [
-      newPath,
-      ...prev.map((p) => ({ ...p, isActive: false })),
-    ]);
-
-    // Scroll smoothly to roadmap section
-    const roadmapEl = document.getElementById("interactive-roadmap");
-    if (roadmapEl) {
-      roadmapEl.scrollIntoView({ behavior: "smooth" });
-    }
-  };
-
   return (
     <div className="space-y-8">
-      {/* Interactive Modal */}
-      <GeneratePathModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onPathGenerated={handlePathGenerated}
-      />
-
       {/* Welcome Banner Card with Clean Sleek Dark Mesh */}
       <div className="relative overflow-hidden p-8 rounded-2xl bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 border border-slate-800 shadow-xl shadow-slate-900/10">
         <div className="absolute top-0 right-0 -mr-16 -mt-16 w-80 h-80 bg-indigo-500/15 rounded-full blur-3xl pointer-events-none" />
@@ -127,17 +103,6 @@ export const OverviewView: React.FC = () => {
               Active Path: <span className="text-indigo-400 font-bold">{activeTitle}</span>.
               EduGuide has structured your nodes for optimal skill acceleration.
             </p>
-          </div>
-
-          <div className="flex items-center gap-3 shrink-0">
-            <Button
-              variant="primary"
-              size="md"
-              icon={<Plus className="w-4 h-4" />}
-              onClick={() => setIsModalOpen(true)}
-            >
-              Generate New Path
-            </Button>
           </div>
         </div>
       </div>
