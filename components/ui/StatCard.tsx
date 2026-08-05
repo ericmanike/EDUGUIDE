@@ -27,14 +27,14 @@ export const StatCard: React.FC<StatCardProps> = ({
     <Card variant="white" hoverEffect className="relative overflow-hidden border border-slate-100/90 shadow-md shadow-slate-200/80 hover:shadow-xl hover:shadow-slate-300/60">
       <div className="flex items-start justify-between">
         <div>
-          <p className="text-xs font-bold uppercase tracking-wider text-slate-400">
+          <p className="text-[16px] font-bold uppercase tracking-wider text-slate-400">
             {title}
           </p>
           <h4 className="text-2xl font-black mt-2 tracking-tight text-slate-900">
             {value}
           </h4>
           {change && (
-            <div className={`flex items-center gap-1 mt-2 text-xs ${changeColors[changeType]}`}>
+            <div className={`flex items-center gap-1 mt-2 text-[16px] ${changeColors[changeType]}`}>
               <span>{change}</span>
             </div>
           )}

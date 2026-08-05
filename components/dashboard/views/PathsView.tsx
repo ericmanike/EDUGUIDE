@@ -85,7 +85,7 @@ export const PathsView: React.FC = () => {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <Badge variant="indigo" icon={<Sparkles className="w-3 h-3" />}>
+            <Badge variant="indigo">
               AI Recommender
             </Badge>
           </div>

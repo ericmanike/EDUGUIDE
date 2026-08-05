@@ -1,7 +1,8 @@
 "use client";
 
 import React from "react";
-import { Search, Bell, GraduationCap, User } from "lucide-react";
+import { Search, Bell, GraduationCap, User, LogOut } from "lucide-react";
+
 
 export const Navbar: React.FC = () => {
   return (
@@ -48,6 +49,13 @@ export const Navbar: React.FC = () => {
             <h4 className="text-xs font-bold text-slate-900">Alex Morgan</h4>
             <p className="text-[10px] font-semibold text-indigo-600">Full-Stack Track</p>
           </div>
+          
+          {/* Logout Button */}
+          <form action={() => alert("Logging out...")}>
+            <button type="submit" title="Log out" className="ml-2 p-2 rounded-xl text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all cursor-pointer border border-transparent hover:border-red-100">
+              <LogOut className="w-4 h-4" />
+            </button>
+          </form>
         </div>
       </div>
     </header>

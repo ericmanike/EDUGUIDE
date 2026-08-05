@@ -61,10 +61,9 @@ export const RecommendedCourses: React.FC = () => {
         <div>
           <h3 className="text-lg font-bold text-slate-900 tracking-tight flex items-center gap-2">
             <span>Recommended Course Modules</span>
-            <Sparkles className="w-4 h-4 text-indigo-600" />
           </h3>
           <p className="text-xs text-slate-500 font-medium">
-            Hand-picked modules based on your target learning path
+            Hand-picked modules based on your goals
           </p>
         </div>
         <Button variant="ghost" size="sm" icon={<ArrowRight className="w-3.5 h-3.5" />}>

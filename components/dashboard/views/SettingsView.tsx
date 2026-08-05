@@ -4,12 +4,11 @@ import React, { useState } from "react";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
-import { Settings, Save, Sparkles, Database } from "lucide-react";
+import { Settings, Save } from "lucide-react";
 
 export const SettingsView: React.FC = () => {
   const [weeklyGoal, setWeeklyGoal] = useState<number>(30);
   const [targetRole, setTargetRole] = useState<string>("Full-Stack Developer");
-  const [difficultyPreference, setDifficultyPreference] = useState<string>("Adaptive");
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,9 +37,7 @@ export const SettingsView: React.FC = () => {
         <Card variant="white">
           <CardHeader>
             <div className="flex items-center gap-3">
-              <div className="p-2.5 bg-orange-50 text-orange-600 rounded-xl">
-                <Sparkles className="w-5 h-5" />
-              </div>
+
               <div>
                 <CardTitle className="text-base">Target Career Goal</CardTitle>
                 <CardDescription>
@@ -78,45 +75,6 @@ export const SettingsView: React.FC = () => {
                 className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs font-semibold text-slate-900 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none"
               />
             </div>
-          </div>
-        </Card>
-
-        {/* Algorithm Preferences */}
-        <Card variant="white">
-          <CardHeader>
-            <div className="flex items-center gap-3">
-              <div className="p-2.5 bg-slate-900 text-orange-400 rounded-xl">
-                <Database className="w-5 h-5" />
-              </div>
-              <div>
-                <CardTitle className="text-base">Recommendation Intensity</CardTitle>
-                <CardDescription>
-                  How fast the AI adjusts module difficulty based on test scores
-                </CardDescription>
-              </div>
-            </div>
-          </CardHeader>
-
-          <div className="space-y-3 mt-2">
-            {["Adaptive (Recommended)", "Steady Progression", "Accelerated Bootcamp"].map((pref) => (
-              <label
-                key={pref}
-                className={`flex items-center justify-between p-3.5 rounded-xl border cursor-pointer transition-all ${
-                  difficultyPreference === pref
-                    ? "border-orange-500 bg-orange-50/50 text-slate-900 font-bold"
-                    : "border-slate-200 bg-slate-50 text-slate-700 font-semibold hover:bg-slate-100"
-                }`}
-              >
-                <span className="text-xs">{pref}</span>
-                <input
-                  type="radio"
-                  name="difficulty"
-                  checked={difficultyPreference === pref}
-                  onChange={() => setDifficultyPreference(pref)}
-                  className="accent-orange-500"
-                />
-              </label>
-            ))}
           </div>
         </Card>
 

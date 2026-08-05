@@ -42,7 +42,7 @@ export const LearningPathCard: React.FC<LearningPathCardProps> = ({
         {/* Header Row */}
         <CardHeader>
           <div className="flex items-center gap-2 flex-wrap">
-            <Badge variant="orange" icon={<Sparkles className="w-3 h-3" />}>
+            <Badge variant="orange">
               {path.matchScore}% Match
             </Badge>
             <Badge variant="slate">{path.level}</Badge>

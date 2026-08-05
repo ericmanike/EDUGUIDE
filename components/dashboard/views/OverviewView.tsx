@@ -89,12 +89,9 @@ export const OverviewView: React.FC = () => {
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 relative z-10">
           <div className="space-y-2">
             <div className="flex items-center gap-2">
-              <Badge variant="indigo" icon={<Sparkles className="w-3 h-3 text-indigo-400" />}>
-                EduGuide AI Engine
-              </Badge>
-              <span className="text-xs text-slate-400 font-semibold">
+              <Badge variant="indigo">
                 Welcome back, Alex!
-              </span>
+              </Badge>
             </div>
             <h1 className="text-2xl md:text-3xl font-black text-white tracking-tight">
               Student Learning Path Dashboard
@@ -138,8 +135,8 @@ export const OverviewView: React.FC = () => {
           value="8 / 12"
           change="PostgreSQL + Spring"
           changeType="positive"
-          icon={<Sparkles className="w-5 h-5 text-emerald-600" />}
           variant="white"
+          
         />
       </div>
 
