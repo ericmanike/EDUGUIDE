@@ -146,7 +146,7 @@ export const SkillRadarChart: React.FC = () => {
               innerRadius={35}
               paddingAngle={3}
               dataKey="value"
-              label={({ name }) => name.split(" ")[0]}
+              label={({ name }: { name?: string }) => (name ? name.split(" ")[0] : "")}
             >
               {skillCompetencyPieData.map((entry, index) => (
                 <Cell key={`cell-${index}`} fill={entry.color} />
