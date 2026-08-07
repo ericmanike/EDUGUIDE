@@ -2,22 +2,15 @@
 
 import React, { useEffect, useState } from "react";
 import { Server, CheckCircle2, AlertCircle } from "lucide-react";
+import { checkBackendStatus } from "@/lib/api";
 
 export const BackendStatusBadge: React.FC = () => {
   const [status, setStatus] = useState<"checking" | "connected" | "offline">("checking");
 
   useEffect(() => {
     const checkBackend = async () => {
-      try {
-        const res = await fetch("http://localhost:8080/api/health", { method: "GET" });
-        if (res.ok) {
-          setStatus("connected");
-        } else {
-          setStatus("offline");
-        }
-      } catch (err) {
-        setStatus("offline");
-      }
+      const isOk = await checkBackendStatus();
+      setStatus(isOk ? "connected" : "offline");
     };
 
     checkBackend();

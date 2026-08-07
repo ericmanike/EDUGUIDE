@@ -1,11 +1,14 @@
-import React from "react";
+"use client";
+
+import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardFooter } from "../ui/Card";
 import { Badge } from "../ui/Badge";
 import { Button } from "../ui/Button";
-import { Star, Users, ArrowRight, PlayCircle, Clock, Sparkles } from "lucide-react";
+import { Star, Users, ArrowRight, PlayCircle, Clock } from "lucide-react";
+import { fetchModules, CourseModule } from "@/lib/api";
 
-interface Course {
+interface CourseItem {
   id: string;
   title: string;
   provider: string;
@@ -17,7 +20,7 @@ interface Course {
   imageBg: string;
 }
 
-const courses: Course[] = [
+const defaultCourses: CourseItem[] = [
   {
     id: "c1",
     title: "Spring Boot 3 & PostgreSQL Backend Architecture",
@@ -27,7 +30,7 @@ const courses: Course[] = [
     level: "Intermediate",
     tag: "Backend Track",
     hours: "18 hrs",
-    imageBg: "from-indigo-600 to-indigo-800",
+    imageBg: "from-blue-900 to-indigo-950",
   },
   {
     id: "c2",
@@ -49,12 +52,36 @@ const courses: Course[] = [
     level: "Intermediate",
     tag: "Recommender Logic",
     hours: "12 hrs",
-    imageBg: "from-indigo-700 to-violet-900",
+    imageBg: "from-indigo-900 to-slate-900",
   },
 ];
 
 export const RecommendedCourses: React.FC = () => {
   const router = useRouter();
+  const [coursesList, setCoursesList] = useState<CourseItem[]>(defaultCourses);
+
+  useEffect(() => {
+    const loadModules = async () => {
+      const apiModules = await fetchModules();
+      if (apiModules && apiModules.length > 0) {
+        const formatted: CourseItem[] = apiModules.map((m: CourseModule, i: number) => ({
+          id: m.id,
+          title: m.title,
+          provider: "EduGuide Core",
+          rating: 4.9,
+          students: `${(i + 1) * 350}`,
+          level: "Intermediate",
+          tag: m.topic || "Core Module",
+          hours: `${Math.round(m.durationMinutes / 60)} hrs`,
+          imageBg: i % 2 === 0 ? "from-blue-900 to-indigo-950" : "from-slate-900 to-slate-800",
+        }));
+        setCoursesList(formatted);
+      }
+    };
+
+    loadModules();
+  }, []);
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -72,7 +99,7 @@ export const RecommendedCourses: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-        {courses.map((course) => (
+        {coursesList.map((course) => (
           <Card key={course.id} variant="white" className="flex flex-col justify-between group">
             <div>
               {/* Header Gradient Banner */}
@@ -90,7 +117,7 @@ export const RecommendedCourses: React.FC = () => {
                 </span>
               </div>
 
-              <h4 className="text-sm font-bold text-slate-900 group-hover:text-indigo-600 transition-colors line-clamp-2 leading-snug">
+              <h4 className="text-sm font-bold text-slate-900 group-hover:text-[#1e3a8a] transition-colors line-clamp-2 leading-snug">
                 {course.title}
               </h4>
               <p className="text-xs font-semibold text-slate-400 mt-1">

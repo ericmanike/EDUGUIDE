@@ -29,7 +29,7 @@ export const CoursesView: React.FC = () => {
                 onClick={() => setSelectedTopic(t.id)}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer shrink-0 ${
                   isSelected
-                    ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/20"
+                    ? "bg-[#1e3a8a] text-white shadow-md shadow-[#1e3a8a]/20"
                     : "bg-white text-slate-700 border border-slate-200/80 hover:bg-slate-50 hover:border-slate-300"
                 }`}
               >

@@ -6,7 +6,7 @@ interface StatCardProps {
   value: string | number;
   change?: string;
   changeType?: "positive" | "negative" | "neutral";
-  icon: React.ReactNode;
+  icon?: React.ReactNode;
   variant?: "white" | "indigo-accent" | "orange-accent";
 }
 
@@ -39,7 +39,7 @@ export const StatCard: React.FC<StatCardProps> = ({
             </div>
           )}
         </div>
-        <div className="p-3 rounded-2xl bg-indigo-50/80 text-indigo-600 border border-indigo-100/60 shadow-xs">
+        <div className="p-3 rounded-2xl bg-blue-50/80 text-[#1e3a8a] border border-blue-100/60 shadow-xs">
           {icon}
         </div>
       </div>

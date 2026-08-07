@@ -17,7 +17,7 @@ export const AnalyticsView: React.FC = () => {
       {/* Header */}
       <div>
         <div className="flex items-center gap-2 mb-1">
-          <Badge variant="indigo" icon={<TrendingUp className="w-3 h-3" />}>
+          <Badge variant="indigo" icon={<TrendingUp className="w-3 h-3 text-[#1e3a8a]" />}>
             Learning Analytics
           </Badge>
         </div>
@@ -36,7 +36,7 @@ export const AnalyticsView: React.FC = () => {
           value="12 Days"
           change="Personal Record!"
           changeType="positive"
-          icon={<Flame className="w-5 h-5 text-indigo-600" />}
+          icon={<Flame className="w-5 h-5 text-[#fb923c]" />}
           variant="white"
         />
         <StatCard
@@ -44,7 +44,7 @@ export const AnalyticsView: React.FC = () => {
           value="24 / 30 hrs"
           change="80% Completed"
           changeType="positive"
-          icon={<Clock className="w-5 h-5 text-indigo-600" />}
+          icon={<Clock className="w-5 h-5 text-[#1e3a8a]" />}
           variant="white"
         />
         <StatCard
@@ -52,7 +52,7 @@ export const AnalyticsView: React.FC = () => {
           value="2.5 nodes/wk"
           change="+0.5 vs last month"
           changeType="positive"
-          icon={<Target className="w-5 h-5 text-indigo-600" />}
+          icon={<Target className="w-5 h-5 text-[#1e3a8a]" />}
           variant="white"
         />
         <StatCard

@@ -20,7 +20,7 @@ export const SettingsView: React.FC = () => {
       {/* Header */}
       <div>
         <div className="flex items-center gap-2 mb-1">
-          <Badge variant="orange" icon={<Settings className="w-3 h-3" />}>
+          <Badge variant="indigo" icon={<Settings className="w-3 h-3 text-[#1e3a8a]" />}>
             Algorithm & Profile Configuration
           </Badge>
         </div>
@@ -37,7 +37,6 @@ export const SettingsView: React.FC = () => {
         <Card variant="white">
           <CardHeader>
             <div className="flex items-center gap-3">
-
               <div>
                 <CardTitle className="text-base">Target Career Goal</CardTitle>
                 <CardDescription>
@@ -55,7 +54,7 @@ export const SettingsView: React.FC = () => {
               <select
                 value={targetRole}
                 onChange={(e) => setTargetRole(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs font-semibold text-slate-900 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none"
+                className="w-full bg-[#f4f5f7] border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs font-semibold text-slate-900 focus:ring-2 focus:ring-[#1e3a8a]/20 focus:border-[#1e3a8a] outline-none"
               >
                 <option value="Full-Stack Developer">Full-Stack Developer (Spring + Next.js)</option>
                 <option value="Backend Specialist">Backend Engineer (Spring Boot + PostgreSQL)</option>
@@ -66,13 +65,13 @@ export const SettingsView: React.FC = () => {
 
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                Weekly Study Time Target
+                Weekly Study Time Target (Hours)
               </label>
               <input
                 type="number"
                 value={weeklyGoal}
                 onChange={(e) => setWeeklyGoal(Number(e.target.value))}
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs font-semibold text-slate-900 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none"
+                className="w-full bg-[#f4f5f7] border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs font-semibold text-slate-900 focus:ring-2 focus:ring-[#1e3a8a]/20 focus:border-[#1e3a8a] outline-none"
               />
             </div>
           </div>
@@ -82,7 +81,7 @@ export const SettingsView: React.FC = () => {
         <div className="flex justify-end">
           <Button
             type="submit"
-            variant="orange"
+            variant="primary"
             size="md"
             icon={<Save className="w-4 h-4" />}
           >

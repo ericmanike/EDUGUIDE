@@ -9,11 +9,6 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  RadarChart,
-  PolarGrid,
-  PolarAngleAxis,
-  PolarRadiusAxis,
-  Radar,
   BarChart,
   Bar,
   Legend,
@@ -36,14 +31,14 @@ const weeklyActivityData = [
   { day: "Sun", hours: 4.0, completedNodes: 3 },
 ];
 
-// Mock Data for Skill Competency Radar
-const skillRadarData = [
-  { subject: "Java 21", current: 85, target: 95 },
-  { subject: "Spring Boot", current: 75, target: 90 },
-  { subject: "PostgreSQL", current: 70, target: 85 },
-  { subject: "Next.js 16", current: 88, target: 92 },
-  { subject: "System Design", current: 60, target: 80 },
-  { subject: "Algorithms", current: 68, target: 85 },
+// Mock Data for Skill Competency Breakdown Pie Chart
+const skillCompetencyPieData = [
+  { name: "Next.js 16 (88% Level)", value: 88, color: "#1e3a8a" },
+  { name: "Java 21 (85% Level)", value: 85, color: "#2563eb" },
+  { name: "Spring Boot 3 (75% Level)", value: 75, color: "#fb923c" },
+  { name: "PostgreSQL (70% Level)", value: 70, color: "#f97316" },
+  { name: "Algorithms (68% Level)", value: 68, color: "#10b981" },
+  { name: "System Design (60% Level)", value: 60, color: "#64748b" },
 ];
 
 // Mock Data for Track Progress Bar Chart
@@ -55,10 +50,10 @@ const pathProgressData = [
 
 // Mock Data for Time Breakdown Donut Chart
 const timeDistributionData = [
-  { name: "Backend (Spring/Java)", value: 45, color: "#f97316" }, // Orange-500
-  { name: "Frontend (Next.js/React)", value: 30, color: "#0f172a" }, // Slate-900
-  { name: "Database (PostgreSQL)", value: 15, color: "#38bdf8" }, // Sky-400
-  { name: "System Design & DevOps", value: 10, color: "#10b981" }, // Emerald-500
+  { name: "Backend (Spring/Java)", value: 45, color: "#1e3a8a" },
+  { name: "Frontend (Next.js/React)", value: 30, color: "#fb923c" },
+  { name: "Database (PostgreSQL)", value: 15, color: "#0f172a" },
+  { name: "System Design & DevOps", value: 10, color: "#10b981" },
 ];
 
 export const WeeklyActivityChart: React.FC = () => {
@@ -67,7 +62,7 @@ export const WeeklyActivityChart: React.FC = () => {
       <CardHeader>
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <Badge variant="orange" icon={<TrendingUp className="w-3 h-3" />}>
+            <Badge variant="indigo" icon={<TrendingUp className="w-3 h-3 text-[#1e3a8a]" />}>
               Weekly Performance
             </Badge>
             <span className="text-xs font-semibold text-slate-400">
@@ -88,9 +83,9 @@ export const WeeklyActivityChart: React.FC = () => {
             margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
           >
             <defs>
-              <linearGradient id="orangeGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#f97316" stopOpacity={0.4} />
-                <stop offset="95%" stopColor="#f97316" stopOpacity={0.0} />
+              <linearGradient id="blueGradient" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="#1e3a8a" stopOpacity={0.4} />
+                <stop offset="95%" stopColor="#1e3a8a" stopOpacity={0.0} />
               </linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
@@ -105,15 +100,15 @@ export const WeeklyActivityChart: React.FC = () => {
                 fontSize: "12px",
                 boxShadow: "0 10px 25px rgba(0,0,0,0.08)",
               }}
-              itemStyle={{ color: "#f97316", fontWeight: "bold" }}
+              itemStyle={{ color: "#1e3a8a", fontWeight: "bold" }}
             />
             <Area
               type="monotone"
               dataKey="hours"
-              stroke="#f97316"
+              stroke="#1e3a8a"
               strokeWidth={3}
               fillOpacity={1}
-              fill="url(#orangeGradient)"
+              fill="url(#blueGradient)"
               name="Hours Learned"
             />
           </AreaChart>
@@ -129,41 +124,34 @@ export const SkillRadarChart: React.FC = () => {
       <CardHeader>
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <Badge variant="orange" icon={<Award className="w-3 h-3" />}>
+            <Badge variant="indigo" icon={<Award className="w-3 h-3 text-[#1e3a8a]" />}>
               Skill Matrix
             </Badge>
           </div>
-          <CardTitle className="text-slate-900">Student Competency Radar</CardTitle>
+          <CardTitle className="text-slate-900">Student Competency Breakdown</CardTitle>
           <CardDescription className="text-slate-500">
-            Current skill levels vs. EduGuide target goals
+            Current skill levels vs. EduGuide target goals (Pie Chart)
           </CardDescription>
         </div>
       </CardHeader>
 
       <div className="h-72 w-full mt-4 flex items-center justify-center">
         <ResponsiveContainer width="100%" height="100%">
-          <RadarChart cx="50%" cy="50%" outerRadius="75%" data={skillRadarData}>
-            <PolarGrid stroke="#e2e8f0" />
-            <PolarAngleAxis dataKey="subject" stroke="#475569" fontSize={11} fontWeight={600} />
-            <PolarRadiusAxis angle={30} domain={[0, 100]} stroke="#cbd5e1" fontSize={10} />
-            <Radar
-              name="Current Level"
-              dataKey="current"
-              stroke="#f97316"
-              fill="#f97316"
-              fillOpacity={0.4}
-            />
-            <Radar
-              name="Target Goal"
-              dataKey="target"
-              stroke="#0f172a"
-              fill="#0f172a"
-              fillOpacity={0.15}
-            />
-            <Legend
-              wrapperStyle={{ fontSize: "11px", paddingTop: "10px" }}
-              formatter={(value) => <span className="text-slate-700 font-semibold">{value}</span>}
-            />
+          <PieChart>
+            <Pie
+              data={skillCompetencyPieData}
+              cx="50%"
+              cy="50%"
+              outerRadius={85}
+              innerRadius={35}
+              paddingAngle={3}
+              dataKey="value"
+              label={({ name }) => name.split(" ")[0]}
+            >
+              {skillCompetencyPieData.map((entry, index) => (
+                <Cell key={`cell-${index}`} fill={entry.color} />
+              ))}
+            </Pie>
             <Tooltip
               contentStyle={{
                 backgroundColor: "#ffffff",
@@ -173,8 +161,16 @@ export const SkillRadarChart: React.FC = () => {
                 fontSize: "12px",
                 boxShadow: "0 10px 25px rgba(0,0,0,0.08)",
               }}
+              formatter={(value) => [`${value}%`, "Competency Score"]}
             />
-          </RadarChart>
+            <Legend
+              layout="horizontal"
+              align="center"
+              verticalAlign="bottom"
+              wrapperStyle={{ fontSize: "11px", paddingTop: "12px" }}
+              formatter={(value) => <span className="text-slate-700 font-semibold">{value}</span>}
+            />
+          </PieChart>
         </ResponsiveContainer>
       </div>
     </Card>
@@ -210,7 +206,7 @@ export const PathProgressBarChart: React.FC = () => {
               }}
             />
             <Legend wrapperStyle={{ fontSize: "11px" }} />
-            <Bar dataKey="completed" name="Completed Modules" fill="#f97316" radius={[6, 6, 0, 0]} />
+            <Bar dataKey="completed" name="Completed Modules" fill="#1e3a8a" radius={[6, 6, 0, 0]} />
             <Bar dataKey="remaining" name="Remaining Modules" fill="#e2e8f0" radius={[6, 6, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
@@ -225,7 +221,7 @@ export const TimeDistributionDonut: React.FC = () => {
       <CardHeader>
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <Badge variant="slate" icon={<PieIcon className="w-3 h-3 text-orange-400" />}>
+            <Badge variant="slate" icon={<PieIcon className="w-3 h-3 text-[#fb923c]" />}>
               Time Split
             </Badge>
           </div>

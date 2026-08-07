@@ -1,7 +1,7 @@
 import React from "react";
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: "primary" | "orange" | "slate" | "outline" | "ghost";
+  variant?: "primary" | "navy" | "orange" | "gold" | "slate" | "outline" | "ghost";
   size?: "sm" | "md" | "lg";
   children: React.ReactNode;
   icon?: React.ReactNode;
@@ -23,15 +23,19 @@ export const Button: React.FC<ButtonProps> = ({
 
   const variants = {
     primary:
-      "bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-600/20 focus:ring-indigo-600 hover:shadow-lg hover:shadow-indigo-600/30",
+      "bg-[#1e3a8a] hover:bg-[#1d4ed8] text-white shadow-md shadow-[#1e3a8a]/20 focus:ring-[#1e3a8a] hover:shadow-lg hover:shadow-blue-900/30",
+    navy:
+      "bg-slate-900 hover:bg-slate-800 text-white shadow-md shadow-slate-900/20 focus:ring-slate-900",
     orange:
-      "bg-orange-500 hover:bg-orange-600 text-white shadow-md shadow-orange-500/20 focus:ring-orange-500 hover:shadow-lg hover:shadow-orange-500/30",
+      "bg-[#fb923c] hover:bg-[#f97316] text-white shadow-md shadow-orange-500/20 focus:ring-orange-500 hover:shadow-lg hover:shadow-orange-500/30",
+    gold:
+      "bg-[#fbcb08] hover:bg-[#eab308] text-slate-900 shadow-md shadow-amber-500/20 focus:ring-amber-500",
     slate:
       "bg-slate-900 hover:bg-slate-800 text-white shadow-md shadow-slate-900/15 focus:ring-slate-900",
     outline:
       "border border-slate-200 text-slate-700 bg-white hover:bg-slate-50 hover:border-slate-300 focus:ring-slate-400 shadow-sm",
     ghost:
-      "text-slate-600 hover:text-indigo-600 hover:bg-indigo-50/60 focus:ring-indigo-500",
+      "text-slate-600 hover:text-[#1e3a8a] hover:bg-blue-50/80 focus:ring-[#1e3a8a]",
   };
 
   const sizes = {

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { StatCard } from "@/components/ui/StatCard";
 import { PathVisualizer } from "@/components/dashboard/PathVisualizer";
 import {
@@ -12,7 +12,6 @@ import {
   WeeklyActivityChart,
   SkillRadarChart,
 } from "@/components/dashboard/AnalyticsCharts";
-import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import {
   Route,
@@ -21,6 +20,7 @@ import {
   Sparkles,
   TrendingUp,
 } from "lucide-react";
+import { fetchLearningPaths, fetchUsers, User } from "@/lib/api";
 
 const initialPaths: LearningPathData[] = [
   {
@@ -67,6 +67,43 @@ const initialPaths: LearningPathData[] = [
 export const OverviewView: React.FC = () => {
   const [paths, setPaths] = useState<LearningPathData[]>(initialPaths);
   const [activeTitle, setActiveTitle] = useState("Full-Stack Spring Boot + Next.js Specialist");
+  const [userName, setUserName] = useState("Alex");
+
+  useEffect(() => {
+    // Check logged in user
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem("edtech_user");
+      if (stored) {
+        try {
+          const parsed: User = JSON.parse(stored);
+          if (parsed.name) setUserName(parsed.name);
+        } catch (e) {}
+      }
+    }
+
+    // Load paths from backend API
+    const loadData = async () => {
+      const apiPaths = await fetchLearningPaths();
+      if (apiPaths && apiPaths.length > 0) {
+        const formatted: LearningPathData[] = apiPaths.map((ap, idx) => ({
+          id: ap.id,
+          title: ap.title,
+          description: ap.description || "Custom backend learning path.",
+          matchScore: ap.matchScore || 95,
+          level: (ap.level as any) || "Intermediate",
+          estimatedHours: ap.estimatedHours || 40,
+          totalModules: ap.totalModules || 10,
+          completedModules: ap.completedModules || 2,
+          skillsCovered: ap.skillsCovered || ["Spring Boot", "REST API"],
+          isActive: idx === 0,
+        }));
+        setPaths(formatted);
+        if (formatted[0]) setActiveTitle(formatted[0].title);
+      }
+    };
+
+    loadData();
+  }, []);
 
   const handleSelectPath = (id: string) => {
     setPaths((prev) =>
@@ -82,22 +119,22 @@ export const OverviewView: React.FC = () => {
 
   return (
     <div className="space-y-8">
-      {/* Welcome Banner Card with Clean Sleek Dark Mesh */}
-      <div className="relative overflow-hidden p-8 rounded-2xl bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 border border-slate-800 shadow-xl shadow-slate-900/10">
-        <div className="absolute top-0 right-0 -mr-16 -mt-16 w-80 h-80 bg-indigo-500/15 rounded-full blur-3xl pointer-events-none" />
+      {/* Welcome Banner Card */}
+      <div className="relative overflow-hidden p-8 rounded-2xl bg-gradient-to-r from-slate-900 via-[#1e3a8a] to-slate-900 border border-slate-800 shadow-xl shadow-slate-900/10">
+        <div className="absolute top-0 right-0 -mr-16 -mt-16 w-80 h-80 bg-blue-500/15 rounded-full blur-3xl pointer-events-none" />
 
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 relative z-10">
           <div className="space-y-2">
             <div className="flex items-center gap-2">
               <Badge variant="indigo">
-                Welcome back, Alex!
+                Welcome back, {userName}!
               </Badge>
             </div>
             <h1 className="text-2xl md:text-3xl font-black text-white tracking-tight">
               Student Learning Path Dashboard
             </h1>
             <p className="text-xs md:text-sm text-slate-300 max-w-2xl leading-relaxed">
-              Active Path: <span className="text-indigo-400 font-bold">{activeTitle}</span>.
+              Active Path: <span className="text-blue-300 font-bold">{activeTitle}</span>.
               EduGuide has structured your nodes for optimal skill acceleration.
             </p>
           </div>
@@ -111,7 +148,7 @@ export const OverviewView: React.FC = () => {
           value="Active Now"
           change="99% Profile Match"
           changeType="positive"
-          icon={<Route className="w-5 h-5 text-indigo-600" />}
+          icon={<Route className="w-5 h-5 text-[#1e3a8a]" />}
           variant="white"
         />
         <StatCard
@@ -119,7 +156,7 @@ export const OverviewView: React.FC = () => {
           value="68%"
           change="+12% this week"
           changeType="positive"
-          icon={<Award className="w-5 h-5 text-indigo-600" />}
+          icon={<Award className="w-5 h-5 text-[#1e3a8a]" />}
           variant="white"
         />
         <StatCard
@@ -127,7 +164,7 @@ export const OverviewView: React.FC = () => {
           value="42.5 hrs"
           change="Target: 65 hrs"
           changeType="neutral"
-          icon={<Clock className="w-5 h-5 text-orange-500" />}
+          icon={<Clock className="w-5 h-5 text-[#fb923c]" />}
           variant="white"
         />
         <StatCard
@@ -136,17 +173,17 @@ export const OverviewView: React.FC = () => {
           change="PostgreSQL + Spring"
           changeType="positive"
           variant="white"
-          
+          icon={<Sparkles className="w-5 h-5 text-[#1e3a8a]" />}
         />
       </div>
 
-      {/* Interactive Recharts Analytics Grid */}
+      {/* Analytics Grid */}
       <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <WeeklyActivityChart />
         <SkillRadarChart />
       </section>
 
-      {/* Interactive Learning Path Visualizer */}
+      {/* Learning Path Visualizer */}
       <section id="interactive-roadmap" className="space-y-3 scroll-mt-20">
         <PathVisualizer />
       </section>

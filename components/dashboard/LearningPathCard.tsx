@@ -1,9 +1,9 @@
 import React from "react";
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "../ui/Card";
+import { Card, CardHeader, CardTitle, CardFooter } from "../ui/Card";
 import { Badge } from "../ui/Badge";
 import { Button } from "../ui/Button";
 import { ProgressBar } from "../ui/ProgressBar";
-import { Clock, BookOpen, Sparkles, ArrowRight, CheckCircle2 } from "lucide-react";
+import { Clock, BookOpen, ArrowRight, CheckCircle2 } from "lucide-react";
 
 export interface LearningPathData {
   id: string;
@@ -35,7 +35,7 @@ export const LearningPathCard: React.FC<LearningPathCardProps> = ({
 
   return (
     <Card
-      variant={path.isActive ? "orange-accent" : "white"}
+      variant={path.isActive ? "indigo-accent" : "white"}
       className="relative flex flex-col justify-between h-full group"
     >
       <div>
@@ -56,7 +56,7 @@ export const LearningPathCard: React.FC<LearningPathCardProps> = ({
 
         {/* Title & Description */}
         <div className="mb-4">
-          <CardTitle className="group-hover:text-orange-600 transition-colors">
+          <CardTitle className="group-hover:text-[#1e3a8a] transition-colors">
             {path.title}
           </CardTitle>
           <p className="text-xs text-slate-500 mt-1.5 leading-relaxed">
@@ -67,7 +67,7 @@ export const LearningPathCard: React.FC<LearningPathCardProps> = ({
         {/* Path Metadata */}
         <div className="flex items-center gap-4 text-xs font-semibold text-slate-600 mb-5">
           <div className="flex items-center gap-1.5">
-            <Clock className="w-3.5 h-3.5 text-orange-500" />
+            <Clock className="w-3.5 h-3.5 text-[#fb923c]" />
             <span>{path.estimatedHours} Hours</span>
           </div>
           <div className="flex items-center gap-1.5">
@@ -91,7 +91,7 @@ export const LearningPathCard: React.FC<LearningPathCardProps> = ({
 
       {/* Progress & Actions */}
       <div>
-        <ProgressBar progress={progressPercent} color="orange" />
+        <ProgressBar progress={progressPercent} color="indigo" />
 
         <CardFooter className="gap-2">
           <Button
@@ -103,7 +103,7 @@ export const LearningPathCard: React.FC<LearningPathCardProps> = ({
           </Button>
 
           <Button
-            variant={path.isActive ? "orange" : "slate"}
+            variant={path.isActive ? "primary" : "slate"}
             size="sm"
             icon={<ArrowRight className="w-3.5 h-3.5" />}
             onClick={() => onSelectPath && onSelectPath(path.id)}

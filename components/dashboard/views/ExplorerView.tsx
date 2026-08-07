@@ -10,7 +10,7 @@ import { Compass, CheckCircle2, ArrowRight, Database, Layers, ShieldCheck, Zap }
 const skillCategories = [
   {
     name: "Backend Architecture",
-    icon: <Layers className="w-5 h-5 text-indigo-600" />,
+    icon: <Layers className="w-5 h-5 text-[#1e3a8a]" />,
     level: "Advanced (78%)",
     skills: ["Java 21", "Spring Boot 3", "REST APIs", "Microservices"],
   },
@@ -22,7 +22,7 @@ const skillCategories = [
   },
   {
     name: "Frontend Frameworks",
-    icon: <Zap className="w-5 h-5 text-indigo-600" />,
+    icon: <Zap className="w-5 h-5 text-[#1e3a8a]" />,
     level: "Advanced (88%)",
     skills: ["Next.js 16", "React 19", "Tailwind CSS", "TypeScript"],
   },
@@ -61,7 +61,7 @@ export const ExplorerView: React.FC = () => {
           <Card key={idx} variant="white" className="space-y-4">
             <CardHeader className="mb-2">
               <div className="flex items-center gap-3">
-                <div className="p-3 bg-indigo-50/50 rounded-2xl border border-indigo-100/60">
+                <div className="p-3 bg-blue-50/60 rounded-2xl border border-blue-100/60">
                   {cat.icon}
                 </div>
                 <div>

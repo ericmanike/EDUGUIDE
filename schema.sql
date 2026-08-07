@@ -11,9 +11,10 @@ CREATE TABLE users (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name VARCHAR(255) NOT NULL,
     email VARCHAR(255) UNIQUE NOT NULL,
+ 
     password_hash VARCHAR(255) NOT NULL,
     role user_role DEFAULT 'STUDENT',
-    wallet_balance DECIMAL(12, 2) DEFAULT 0.00,
+   
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );

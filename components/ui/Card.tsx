@@ -21,9 +21,9 @@ export const Card: React.FC<CardProps> = ({
     white:
       "shadow-md shadow-slate-200/80 hover:shadow-xl hover:shadow-slate-300/60 text-slate-900",
     "indigo-accent":
-      "border-l-4 border-l-indigo-600 shadow-md shadow-slate-200/80 hover:shadow-xl hover:shadow-slate-300/60 text-slate-900",
+      "border-l-4 border-l-[#1e3a8a] shadow-md shadow-slate-200/80 hover:shadow-xl hover:shadow-slate-300/60 text-slate-900",
     "orange-accent":
-      "border-l-4 border-l-orange-500 shadow-md shadow-slate-200/80 hover:shadow-xl hover:shadow-slate-300/60 text-slate-900",
+      "border-l-4 border-l-[#fb923c] shadow-md shadow-slate-200/80 hover:shadow-xl hover:shadow-slate-300/60 text-slate-900",
   };
 
   const hoverStyle = hoverEffect

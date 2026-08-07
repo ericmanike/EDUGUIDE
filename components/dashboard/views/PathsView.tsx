@@ -1,10 +1,11 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Badge } from "@/components/ui/Badge";
 import { LearningPathCard, LearningPathData } from "@/components/dashboard/LearningPathCard";
 import { PathProgressBarChart } from "@/components/dashboard/AnalyticsCharts";
-import { Sparkles, SlidersHorizontal } from "lucide-react";
+import { SlidersHorizontal } from "lucide-react";
+import { fetchLearningPaths } from "@/lib/api";
 
 const allPaths: LearningPathData[] = [
   {
@@ -65,6 +66,28 @@ export const PathsView: React.FC = () => {
   const [paths, setPaths] = useState<LearningPathData[]>(allPaths);
   const [filter, setFilter] = useState<string>("All");
 
+  useEffect(() => {
+    const loadPaths = async () => {
+      const apiData = await fetchLearningPaths();
+      if (apiData && apiData.length > 0) {
+        const formatted: LearningPathData[] = apiData.map((ap, idx) => ({
+          id: ap.id,
+          title: ap.title,
+          description: ap.description || "Custom learning path.",
+          matchScore: ap.matchScore || 95,
+          level: (ap.level as any) || "Intermediate",
+          estimatedHours: ap.estimatedHours || 40,
+          totalModules: ap.totalModules || 10,
+          completedModules: ap.completedModules || 2,
+          skillsCovered: ap.skillsCovered || ["Spring Boot", "REST API"],
+          isActive: idx === 0,
+        }));
+        setPaths(formatted);
+      }
+    };
+    loadPaths();
+  }, []);
+
   const filteredPaths = paths.filter((p) => {
     if (filter === "Active") return p.isActive;
     if (filter === "Intermediate") return p.level === "Intermediate";
@@ -80,7 +103,6 @@ export const PathsView: React.FC = () => {
 
   return (
     <div className="space-y-6">
-
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
@@ -98,7 +120,7 @@ export const PathsView: React.FC = () => {
         </div>
       </div>
 
-      {/* Recharts Module Progress Comparison Chart */}
+      {/* Module Progress Comparison Chart */}
       <PathProgressBarChart />
 
       {/* Filters Bar */}
@@ -110,7 +132,7 @@ export const PathsView: React.FC = () => {
               onClick={() => setFilter(cat)}
               className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                 filter === cat
-                  ? "bg-slate-900 text-white"
+                  ? "bg-[#1e3a8a] text-white shadow-sm"
                   : "text-slate-600 hover:bg-slate-100"
               }`}
             >
@@ -120,7 +142,7 @@ export const PathsView: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-2 text-xs text-slate-500">
-          <SlidersHorizontal className="w-4 h-4 text-indigo-600" />
+          <SlidersHorizontal className="w-4 h-4 text-[#1e3a8a]" />
           <span className="font-semibold">{filteredPaths.length} Paths Found</span>
         </div>
       </div>

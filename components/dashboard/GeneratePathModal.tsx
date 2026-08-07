@@ -5,7 +5,6 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { LearningPathData } from "@/components/dashboard/LearningPathCard";
 import {
-  Sparkles,
   X,
   Zap,
   CheckCircle2,
@@ -117,13 +116,12 @@ export const GeneratePathModal: React.FC<GeneratePathModalProps> = ({
         {/* Header */}
         <div className="flex items-center justify-between pb-4 border-b border-slate-100">
           <div className="flex items-center gap-3">
-
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="text-xl font-black text-slate-900 tracking-tight">
                   Generate New Learning Path
                 </h3>
-                <Badge variant="indigo" icon={<Zap className="w-3 h-3" />}>
+                <Badge variant="indigo" icon={<Zap className="w-3 h-3 text-[#1e3a8a]" />}>
                   Instant AI
                 </Badge>
               </div>
@@ -146,8 +144,8 @@ export const GeneratePathModal: React.FC<GeneratePathModalProps> = ({
         {isGenerating ? (
           <div className="py-12 flex flex-col items-center justify-center text-center space-y-4">
             <div className="relative flex items-center justify-center">
-              <div className="w-20 h-20 rounded-full border-4 border-indigo-100 border-t-indigo-600 animate-spin" />
-              <Brain className="w-8 h-8 text-indigo-600 absolute" />
+              <div className="w-20 h-20 rounded-full border-4 border-blue-100 border-t-[#1e3a8a] animate-spin" />
+              <Brain className="w-8 h-8 text-[#1e3a8a] absolute" />
             </div>
             <div>
               <h4 className="text-base font-bold text-slate-900 animate-pulse">
@@ -170,7 +168,7 @@ export const GeneratePathModal: React.FC<GeneratePathModalProps> = ({
                 value={customGoal}
                 onChange={(e) => setCustomGoal(e.target.value)}
                 placeholder="e.g. Building High-Throughput REST APIs with Spring Boot"
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-xs font-semibold text-slate-900 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none"
+                className="w-full bg-[#f4f5f7] border border-slate-200 rounded-xl px-4 py-2.5 text-xs font-semibold text-slate-900 focus:ring-2 focus:ring-[#1e3a8a]/20 focus:border-[#1e3a8a] outline-none"
               />
             </div>
 
@@ -189,18 +187,18 @@ export const GeneratePathModal: React.FC<GeneratePathModalProps> = ({
                       onClick={() => setSelectedTrack(t)}
                       className={`p-3.5 rounded-2xl border cursor-pointer transition-all ${
                         isSelected
-                          ? "bg-indigo-50/50 border-indigo-600 ring-2 ring-indigo-600/20 shadow-sm"
+                          ? "bg-blue-50/50 border-[#1e3a8a] ring-2 ring-[#1e3a8a]/20 shadow-sm"
                           : "bg-white border-slate-200/80 hover:border-slate-300 hover:bg-slate-50/60"
                       }`}
                     >
                       <div className="flex items-center justify-between mb-1.5">
                         <div className="flex items-center gap-2">
-                          <Icon className={`w-4 h-4 ${isSelected ? "text-indigo-600" : "text-slate-500"}`} />
+                          <Icon className={`w-4 h-4 ${isSelected ? "text-[#1e3a8a]" : "text-slate-500"}`} />
                           <span className="text-xs font-bold text-slate-900 line-clamp-1">
                             {t.title}
                           </span>
                         </div>
-                        {isSelected && <CheckCircle2 className="w-4 h-4 text-indigo-600 shrink-0" />}
+                        {isSelected && <CheckCircle2 className="w-4 h-4 text-[#1e3a8a] shrink-0" />}
                       </div>
                       <p className="text-[11px] text-slate-500 line-clamp-2 leading-relaxed">
                         {t.description}
@@ -221,7 +219,7 @@ export const GeneratePathModal: React.FC<GeneratePathModalProps> = ({
                     onClick={() => setLevel(l)}
                     className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                       level === l
-                        ? "bg-slate-900 text-white shadow-sm"
+                        ? "bg-[#1e3a8a] text-white shadow-sm"
                         : "bg-slate-100 text-slate-600 hover:bg-slate-200/70"
                     }`}
                   >

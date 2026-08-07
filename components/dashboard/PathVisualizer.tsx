@@ -109,7 +109,7 @@ export const PathVisualizer: React.FC = () => {
       <CardHeader>
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <Badge variant="indigo" icon={<Zap className="w-3 h-3" />}>
+            <Badge variant="indigo" icon={<Zap className="w-3 h-3 text-[#1e3a8a]" />}>
               Interactive Learning Roadmap
             </Badge>
             <span className="text-xs font-semibold text-slate-400">
@@ -143,11 +143,11 @@ export const PathVisualizer: React.FC = () => {
               onClick={() => setSelectedNode(node)}
               className={`relative p-4 rounded-2xl transition-all duration-200 cursor-pointer border ${
                 isSelected
-                  ? "bg-white border-indigo-600 shadow-xl shadow-indigo-600/15 ring-2 ring-indigo-600/20 scale-[1.02]"
+                  ? "bg-white border-[#1e3a8a] shadow-xl shadow-[#1e3a8a]/15 ring-2 ring-[#1e3a8a]/20 scale-[1.02]"
                   : isCompleted
                   ? "bg-emerald-50/50 border-emerald-200 shadow-sm hover:shadow-md"
                   : isCurrent
-                  ? "bg-white border-indigo-400 shadow-md shadow-indigo-500/10"
+                  ? "bg-white border-[#1e3a8a]/70 shadow-md shadow-blue-500/10"
                   : "bg-slate-50/60 border-slate-200/70 shadow-2xs hover:shadow-md hover:bg-white"
               }`}
             >
@@ -157,7 +157,7 @@ export const PathVisualizer: React.FC = () => {
                     isCompleted
                       ? "bg-emerald-100 text-emerald-700"
                       : isCurrent
-                      ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/30"
+                      ? "bg-[#1e3a8a] text-white shadow-md shadow-[#1e3a8a]/30"
                       : "bg-slate-100 text-slate-500"
                   }`}
                 >
@@ -167,7 +167,7 @@ export const PathVisualizer: React.FC = () => {
                 {isCompleted ? (
                   <CheckCircle2 className="w-4 h-4 text-emerald-600" />
                 ) : isCurrent ? (
-                  <span className="w-2.5 h-2.5 rounded-full bg-indigo-600 animate-ping" />
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#fb923c] animate-ping" />
                 ) : (
                   <Circle className="w-4 h-4 text-slate-300" />
                 )}
@@ -185,11 +185,11 @@ export const PathVisualizer: React.FC = () => {
         })}
       </div>
 
-      {/* Selected Node Details Box - Pure White Card with Elevated Shadow */}
+      {/* Selected Node Details Box */}
       <div className="p-5 rounded-2xl bg-white border border-slate-100 shadow-md shadow-slate-200/70 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <span className="text-xs font-bold text-indigo-600 uppercase tracking-wider">
+            <span className="text-xs font-bold text-[#1e3a8a] uppercase tracking-wider">
               {selectedNode.category} Module
             </span>
             <span className="text-slate-300">•</span>

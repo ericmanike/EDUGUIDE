@@ -1,10 +1,4 @@
-import DashboardLayout from "./dashboard/layout";
-import DashboardOverviewPage from "./dashboard/page";
-
+import { redirect } from "next/navigation";
 export default function Home() {
-  return (
-    <DashboardLayout>
-      <DashboardOverviewPage />
-    </DashboardLayout>
-  );
+  redirect("/auth/signIn");
 }

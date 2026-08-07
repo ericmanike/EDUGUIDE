@@ -18,8 +18,8 @@ export const Badge: React.FC<BadgeProps> = ({
   const base = "inline-flex items-center font-bold rounded-full tracking-wide";
 
   const variants = {
-    indigo: "bg-indigo-50 text-indigo-700 border border-indigo-100",
-    orange: "bg-orange-50 text-orange-700 border border-orange-100",
+    indigo: "bg-blue-50 text-[#1e3a8a] border border-blue-100/80",
+    orange: "bg-amber-50 text-[#f97316] border border-amber-100/80",
     slate: "bg-slate-900 text-white border border-slate-800",
     green: "bg-emerald-50 text-emerald-700 border border-emerald-100",
     sky: "bg-sky-50 text-sky-700 border border-sky-100",

@@ -10,8 +10,6 @@ import {
   BookOpen,
   TrendingUp,
   Settings,
-  Sparkles,
-  ChevronRight,
 } from "lucide-react";
 
 export const Sidebar: React.FC = () => {
@@ -47,14 +45,14 @@ export const Sidebar: React.FC = () => {
                   href={item.href}
                   className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                     isActive
-                      ? "bg-slate-900 text-white shadow-md shadow-slate-900/10"
+                      ? "bg-[#1e3a8a] text-white shadow-md shadow-[#1e3a8a]/20"
                       : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
                   }`}
                 >
                   <div className="flex items-center gap-3">
                     <Icon
                       className={`w-4 h-4 ${
-                        isActive ? "text-indigo-400" : "text-slate-400"
+                        isActive ? "text-[#fb923c]" : "text-slate-400"
                       }`}
                     />
                     <span>{item.label}</span>
@@ -65,7 +63,6 @@ export const Sidebar: React.FC = () => {
           </nav>
         </div>
       </div>
-
     </aside>
   );
 };
