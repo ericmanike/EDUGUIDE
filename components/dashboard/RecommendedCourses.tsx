@@ -102,19 +102,27 @@ export const RecommendedCourses: React.FC = () => {
         {coursesList.map((course) => (
           <Card key={course.id} variant="white" className="flex flex-col justify-between group">
             <div>
-              {/* Header Gradient Banner */}
-              <div
-                className={`h-28 -mx-6 -mt-6 mb-4 rounded-t-2xl bg-gradient-to-r ${course.imageBg} p-4 flex items-end justify-between relative overflow-hidden`}
-              >
-                <div className="absolute top-3 right-3 flex items-center gap-1.5">
-                  <Badge variant="slate" size="sm">
+              {/* Header Cover Image Banner */}
+              <div className="h-36 -mx-6 -mt-6 mb-4 rounded-t-2xl relative overflow-hidden group">
+                <img
+                  src="/cover_image.jpg"
+                  alt={course.title}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/20 to-transparent" />
+
+                <div className="absolute top-3 right-3 z-10 flex items-center gap-1.5">
+                  <Badge variant="slate" size="sm" className="bg-slate-900/80 text-white backdrop-blur-md border-0 font-bold">
                     {course.level}
                   </Badge>
                 </div>
-                <PlayCircle className="w-9 h-9 text-white/90 drop-shadow-md group-hover:scale-110 transition-transform" />
-                <span className="text-[10px] font-extrabold uppercase tracking-wider bg-white/20 backdrop-blur-md text-white px-2.5 py-1 rounded-lg">
-                  {course.tag}
-                </span>
+
+                <div className="absolute bottom-3 left-3 right-3 z-10 flex items-center justify-between">
+                  <PlayCircle className="w-9 h-9 text-white/90 drop-shadow-md group-hover:scale-110 transition-transform" />
+                  <span className="text-[10px] font-extrabold uppercase tracking-wider bg-white/20 backdrop-blur-md text-white px-2.5 py-1 rounded-lg border border-white/20">
+                    {course.tag}
+                  </span>
+                </div>
               </div>
 
               <h4 className="text-sm font-bold text-slate-900 group-hover:text-[#1e3a8a] transition-colors line-clamp-2 leading-snug">

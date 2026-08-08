@@ -39,20 +39,30 @@ export const LearningPathCard: React.FC<LearningPathCardProps> = ({
       className="relative flex flex-col justify-between h-full group"
     >
       <div>
-        {/* Header Row */}
-        <CardHeader>
-          <div className="flex items-center gap-2 flex-wrap">
-            <Badge variant="orange">
-              {path.matchScore}% Match
-            </Badge>
-            <Badge variant="slate">{path.level}</Badge>
+        {/* Header Cover Image Banner */}
+        <div className="h-32 -mx-6 -mt-6 mb-4 rounded-t-2xl relative overflow-hidden group">
+          <img
+            src="/cover_image.jpg"
+            alt={path.title}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/20 to-transparent" />
+          <div className="absolute top-3 left-3 right-3 z-10 flex items-center justify-between flex-wrap gap-1.5">
+            <div className="flex items-center gap-1.5">
+              <Badge variant="orange" className="shadow-xs font-bold">
+                {path.matchScore}% Match
+              </Badge>
+              <Badge variant="slate" className="bg-slate-900/80 text-white backdrop-blur-md border-0 font-bold">
+                {path.level}
+              </Badge>
+            </div>
             {path.isActive && (
-              <Badge variant="green" icon={<CheckCircle2 className="w-3 h-3" />}>
+              <Badge variant="green" icon={<CheckCircle2 className="w-3 h-3" />} className="shadow-xs font-bold">
                 Active Path
               </Badge>
             )}
           </div>
-        </CardHeader>
+        </div>
 
         {/* Title & Description */}
         <div className="mb-4">

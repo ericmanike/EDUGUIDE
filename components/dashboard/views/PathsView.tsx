@@ -6,6 +6,7 @@ import { LearningPathCard, LearningPathData } from "@/components/dashboard/Learn
 import { PathProgressBarChart } from "@/components/dashboard/AnalyticsCharts";
 import { SlidersHorizontal } from "lucide-react";
 import { fetchLearningPaths } from "@/lib/api";
+import { DashboardSkeleton } from "@/components/dashboard/DashboardSkeleton";
 
 const allPaths: LearningPathData[] = [
   {
@@ -65,28 +66,40 @@ const allPaths: LearningPathData[] = [
 export const PathsView: React.FC = () => {
   const [paths, setPaths] = useState<LearningPathData[]>(allPaths);
   const [filter, setFilter] = useState<string>("All");
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
     const loadPaths = async () => {
-      const apiData = await fetchLearningPaths();
-      if (apiData && apiData.length > 0) {
-        const formatted: LearningPathData[] = apiData.map((ap, idx) => ({
-          id: ap.id,
-          title: ap.title,
-          description: ap.description || "Custom learning path.",
-          matchScore: ap.matchScore || 95,
-          level: (ap.level as any) || "Intermediate",
-          estimatedHours: ap.estimatedHours || 40,
-          totalModules: ap.totalModules || 10,
-          completedModules: ap.completedModules || 2,
-          skillsCovered: ap.skillsCovered || ["Spring Boot", "REST API"],
-          isActive: idx === 0,
-        }));
-        setPaths(formatted);
+      setIsLoading(true);
+      try {
+        const apiData = await fetchLearningPaths();
+        if (apiData && apiData.length > 0) {
+          const formatted: LearningPathData[] = apiData.map((ap, idx) => ({
+            id: ap.id,
+            title: ap.title,
+            description: ap.description || "Custom learning path.",
+            matchScore: ap.matchScore || 95,
+            level: (ap.level as any) || "Intermediate",
+            estimatedHours: ap.estimatedHours || 40,
+            totalModules: ap.totalModules || 10,
+            completedModules: ap.completedModules || 2,
+            skillsCovered: ap.skillsCovered || ["Spring Boot", "REST API"],
+            isActive: idx === 0,
+          }));
+          setPaths(formatted);
+        }
+      } catch (error) {
+        console.error("Error loading learning paths:", error);
+      } finally {
+        setIsLoading(false);
       }
     };
     loadPaths();
   }, []);
+
+  if (isLoading) {
+    return <DashboardSkeleton />;
+  }
 
   const filteredPaths = paths.filter((p) => {
     if (filter === "Active") return p.isActive;

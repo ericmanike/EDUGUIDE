@@ -21,6 +21,7 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { fetchLearningPaths, fetchUsers, User, getCurrentUser } from "@/lib/api";
+import { DashboardSkeleton } from "@/components/dashboard/DashboardSkeleton";
 
 const initialPaths: LearningPathData[] = [
   {
@@ -68,33 +69,38 @@ export const OverviewView: React.FC = () => {
   const [paths, setPaths] = useState<LearningPathData[]>(initialPaths);
   const [activeTitle, setActiveTitle] = useState("Full-Stack Spring Boot + Next.js Specialist");
   const [userName, setUserName] = useState("Student");
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    // Check logged in user via decoded JWT or session
-    const currentUser = getCurrentUser();
-    if (currentUser?.name) {
-      setUserName(currentUser.name);
-    }
-
-
-    // Load paths from backend API
     const loadData = async () => {
-      const apiPaths = await fetchLearningPaths();
-      if (apiPaths && apiPaths.length > 0) {
-        const formatted: LearningPathData[] = apiPaths.map((ap, idx) => ({
-          id: ap.id,
-          title: ap.title,
-          description: ap.description || "Custom backend learning path.",
-          matchScore: ap.matchScore || 95,
-          level: (ap.level as any) || "Intermediate",
-          estimatedHours: ap.estimatedHours || 40,
-          totalModules: ap.totalModules || 10,
-          completedModules: ap.completedModules || 2,
-          skillsCovered: ap.skillsCovered || ["Spring Boot", "REST API"],
-          isActive: idx === 0,
-        }));
-        setPaths(formatted);
-        if (formatted[0]) setActiveTitle(formatted[0].title);
+      setIsLoading(true);
+      try {
+        const currentUser = getCurrentUser();
+        if (currentUser?.name) {
+          setUserName(currentUser.name);
+        }
+
+        const apiPaths = await fetchLearningPaths();
+        if (apiPaths && apiPaths.length > 0) {
+          const formatted: LearningPathData[] = apiPaths.map((ap, idx) => ({
+            id: ap.id,
+            title: ap.title,
+            description: ap.description || "Custom backend learning path.",
+            matchScore: ap.matchScore || 95,
+            level: (ap.level as any) || "Intermediate",
+            estimatedHours: ap.estimatedHours || 40,
+            totalModules: ap.totalModules || 10,
+            completedModules: ap.completedModules || 2,
+            skillsCovered: ap.skillsCovered || ["Spring Boot", "REST API"],
+            isActive: idx === 0,
+          }));
+          setPaths(formatted);
+          if (formatted[0]) setActiveTitle(formatted[0].title);
+        }
+      } catch (error) {
+        console.error("Failed to load user data/paths:", error);
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -112,6 +118,10 @@ export const OverviewView: React.FC = () => {
       })
     );
   };
+
+  if (isLoading) {
+    return <DashboardSkeleton />;
+  }
 
   return (
     <div className="space-y-8">

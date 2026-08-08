@@ -29,9 +29,9 @@ export default function SignUpPage() {
 
     try {
       await registerUser({ name, email, password });
-      toast.success("Account created successfully!");
+      toast.success("Account created successfully! Starting diagnostic onboarding...");
       setTimeout(() => {
-        router.push("/dashboard");
+        router.push("/onboarding");
         router.refresh();
       }, 500);
     } catch (err: any) {
