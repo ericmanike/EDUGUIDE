@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "EduGuide | AI Student Learning Path Recommender",
+  title: "SkillsBank | AI Student Learning Path Recommender",
   description: "Personalized learning path recommendation engine powered by Spring Boot backend and Next.js frontend.",
 };
 

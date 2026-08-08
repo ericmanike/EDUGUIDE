@@ -24,7 +24,7 @@ const defaultCourses: CourseItem[] = [
   {
     id: "c1",
     title: "Spring Boot 3 & PostgreSQL Backend Architecture",
-    provider: "EduGuide Core",
+    provider: "SkillsBank Core",
     rating: 4.9,
     students: "1,420",
     level: "Intermediate",
@@ -35,7 +35,7 @@ const defaultCourses: CourseItem[] = [
   {
     id: "c2",
     title: "Next.js 16 App Router & Fullstack Integration",
-    provider: "EduGuide Core",
+    provider: "SkillsBank Core",
     rating: 4.8,
     students: "2,150",
     level: "Advanced",
@@ -46,7 +46,7 @@ const defaultCourses: CourseItem[] = [
   {
     id: "c3",
     title: "Algorithm & Data Structures for Recommendation Systems",
-    provider: "EduGuide Specialization",
+    provider: "SkillsBank Specialization",
     rating: 4.9,
     students: "980",
     level: "Intermediate",
@@ -67,7 +67,7 @@ export const RecommendedCourses: React.FC = () => {
         const formatted: CourseItem[] = apiModules.map((m: CourseModule, i: number) => ({
           id: m.id,
           title: m.title,
-          provider: "EduGuide Core",
+          provider: "SkillsBank Core",
           rating: 4.9,
           students: `${(i + 1) * 350}`,
           level: "Intermediate",

@@ -89,7 +89,7 @@ export const GeneratePathModal: React.FC<GeneratePathModalProps> = ({
     }, 800);
 
     setTimeout(() => {
-      setStepText("Finalizing personalized EduGuide roadmap...");
+      setStepText("Finalizing personalized SkillsBank roadmap...");
     }, 1500);
 
     setTimeout(async () => {
@@ -140,7 +140,7 @@ export const GeneratePathModal: React.FC<GeneratePathModalProps> = ({
                 </Badge>
               </div>
               <p className="text-xs text-slate-500 font-medium">
-                EduGuide will structure an optimized node graph and activate it now
+                SkillsBank will structure an optimized node graph and activate it now
               </p>
             </div>
           </div>

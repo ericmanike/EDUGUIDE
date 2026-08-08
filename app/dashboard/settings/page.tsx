@@ -1,5 +1,6 @@
-import { SettingsView } from "@/components/dashboard/views/SettingsView";
+import { redirect } from "next/navigation";
 
 export default function SettingsPage() {
-  return <SettingsView />;
+  redirect("/dashboard/account");
 }
+

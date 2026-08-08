@@ -113,7 +113,7 @@ export const PathVisualizer: React.FC = () => {
               Interactive Learning Roadmap
             </Badge>
             <span className="text-xs font-semibold text-slate-400">
-              Updated by EduGuide Engine
+              Updated by SkillsBank Engine
             </span>
           </div>
           <CardTitle className="text-slate-900 text-xl font-black">

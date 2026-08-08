@@ -48,7 +48,7 @@ export const ExplorerView: React.FC = () => {
           Skill Explorer & Competency Map
         </h1>
         <p className="text-xs text-slate-500 font-medium">
-          Analyze your proficiency breakdown and discover skill gaps targeted by EduGuide
+          Analyze your proficiency breakdown and discover skill gaps targeted by SkillsBank
         </p>
       </div>
 

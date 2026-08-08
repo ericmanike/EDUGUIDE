@@ -131,7 +131,7 @@ export const OverviewView: React.FC = () => {
             </h1>
             <p className="text-xs md:text-sm text-slate-300 max-w-2xl leading-relaxed">
               Active Path: <span className="text-blue-300 font-bold">{activeTitle}</span>.
-              EduGuide has structured your nodes for optimal skill acceleration.
+              SkillsBank has structured your nodes for optimal skill acceleration.
             </p>
           </div>
         </div>

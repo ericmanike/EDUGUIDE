@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Search, Bell, GraduationCap, User, LogOut, Menu } from "lucide-react";
 import { getCurrentUser, logoutUser, User as UserType } from "@/lib/api";
 
@@ -45,15 +46,14 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleMobileMenu }) => {
         </div>
         <div>
           <span className="text-xl font-black tracking-tight flex items-baseline leading-none">
-            <span className="text-[#1e3a8a]">Edu</span>
-            <span className="text-[#fb923c]">Guide</span>
+            <span className="text-[#1e3a8a]">Skills</span>
+            <span className="text-[#fb923c]">Bank</span>
           </span>
           <p className="text-[11px] font-semibold text-slate-400 hidden sm:block mt-0.5">
             Personalized Student Learning Recommender
           </p>
         </div>
       </div>
-
 
       {/* Center Search */}
       <div className="hidden md:flex items-center relative w-80">
@@ -75,17 +75,23 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleMobileMenu }) => {
 
         {/* Student Profile Pill */}
         <div className="flex items-center gap-3 pl-2 border-l border-slate-100">
-          <div className="w-9 h-9 rounded-xl bg-[#1e3a8a] text-white flex items-center justify-center font-bold text-sm shadow-sm">
-            <User className="w-4 h-4 text-white" />
-          </div>
-          <div className="hidden sm:block text-left">
-            <h4 className="text-xs font-bold text-slate-900">
-              {currentUser?.name || "Student User"}
-            </h4>
-            <p className="text-[10px] font-semibold text-[#fb923c]">
-              {currentUser?.role || "STUDENT"} Track
-            </p>
-          </div>
+          <Link
+            href="/dashboard/account"
+            className="flex items-center gap-2.5 hover:opacity-80 transition-opacity cursor-pointer group"
+          >
+            <div className="w-9 h-9 rounded-xl bg-[#1e3a8a] text-white flex items-center justify-center font-bold text-sm shadow-sm group-hover:scale-105 transition-transform">
+              <User className="w-4 h-4 text-white" />
+            </div>
+            <div className="hidden sm:block text-left">
+              <h4 className="text-xs font-bold text-slate-900 group-hover:text-[#1e3a8a] transition-colors">
+                {currentUser?.name || "Student User"}
+              </h4>
+              <p className="text-[10px] font-semibold text-[#fb923c]">
+                {currentUser?.role || "STUDENT"} Track
+              </p>
+            </div>
+          </Link>
+
           
           {/* Logout Button */}
           <button

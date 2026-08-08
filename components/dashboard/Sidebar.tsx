@@ -9,9 +9,9 @@ import {
   Route,
   BookOpen,
   TrendingUp,
-  Settings,
   GraduationCap,
   X,
+  User,
 } from "lucide-react";
 
 interface SidebarProps {
@@ -29,14 +29,16 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, onCloseMobile })
     { id: "courses", label: "Course Modules", href: "/dashboard/courses", icon: BookOpen },
     { id: "analytics", label: "Progress Analytics", href: "/dashboard/analytics", icon: TrendingUp },
     { id: "curriculum", label: "Curriculum Manager", href: "/dashboard/curriculum", icon: GraduationCap },
-    { id: "settings", label: "Settings", href: "/dashboard/settings", icon: Settings },
+    { id: "account", label: "My Account", href: "/dashboard/account", icon: User },
   ];
+
+
 
   const renderNavContent = () => (
     <div className="space-y-6">
       <div>
         <div className="flex items-center justify-between px-3 mb-3">
-          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+          <p className="text-[11px] font-extrabold text-slate-400 uppercase tracking-widest">
             Main Navigation
           </p>
           {onCloseMobile && (
@@ -44,11 +46,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, onCloseMobile })
               onClick={onCloseMobile}
               className="md:hidden p-1.5 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100"
             >
-              <X className="w-4 h-4" />
+              <X className="w-5 h-5" />
             </button>
           )}
         </div>
-        <nav className="space-y-1">
+        <nav className="space-y-1.5">
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive =
@@ -61,15 +63,15 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, onCloseMobile })
                 key={item.id}
                 href={item.href}
                 onClick={onCloseMobile}
-                className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                className={`w-full flex items-center justify-between px-3.5 py-3 rounded-xl text-sm font-bold transition-all cursor-pointer ${
                   isActive
                     ? "bg-[#1e3a8a] text-white shadow-md shadow-[#1e3a8a]/20"
                     : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
                 }`}
               >
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3.5">
                   <Icon
-                    className={`w-4 h-4 ${
+                    className={`w-5 h-5 ${
                       isActive ? "text-[#fb923c]" : "text-slate-400"
                     }`}
                   />

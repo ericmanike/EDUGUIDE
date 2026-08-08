@@ -4,8 +4,8 @@ import { GraduationCap, HelpCircle } from "lucide-react";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Authentication - EduGuide",
-  description: "Sign in or create a free account with EduGuide. Accelerate your personalized learning path.",
+  title: "Authentication - SkillsBank",
+  description: "Sign in or create a free account with SkillsBank. Accelerate your personalized learning path.",
 };
 
 interface AuthLayoutProps {
@@ -23,8 +23,8 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
             <GraduationCap className="h-5.5 w-5.5 text-white" />
           </div>
           <span className="text-[27px] font-extrabold flex items-baseline leading-none">
-            <span className="text-[#1e3a8a]">Edu</span>
-            <span className="text-[#fb923c]">Guide</span> 
+            <span className="text-[#1e3a8a]">Skills</span>
+            <span className="text-[#fb923c]">Bank</span> 
           </span>
         </Link>
       </div>
@@ -44,7 +44,7 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
           Need help? Watch how to log in
         </Link>
         <span className="text-[11px] text-slate-400 font-medium">
-          © {new Date().getFullYear()} EduGuide
+          © {new Date().getFullYear()} SkillsBank
         </span>
       </div>
     </div>
