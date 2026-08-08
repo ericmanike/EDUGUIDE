@@ -1,13 +1,45 @@
 "use client";
 
-import React from "react";
-import { Search, Bell, GraduationCap, User, LogOut } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { Search, Bell, GraduationCap, User, LogOut, Menu } from "lucide-react";
+import { getCurrentUser, logoutUser, User as UserType } from "@/lib/api";
 
-export const Navbar: React.FC = () => {
+interface NavbarProps {
+  onToggleMobileMenu?: () => void;
+}
+
+export const Navbar: React.FC<NavbarProps> = ({ onToggleMobileMenu }) => {
+  const router = useRouter();
+  const [currentUser, setCurrentUser] = useState<UserType | null>(null);
+
+  useEffect(() => {
+    const user = getCurrentUser();
+    if (user) {
+      setCurrentUser(user);
+    }
+  }, []);
+
+  const handleLogout = () => {
+    logoutUser();
+    router.push("/auth/signIn");
+    router.refresh();
+  };
+
   return (
-    <header className="sticky top-0 z-30 w-full bg-white/95 backdrop-blur-md border-b border-slate-100 px-6 py-3 flex items-center justify-between shadow-2xs">
-      {/* Brand */}
+    <header className="sticky top-0 z-30 w-full bg-white/95 backdrop-blur-md border-b border-slate-100 px-4 sm:px-6 py-3 flex items-center justify-between shadow-2xs">
+      {/* Brand & Mobile Toggle */}
       <div className="flex items-center gap-3">
+        {onToggleMobileMenu && (
+          <button
+            onClick={onToggleMobileMenu}
+            className="md:hidden p-2 rounded-xl text-slate-600 hover:bg-slate-100 transition-all cursor-pointer border border-slate-200/60"
+            title="Open Menu"
+          >
+            <Menu className="w-5 h-5" />
+          </button>
+        )}
+
         <div className="bg-[#1e3a8a] text-white p-2.5 rounded-xl shadow-md shadow-[#1e3a8a]/20 flex items-center justify-center">
           <GraduationCap className="w-5 h-5" />
         </div>
@@ -21,6 +53,7 @@ export const Navbar: React.FC = () => {
           </p>
         </div>
       </div>
+
 
       {/* Center Search */}
       <div className="hidden md:flex items-center relative w-80">
@@ -46,18 +79,25 @@ export const Navbar: React.FC = () => {
             <User className="w-4 h-4 text-white" />
           </div>
           <div className="hidden sm:block text-left">
-            <h4 className="text-xs font-bold text-slate-900">Alex Morgan</h4>
-            <p className="text-[10px] font-semibold text-[#fb923c]">Full-Stack Track</p>
+            <h4 className="text-xs font-bold text-slate-900">
+              {currentUser?.name || "Student User"}
+            </h4>
+            <p className="text-[10px] font-semibold text-[#fb923c]">
+              {currentUser?.role || "STUDENT"} Track
+            </p>
           </div>
           
           {/* Logout Button */}
-          <form action={() => alert("Logging out...")}>
-            <button type="submit" title="Log out" className="ml-2 p-2 rounded-xl text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all cursor-pointer border border-transparent hover:border-red-100">
-              <LogOut className="w-4 h-4" />
-            </button>
-          </form>
+          <button
+            onClick={handleLogout}
+            title="Log out"
+            className="ml-2 p-2 rounded-xl text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all cursor-pointer border border-transparent hover:border-red-100"
+          >
+            <LogOut className="w-4 h-4" />
+          </button>
         </div>
       </div>
     </header>
   );
 };
+

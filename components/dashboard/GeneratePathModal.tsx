@@ -16,6 +16,8 @@ import {
   Cpu,
 } from "lucide-react";
 
+import { createLearningPath } from "@/lib/api";
+
 interface GeneratePathModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -78,7 +80,7 @@ export const GeneratePathModal: React.FC<GeneratePathModalProps> = ({
 
   if (!isOpen) return null;
 
-  const handleStartGeneration = () => {
+  const handleStartGeneration = async () => {
     setIsGenerating(true);
     setStepText("Evaluating skill gap matrix...");
 
@@ -90,11 +92,22 @@ export const GeneratePathModal: React.FC<GeneratePathModalProps> = ({
       setStepText("Finalizing personalized EduGuide roadmap...");
     }, 1500);
 
-    setTimeout(() => {
+    setTimeout(async () => {
+      const pathTitle = customGoal.trim() ? customGoal : selectedTrack.title;
+      const pathDesc = selectedTrack.description;
+
+      // Post to Spring Boot Backend API
+      const createdBackendPath = await createLearningPath({
+        title: pathTitle,
+        description: pathDesc,
+        level: level,
+        estimatedHours: selectedTrack.hours,
+      });
+
       const generatedPath: LearningPathData = {
-        id: `gen-${Date.now()}`,
-        title: customGoal.trim() ? customGoal : selectedTrack.title,
-        description: selectedTrack.description,
+        id: createdBackendPath?.id || `gen-${Date.now()}`,
+        title: pathTitle,
+        description: pathDesc,
         matchScore: 99,
         level: level,
         estimatedHours: selectedTrack.hours,
@@ -109,6 +122,7 @@ export const GeneratePathModal: React.FC<GeneratePathModalProps> = ({
       onClose();
     }, 2200);
   };
+
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">

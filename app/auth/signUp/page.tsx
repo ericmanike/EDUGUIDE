@@ -5,7 +5,7 @@ import Link from "next/link";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useRouter } from "next/navigation";
-import { User, Phone, Mail, Lock, Eye, EyeOff, Loader2, ArrowRight } from "lucide-react";
+import { User, Mail, Lock, Eye, EyeOff, Loader2, ArrowRight } from "lucide-react";
 import { registerUser } from "@/lib/api";
 
 export default function SignUpPage() {
@@ -13,7 +13,6 @@ export default function SignUpPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [phone, setPhone] = useState("");
 
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -29,7 +28,7 @@ export default function SignUpPage() {
     }
 
     try {
-      const user = await registerUser({ name, email, phone, password });
+      await registerUser({ name, email, password });
       toast.success("Account created successfully!");
       setTimeout(() => {
         router.push("/dashboard");
@@ -42,11 +41,7 @@ export default function SignUpPage() {
     }
   };
 
-  const isPasswordValid =
-    password.length >= 8 &&
-    /[a-z]/.test(password) &&
-    /[A-Z]/.test(password) &&
-    /[0-9]/.test(password);
+  const isFormValid = name.trim() !== "" && email.trim() !== "" && password.length >= 6;
 
   return (
     <div className="w-full rounded-[24px] border border-slate-100 bg-white p-7 shadow-[0_10px_35px_rgba(0,0,0,0.04)] sm:p-9 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -76,22 +71,6 @@ export default function SignUpPage() {
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Full Name"
-            className="block w-full rounded-xl border border-slate-200 bg-[#f4f5f7] py-3.5 pl-12 pr-4 text-sm text-slate-800 placeholder-slate-400 outline-none transition-all duration-200 focus:border-[#1e3a8a] focus:bg-white focus:ring-1 focus:ring-[#1e3a8a]"
-          />
-        </div>
-
-        {/* Phone input */}
-        <div className="relative flex items-center">
-          <div className="pointer-events-none absolute left-4 text-slate-400">
-            <Phone className="h-5 w-5" strokeWidth={1.8} />
-          </div>
-          <input
-            type="text"
-            required
-            autoComplete="tel"
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            placeholder="Phone Number"
             className="block w-full rounded-xl border border-slate-200 bg-[#f4f5f7] py-3.5 pl-12 pr-4 text-sm text-slate-800 placeholder-slate-400 outline-none transition-all duration-200 focus:border-[#1e3a8a] focus:bg-white focus:ring-1 focus:ring-[#1e3a8a]"
           />
         </div>
@@ -140,32 +119,17 @@ export default function SignUpPage() {
           </button>
         </div>
 
-        {/* Password hints */}
-        {password.length > 0 && password.length < 8 && (
+        {/* Password hint */}
+        {password.length > 0 && password.length < 6 && (
           <div className="text-red-500 text-xs">
-            Password must be at least 8 characters long
-          </div>
-        )}
-        {password.length >= 8 && !/[a-z]/.test(password) && (
-          <div className="text-red-500 text-xs">
-            Password must contain at least one lowercase letter
-          </div>
-        )}
-        {password.length >= 8 && !/[A-Z]/.test(password) && (
-          <div className="text-red-500 text-xs">
-            Password must contain at least one uppercase letter
-          </div>
-        )}
-        {password.length >= 8 && !/[0-9]/.test(password) && (
-          <div className="text-red-500 text-xs">
-            Password must contain at least one number
+            Password must be at least 6 characters long
           </div>
         )}
 
-        {/* Primary CTA Button (Updated to Brand Blue #1e3a8a) */}
+        {/* Primary CTA Button */}
         <button
           type="submit"
-          disabled={isLoading || !name || !phone || !email || !isPasswordValid}
+          disabled={isLoading || !isFormValid}
           className="relative flex w-full items-center justify-center gap-2 rounded-xl bg-[#1e3a8a] hover:bg-[#1d4ed8] py-3.5 px-4 text-sm font-bold text-white shadow-md shadow-[#1e3a8a]/25 transition-all duration-200 cursor-pointer select-none active:scale-[0.99] disabled:opacity-40 disabled:pointer-events-none"
         >
           {isLoading ? (

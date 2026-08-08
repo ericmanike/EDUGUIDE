@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
+import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { Mail, Lock, Eye, EyeOff, Check, Loader2, ArrowRight } from "lucide-react";
 import { loginUser } from "@/lib/api";
@@ -23,13 +24,13 @@ export default function SignInPage() {
 
     try {
       const user = await loginUser(email, password);
-      alert(`Welcome back, ${user.name || "Student"}!`);
+      toast.success(`Welcome back, ${user.name || "Student"}!`);
       setTimeout(() => {
         router.push("/dashboard");
         router.refresh();
       }, 500);
     } catch (err: any) {
-      alert(err.message || "Failed to sign in. Please try again.");
+      toast.error(err.message || "Failed to sign in. Please check your credentials.");
     } finally {
       setIsLoading(false);
     }
@@ -37,7 +38,8 @@ export default function SignInPage() {
 
   return (
     <div className="w-full rounded-[24px] border border-slate-100 bg-white p-7 shadow-[0_10px_35px_rgba(0,0,0,0.04)] sm:p-9 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      
+      <ToastContainer position="top-right" autoClose={3000} />
+
 
       {/* Title & Subtitle */}
       <div className="mb-6 space-y-1 text-left">

@@ -20,7 +20,7 @@ import {
   Sparkles,
   TrendingUp,
 } from "lucide-react";
-import { fetchLearningPaths, fetchUsers, User } from "@/lib/api";
+import { fetchLearningPaths, fetchUsers, User, getCurrentUser } from "@/lib/api";
 
 const initialPaths: LearningPathData[] = [
   {
@@ -67,19 +67,15 @@ const initialPaths: LearningPathData[] = [
 export const OverviewView: React.FC = () => {
   const [paths, setPaths] = useState<LearningPathData[]>(initialPaths);
   const [activeTitle, setActiveTitle] = useState("Full-Stack Spring Boot + Next.js Specialist");
-  const [userName, setUserName] = useState("Alex");
+  const [userName, setUserName] = useState("Student");
 
   useEffect(() => {
-    // Check logged in user
-    if (typeof window !== "undefined") {
-      const stored = localStorage.getItem("edtech_user");
-      if (stored) {
-        try {
-          const parsed: User = JSON.parse(stored);
-          if (parsed.name) setUserName(parsed.name);
-        } catch (e) {}
-      }
+    // Check logged in user via decoded JWT or session
+    const currentUser = getCurrentUser();
+    if (currentUser?.name) {
+      setUserName(currentUser.name);
     }
+
 
     // Load paths from backend API
     const loadData = async () => {
