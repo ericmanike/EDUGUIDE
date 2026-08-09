@@ -21,45 +21,11 @@ interface CourseItem {
   imageBg: string;
 }
 
-const defaultCourses: CourseItem[] = [
-  {
-    id: "c1",
-    title: "Spring Boot 3 & PostgreSQL Backend Architecture",
-    provider: "SkillsBank Core",
-    rating: 4.9,
-    students: "1,420",
-    level: "Intermediate",
-    tag: "Backend Track",
-    hours: "18 hrs",
-    imageBg: "from-blue-900 to-indigo-950",
-  },
-  {
-    id: "c2",
-    title: "Next.js 16 App Router & Fullstack Integration",
-    provider: "SkillsBank Core",
-    rating: 4.8,
-    students: "2,150",
-    level: "Advanced",
-    tag: "Frontend Track",
-    hours: "16 hrs",
-    imageBg: "from-slate-900 to-slate-800",
-  },
-  {
-    id: "c3",
-    title: "Algorithm & Data Structures for Recommendation Systems",
-    provider: "SkillsBank Specialization",
-    rating: 4.9,
-    students: "980",
-    level: "Intermediate",
-    tag: "Recommender Logic",
-    hours: "12 hrs",
-    imageBg: "from-indigo-900 to-slate-900",
-  },
-];
+
 
 export const RecommendedCourses: React.FC = () => {
   const router = useRouter();
-  const [coursesList, setCoursesList] = useState<CourseItem[]>(defaultCourses);
+  const [coursesList, setCoursesList] = useState<CourseItem[]>();
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
@@ -113,7 +79,7 @@ export const RecommendedCourses: React.FC = () => {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-          {coursesList.map((course) => (
+          {coursesList?.map((course) => (
             <Card key={course.id} variant="white" className="flex flex-col justify-between group">
               <div>
                 {/* Header Cover Image Banner */}
