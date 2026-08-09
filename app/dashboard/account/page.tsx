@@ -106,7 +106,7 @@ export default function AccountPage() {
       <div className="p-8 rounded-3xl bg-gradient-to-r from-slate-900 via-[#1e3a8a] to-slate-900 border border-slate-800 text-white shadow-xl shadow-slate-900/10 relative overflow-hidden">
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 relative z-10">
           <div className="flex items-center gap-5">
-            <div className="w-16 h-16 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 text-white flex items-center justify-center font-black text-2xl shadow-inner shrink-0">
+            <div className="w-16 h-16 rounded-2xl bg-[#fb923c] text-white flex items-center justify-center font-black text-2xl shadow-lg shadow-[#fb923c]/30 shrink-0">
               {currentUser?.name ? currentUser.name.charAt(0).toUpperCase() : "U"}
             </div>
             <div>
@@ -126,7 +126,7 @@ export default function AccountPage() {
 
           <button
             onClick={handleLogout}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-red-500/20 hover:bg-red-500/30 text-red-300 border border-red-500/30 font-bold text-xs transition-all cursor-pointer"
+            className="flex items-center gap-2 px-4.5 py-2.5 rounded-xl bg-[#fb923c] hover:bg-[#f97316] text-white font-bold text-xs shadow-md shadow-[#fb923c]/25 transition-all cursor-pointer select-none active:scale-[0.98]"
           >
             <LogOut className="w-4 h-4" />
             Sign Out

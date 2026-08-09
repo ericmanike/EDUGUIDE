@@ -12,7 +12,7 @@ export const SettingsView: React.FC = () => {
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
-    alert("Settings saved! EduGuide recommendation algorithm has updated.");
+    alert("Settings saved! SkillsBank recommendation algorithm has updated.");
   };
 
   return (
@@ -25,7 +25,7 @@ export const SettingsView: React.FC = () => {
           </Badge>
         </div>
         <h1 className="text-2xl font-black text-slate-900 tracking-tight">
-          EduGuide Recommender Settings
+          SkillsBank Recommender Settings
         </h1>
         <p className="text-xs text-slate-500">
           Tune your learning targets, weekly time commitment, and recommendation parameters

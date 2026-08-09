@@ -65,9 +65,6 @@ export const WeeklyActivityChart: React.FC = () => {
             <Badge variant="indigo" icon={<TrendingUp className="w-3 h-3 text-[#1e3a8a]" />}>
               Weekly Performance
             </Badge>
-            <span className="text-xs font-semibold text-slate-400">
-              Hours Spent vs Milestones
-            </span>
           </div>
           <CardTitle>Learning Activity Trend</CardTitle>
           <CardDescription>
@@ -129,9 +126,6 @@ export const SkillRadarChart: React.FC = () => {
             </Badge>
           </div>
           <CardTitle className="text-slate-900">Student Competency Breakdown</CardTitle>
-          <CardDescription className="text-slate-500">
-            Current skill levels vs. EduGuide target goals (Pie Chart)
-          </CardDescription>
         </div>
       </CardHeader>
 

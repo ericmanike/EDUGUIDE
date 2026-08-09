@@ -1,24 +1,18 @@
 "use client";
 
 import React from "react";
-import { Loader2, GraduationCap } from "lucide-react";
-
 export function DashboardSkeleton() {
   return (
     <div className="space-y-8 animate-pulse font-sans">
       {/* Top Banner Skeleton */}
-      <div className="relative overflow-hidden p-8 rounded-2xl bg-slate-900/90 border border-slate-800 shadow-xl">
+      <div className="relative overflow-hidden p-8 rounded-3xl bg-white border border-slate-100 shadow-sm">
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 relative z-10">
           <div className="space-y-3 w-full max-w-xl">
             <div className="flex items-center gap-2">
-              <div className="h-6 w-36 bg-blue-900/60 rounded-full" />
+              <div className="h-6 w-36 bg-blue-50 rounded-full" />
             </div>
-            <div className="h-8 w-3/4 bg-slate-800 rounded-xl" />
-            <div className="h-4 w-5/6 bg-slate-800/80 rounded-lg" />
-          </div>
-          <div className="flex items-center gap-3 shrink-0 bg-white/5 backdrop-blur-md px-4 py-3 rounded-xl border border-white/10">
-            <Loader2 className="w-5 h-5 text-[#fb923c] animate-spin" />
-            <span className="text-xs font-bold text-slate-300">Loading User Profile...</span>
+            <div className="h-8 w-3/4 bg-slate-200 rounded-xl" />
+            <div className="h-4 w-5/6 bg-slate-100 rounded-lg" />
           </div>
         </div>
       </div>

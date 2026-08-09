@@ -112,9 +112,6 @@ export const PathVisualizer: React.FC = () => {
             <Badge variant="indigo" icon={<Zap className="w-3 h-3 text-[#1e3a8a]" />}>
               Interactive Learning Roadmap
             </Badge>
-            <span className="text-xs font-semibold text-slate-400">
-              Updated by SkillsBank Engine
-            </span>
           </div>
           <CardTitle className="text-slate-900 text-xl font-black">
             Full-Stack Spring Boot + Next.js Track
