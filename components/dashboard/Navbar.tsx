@@ -163,7 +163,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleMobileMenu }) => {
                     className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold text-slate-700 hover:text-[#1e3a8a] hover:bg-blue-50/60 transition-colors"
                   >
                     <Settings className="w-4 h-4 text-slate-400" />
-                    <span>Settings & Targets</span>
+                    <span>My learnings</span>
                   </Link>
                 </div>
 
