@@ -554,4 +554,12 @@ export async function deletePathModule(id: string): Promise<boolean> {
   }
 }
 
-
+export function getStoredAIRecommendations() {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = localStorage.getItem("edtech_ai_recommendations");
+    return raw ? JSON.parse(raw) : null;
+  } catch (e) {
+    return null;
+  }
+}
