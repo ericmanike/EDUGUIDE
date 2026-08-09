@@ -3,9 +3,8 @@
 import React from "react";
 import { SkillRadarChart } from "@/components/dashboard/AnalyticsCharts";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/Card";
-import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
-import { Compass, CheckCircle2, ArrowRight, Database, Layers, ShieldCheck, Zap } from "lucide-react";
+import { CheckCircle2, ArrowRight, Database, Layers, ShieldCheck, Zap } from "lucide-react";
 
 const skillCategories = [
   {
@@ -39,11 +38,6 @@ export const ExplorerView: React.FC = () => {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <div className="flex items-center gap-2 mb-1">
-          <Badge variant="indigo" icon={<Compass className="w-3 h-3" />}>
-            Taxonomy Explorer
-          </Badge>
-        </div>
         <h1 className="text-2xl font-black text-slate-900 tracking-tight">
           Skill Explorer & Competency Map
         </h1>

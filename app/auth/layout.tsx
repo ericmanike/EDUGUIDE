@@ -4,7 +4,7 @@ import { GraduationCap, HelpCircle } from "lucide-react";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Authentication - SkillsBank",
+  title: "Login - SkillsBank",
   description: "Sign in or create a free account with SkillsBank. Accelerate your personalized learning path.",
 };
 
@@ -44,7 +44,7 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
           Need help? Watch how to log in
         </Link>
         <span className="text-[11px] text-slate-400 font-medium">
-          © {new Date().getFullYear()} SkillsBank
+          © {new Date().getFullYear()} SkillsBank Africa
         </span>
       </div>
     </div>
