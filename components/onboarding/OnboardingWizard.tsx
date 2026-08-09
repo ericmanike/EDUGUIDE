@@ -35,6 +35,8 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { AIRecommendationResult } from "@/app/api/onboarding/recommend-skills/route";
+import { fetchLearningPaths, LearningPath } from "@/lib/api";
+import { LogoSpinner } from "@/components/ui/LogoSpinner";
 
 // Types
 export interface OnboardingData {
@@ -73,7 +75,7 @@ export interface DiagnosticQuestion {
   }>;
 }
 
-const TRACKS: TrackOption[] = [
+const DEFAULT_TRACKS: TrackOption[] = [
   {
     id: "web-dev",
     title: "Full-Stack Web Development",
@@ -143,6 +145,49 @@ const TRACKS: TrackOption[] = [
     skills: ["Figma Systems", "User Research", "Wireframing", "Interactive Prototypes"],
   },
 ];
+
+function mapLearningPathToTrack(lp: LearningPath): TrackOption {
+  const lowerTitle = lp.title.toLowerCase();
+  let Icon = Code2;
+  let category = "Software Engineering";
+  let color = "text-blue-600";
+  let bgLight = "bg-blue-50/80";
+  let borderAccent = "border-blue-500";
+
+  if (lowerTitle.includes("ai") || lowerTitle.includes("machine learning") || lowerTitle.includes("data")) {
+    Icon = BrainCircuit;
+    category = "Artificial Intelligence";
+    color = "text-[#1e3a8a]";
+  } else if (lowerTitle.includes("cloud") || lowerTitle.includes("devops") || lowerTitle.includes("docker")) {
+    Icon = Cloud;
+    category = "Infrastructure";
+    color = "text-sky-600";
+  } else if (lowerTitle.includes("mobile") || lowerTitle.includes("ios") || lowerTitle.includes("android")) {
+    Icon = Smartphone;
+    category = "Cross-Platform";
+    color = "text-emerald-600";
+  } else if (lowerTitle.includes("security") || lowerTitle.includes("cyber")) {
+    Icon = ShieldCheck;
+    category = "Security";
+    color = "text-amber-600";
+  } else if (lowerTitle.includes("ui") || lowerTitle.includes("ux") || lowerTitle.includes("design")) {
+    Icon = Palette;
+    category = "Design & Product";
+    color = "text-pink-600";
+  }
+
+  return {
+    id: lp.id,
+    title: lp.title,
+    category,
+    description: lp.description || `Master ${lp.title} competencies and enterprise architecture.`,
+    icon: Icon,
+    color,
+    bgLight,
+    borderAccent,
+    skills: lp.skillsCovered && lp.skillsCovered.length > 0 ? lp.skillsCovered : [lp.title, "Core Fundamentals"],
+  };
+}
 
 // Short 1 to 2 line questions with Gatekeeper Adaptive Branching
 const DEFAULT_DIAGNOSTIC_QUESTIONS: DiagnosticQuestion[] = [
@@ -219,10 +264,34 @@ export function OnboardingWizard() {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(1);
 
+  // Dynamic Learning Paths State
+  const [tracks, setTracks] = useState<TrackOption[]>(DEFAULT_TRACKS);
+  const [isLoadingPaths, setIsLoadingPaths] = useState<boolean>(true);
+
   // Form states
   const [selectedTrack, setSelectedTrack] = useState<string>("web-dev");
   const [diagnosticQuestions, setDiagnosticQuestions] = useState<DiagnosticQuestion[]>(DEFAULT_DIAGNOSTIC_QUESTIONS);
   const [isGeneratingQuestions, setIsGeneratingQuestions] = useState(false);
+
+  // Fetch available learning paths dynamically from backend API on mount
+  useEffect(() => {
+    async function loadBackendPaths() {
+      setIsLoadingPaths(true);
+      try {
+        const backendPaths = await fetchLearningPaths();
+        if (backendPaths && backendPaths.length > 0) {
+          const mappedTracks = backendPaths.map(mapLearningPathToTrack);
+          setTracks(mappedTracks);
+          setSelectedTrack(mappedTracks[0].id);
+        }
+      } catch (err) {
+        console.warn("Could not fetch learning paths from backend, using default catalog:", err);
+      } finally {
+        setIsLoadingPaths(false);
+      }
+    }
+    loadBackendPaths();
+  }, []);
 
   // Adaptive Question State (1 question at a time)
   const [activeQuestionIndex, setActiveQuestionIndex] = useState<number>(0);
@@ -252,7 +321,7 @@ export function OnboardingWizard() {
     return "ADVANCED";
   };
 
-  const activeTrackDetails = TRACKS.find((t) => t.id === selectedTrack) || TRACKS[0];
+  const activeTrackDetails = tracks.find((t) => t.id === selectedTrack) || tracks[0] || DEFAULT_TRACKS[0];
 
   // Fetch AI generated adaptive diagnostic questions based on selected Learning Path track
   const fetchAIGeneratedAssessment = async (track: TrackOption) => {
@@ -487,41 +556,47 @@ export function OnboardingWizard() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {TRACKS.map((track) => {
-              const Icon = track.icon;
-              const isSelected = selectedTrack === track.id;
+          {isLoadingPaths ? (
+            <div className="py-12 flex justify-center">
+              <LogoSpinner size="md" text="Fetching available learning paths..." />
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {tracks.map((track) => {
+                const Icon = track.icon;
+                const isSelected = selectedTrack === track.id;
 
-              return (
-                <div
-                  key={track.id}
-                  onClick={() => setSelectedTrack(track.id)}
-                  className={`p-4 rounded-2xl border-2 transition-all cursor-pointer flex items-center justify-between gap-3 ${
-                    isSelected
-                      ? "border-[#1e3a8a] bg-blue-50/60 text-[#1e3a8a] shadow-md ring-2 ring-[#1e3a8a]/20 font-bold"
-                      : "border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50"
-                  }`}
-                >
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div
-                      className={`p-2.5 rounded-xl shrink-0 transition-colors ${
-                        isSelected ? "bg-[#1e3a8a] text-white" : "bg-slate-100 text-slate-600"
-                      }`}
-                    >
-                      <Icon className="w-5 h-5" />
+                return (
+                  <div
+                    key={track.id}
+                    onClick={() => setSelectedTrack(track.id)}
+                    className={`p-4 rounded-2xl border-2 transition-all cursor-pointer flex items-center justify-between gap-3 ${
+                      isSelected
+                        ? "border-[#1e3a8a] bg-blue-50/60 text-[#1e3a8a] shadow-md ring-2 ring-[#1e3a8a]/20 font-bold"
+                        : "border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50"
+                    }`}
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div
+                        className={`p-2.5 rounded-xl shrink-0 transition-colors ${
+                          isSelected ? "bg-[#1e3a8a] text-white" : "bg-slate-100 text-slate-600"
+                        }`}
+                      >
+                        <Icon className="w-5 h-5" />
+                      </div>
+                      <span className="text-xs sm:text-sm font-bold text-slate-900 truncate">
+                        {track.title}
+                      </span>
                     </div>
-                    <span className="text-xs sm:text-sm font-bold text-slate-900 truncate">
-                      {track.title}
-                    </span>
-                  </div>
 
-                  {isSelected && (
-                    <CheckCircle2 className="w-5 h-5 fill-[#1e3a8a] text-white shrink-0 ml-1" />
-                  )}
-                </div>
-              );
-            })}
-          </div>
+                    {isSelected && (
+                      <CheckCircle2 className="w-5 h-5 fill-[#1e3a8a] text-white shrink-0 ml-1" />
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
 
           {/* Action buttons */}
           <div className="flex justify-end pt-4 border-t border-slate-100">
@@ -726,12 +801,8 @@ export function OnboardingWizard() {
       {currentStep === 4 && (
         <div className="bg-white rounded-3xl border border-slate-200/80 p-6 sm:p-10 shadow-xl shadow-slate-200/40 space-y-8 animate-in fade-in zoom-in-95 duration-300">
           {isGeneratingRecommendation ? (
-            <div className="py-20 text-center space-y-6">
-              <div className="relative w-20 h-20 mx-auto flex items-center justify-center">
-                <div className="absolute inset-0 rounded-full border-4 border-blue-100 border-t-[#1e3a8a] animate-spin" />
-                <BrainCircuit className="w-8 h-8 text-[#fb923c]" />
-              </div>
-        
+            <div className="py-20 flex justify-center">
+              <LogoSpinner size="lg" text={loadingStepText || "Generating AI Skill Recommendations..."} />
             </div>
           ) : (
             <>

@@ -1,9 +1,9 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { ToastContainer } from "react-toastify";
+import { usePathname, useRouter } from "next/navigation";
+import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import {
   GraduationCap,
@@ -12,6 +12,7 @@ import {
   Link as LinkIcon,
   LayoutDashboard,
 } from "lucide-react";
+import { getCurrentUser } from "@/lib/api";
 
 export default function CurriculumLayout({
   children,
@@ -19,6 +20,15 @@ export default function CurriculumLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const router = useRouter();
+
+  useEffect(() => {
+    const user = getCurrentUser();
+    if (!user || user.role !== "ADMIN") {
+      toast.error("Access denied: Curriculum Manager is restricted to administrators.");
+      router.replace("/dashboard");
+    }
+  }, [router]);
 
   const subNavItems = [
     {
