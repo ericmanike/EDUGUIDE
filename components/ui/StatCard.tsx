@@ -24,22 +24,22 @@ export const StatCard: React.FC<StatCardProps> = ({
   };
 
   return (
-    <Card variant="white" hoverEffect className="relative overflow-hidden border border-slate-100/90 shadow-md shadow-slate-200/80 hover:shadow-xl hover:shadow-slate-300/60">
-      <div className="flex items-start justify-between">
-        <div>
-          <p className="text-[16px] font-bold uppercase tracking-wider text-slate-400">
+    <Card variant="white" hoverEffect className="relative overflow-hidden border border-slate-100/90 shadow-sm hover:shadow-md transition-all p-3.5 sm:p-4 rounded-2xl">
+      <div className="flex items-center justify-between">
+        <div className="space-y-0.5">
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">
             {title}
           </p>
-          <h4 className="text-2xl font-black mt-2 tracking-tight text-slate-900">
+          <h4 className="text-base sm:text-lg font-black tracking-tight text-slate-900">
             {value}
           </h4>
           {change && (
-            <div className={`flex items-center gap-1 mt-2 text-[16px] ${changeColors[changeType]}`}>
+            <div className={`flex items-center gap-1 text-[11px] ${changeColors[changeType]}`}>
               <span>{change}</span>
             </div>
           )}
         </div>
-        <div className="p-3 rounded-2xl bg-blue-50/80 text-[#1e3a8a] border border-blue-100/60 shadow-xs">
+        <div className="p-2 rounded-xl bg-blue-50/80 text-[#1e3a8a] border border-blue-100/60 shrink-0">
           {icon}
         </div>
       </div>

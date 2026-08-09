@@ -137,49 +137,35 @@ export const OverviewView: React.FC = () => {
               </Badge>
             </div>
             <h1 className="text-2xl md:text-3xl font-black text-white tracking-tight">
-              Student Learning Path Dashboard
+              Student Learning Dashboard
             </h1>
             <p className="text-xs md:text-sm text-slate-300 max-w-2xl leading-relaxed">
-              Active Path: <span className="text-blue-300 font-bold">{activeTitle}</span>.
-              SkillsBank has structured your nodes for optimal skill acceleration.
+            <span className="text-blue-300 font-bold">{activeTitle}</span>.
+              SkillsBank has structured your  modules for optimal skill acceleration.
             </p>
           </div>
         </div>
       </div>
 
       {/* Key Metrics / Stat Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <StatCard
           title="Active Path"
-          value="Active Now"
-          change="99% Profile Match"
-          changeType="positive"
-          icon={<Route className="w-5 h-5 text-[#1e3a8a]" />}
+          value={activeTitle || "Full-Stack Track"}
+          icon={<Route className="w-4 h-4 text-[#1e3a8a]" />}
           variant="white"
         />
         <StatCard
           title="Path Progress"
           value="68%"
-          change="+12% this week"
-          changeType="positive"
-          icon={<Award className="w-5 h-5 text-[#1e3a8a]" />}
-          variant="white"
-        />
-        <StatCard
-          title="Hours Completed"
-          value="42.5 hrs"
-          change="Target: 65 hrs"
-          changeType="neutral"
-          icon={<Clock className="w-5 h-5 text-[#fb923c]" />}
+          icon={<Award className="w-4 h-4 text-[#1e3a8a]" />}
           variant="white"
         />
         <StatCard
           title="Skill Mastery"
-          value="8 / 12"
-          change="PostgreSQL + Spring"
-          changeType="positive"
+          value="8 / 12 Nodes"
+          icon={<Sparkles className="w-4 h-4 text-[#1e3a8a]" />}
           variant="white"
-          icon={<Sparkles className="w-5 h-5 text-[#1e3a8a]" />}
         />
       </div>
 

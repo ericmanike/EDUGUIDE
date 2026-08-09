@@ -110,11 +110,6 @@ export default function AccountPage() {
               {currentUser?.name ? currentUser.name.charAt(0).toUpperCase() : "U"}
             </div>
             <div>
-              <div className="mb-1">
-                <span className="px-2.5 py-0.5 rounded-full bg-blue-500/20 text-blue-300 text-[10px] font-bold border border-blue-400/30 uppercase tracking-wider">
-                  STUDENT ACCOUNT
-                </span>
-              </div>
               <h1 className="text-2xl md:text-3xl font-black tracking-tight">
                 {currentUser?.name || "Student User"}
               </h1>

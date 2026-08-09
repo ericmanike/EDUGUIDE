@@ -3,6 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   LayoutDashboard,
   Compass,
@@ -32,25 +33,31 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, onCloseMobile })
     { id: "account", label: "My Account", href: "/dashboard/account", icon: User },
   ];
 
-
-
   const renderNavContent = () => (
     <div className="space-y-6">
       <div>
-        <div className="flex items-center justify-between px-3 mb-3">
-          <p className="text-[11px] font-extrabold text-slate-400 uppercase tracking-widest">
-            Main Navigation
-          </p>
-          {onCloseMobile && (
+        {onCloseMobile && (
+          <div className="flex items-center justify-between px-3 pb-3 mb-2 border-b border-slate-100 md:hidden">
+            <Link href="/dashboard" onClick={onCloseMobile} className="flex items-center gap-2.5">
+              <div className="bg-[#1e3a8a] text-white p-2 rounded-xl shadow-md shadow-[#1e3a8a]/20 flex items-center justify-center">
+                <GraduationCap className="w-4.5 h-4.5" />
+              </div>
+              <span className="text-lg font-black tracking-tight flex items-baseline leading-none">
+                <span className="text-[#1e3a8a]">Skills</span>
+                <span className="text-[#fb923c]">Bank</span>
+              </span>
+            </Link>
             <button
               onClick={onCloseMobile}
-              className="md:hidden p-1.5 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100"
+              className="p-1.5 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100 transition-colors"
+              title="Close menu"
             >
               <X className="w-5 h-5" />
             </button>
-          )}
-        </div>
-        <nav className="space-y-1.5">
+          </div>
+        )}
+
+        <nav className="space-y-1.5 relative">
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive =
@@ -59,25 +66,40 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, onCloseMobile })
                 : pathname?.startsWith(item.href);
 
             return (
-              <Link
-                key={item.id}
-                href={item.href}
-                onClick={onCloseMobile}
-                className={`w-full flex items-center justify-between px-3.5 py-3 rounded-xl text-sm font-bold transition-all cursor-pointer ${
-                  isActive
-                    ? "bg-[#1e3a8a] text-white shadow-md shadow-[#1e3a8a]/20"
-                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
-                }`}
-              >
-                <div className="flex items-center gap-3.5">
-                  <Icon
-                    className={`w-5 h-5 ${
-                      isActive ? "text-[#fb923c]" : "text-slate-400"
+              <div key={item.id}>
+                <Link
+                  href={item.href}
+                  onClick={onCloseMobile}
+                  className="relative block"
+                >
+                  <motion.div
+                    whileHover={{ x: isActive ? 0 : 4 }}
+                    whileTap={{ scale: 0.98 }}
+                    className={`relative w-full flex items-center justify-between px-3.5 py-3 rounded-xl text-sm font-bold transition-colors cursor-pointer select-none ${
+                      isActive
+                        ? "text-white"
+                        : "text-slate-600 hover:text-slate-900 hover:bg-slate-50/80"
                     }`}
-                  />
-                  <span>{item.label}</span>
-                </div>
-              </Link>
+                  >
+                    {isActive && (
+                      <motion.div
+                        layoutId="activeSidebarPill"
+                        className="absolute inset-0 rounded-xl bg-[#1e3a8a] shadow-md shadow-[#1e3a8a]/20"
+                        transition={{ type: "spring", stiffness: 350, damping: 30 }}
+                      />
+                    )}
+
+                    <div className="relative z-10 flex items-center gap-3.5">
+                      <Icon
+                        className={`w-5 h-5 transition-colors ${
+                          isActive ? "text-[#fb923c]" : "text-slate-400"
+                        }`}
+                      />
+                      <span>{item.label}</span>
+                    </div>
+                  </motion.div>
+                </Link>
+              </div>
             );
           })}
         </nav>
@@ -93,21 +115,32 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, onCloseMobile })
       </aside>
 
       {/* Mobile Drawer Overlay */}
-      {isMobileOpen && (
-        <div className="fixed inset-0 z-50 md:hidden flex">
-          {/* Backdrop */}
-          <div
-            className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200"
-            onClick={onCloseMobile}
-          />
+      <AnimatePresence>
+        {isMobileOpen && (
+          <div className="fixed inset-0 z-50 md:hidden flex">
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm"
+              onClick={onCloseMobile}
+            />
 
-          {/* Drawer Menu */}
-          <div className="relative w-72 max-w-[80vw] bg-white h-full p-4 shadow-2xl flex flex-col justify-between z-10 animate-in slide-in-from-left duration-300">
-            {renderNavContent()}
+            {/* Drawer Menu */}
+            <motion.div
+              initial={{ x: "-100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "-100%" }}
+              transition={{ type: "spring", stiffness: 320, damping: 32 }}
+              className="relative w-72 max-w-[80vw] bg-white h-full p-4 shadow-2xl flex flex-col justify-between z-10"
+            >
+              {renderNavContent()}
+            </motion.div>
           </div>
-        </div>
-      )}
+        )}
+      </AnimatePresence>
     </>
   );
 };
-
