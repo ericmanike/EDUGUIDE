@@ -1,17 +1,57 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   WeeklyActivityChart,
-  SkillRadarChart,
   PathProgressBarChart,
   TimeDistributionDonut,
 } from "@/components/dashboard/AnalyticsCharts";
 import { StatCard } from "@/components/ui/StatCard";
 import { Badge } from "@/components/ui/Badge";
 import { TrendingUp, Clock, Award, Target, Flame } from "lucide-react";
+import { fetchActivityLogs, fetchLearningPaths, fetchModules, ActivityLog, LearningPath, CourseModule } from "@/lib/api";
 
 export const AnalyticsView: React.FC = () => {
+  const [streakDays, setStreakDays] = useState<number>(0);
+  const [weeklyHours, setWeeklyHours] = useState<number>(0);
+  const [velocity, setVelocity] = useState<string>("0 nodes/wk");
+  const [masteryRank, setMasteryRank] = useState<string>("Active Student");
+
+  useEffect(() => {
+    async function loadAnalytics() {
+      try {
+        const [logs, paths, modules] = await Promise.all([
+          fetchActivityLogs(),
+          fetchLearningPaths(),
+          fetchModules(),
+        ]);
+
+        if (logs && logs.length > 0) {
+          const activeDays = logs.filter((l: ActivityLog) => Number(l.hoursSpent) > 0).length;
+          setStreakDays(activeDays || logs.length);
+          const totalHours = logs.reduce((sum: number, l: ActivityLog) => sum + (Number(l.hoursSpent) || 0), 0);
+          setWeeklyHours(Math.round(totalHours));
+        }
+
+        if (paths && paths.length > 0) {
+          const completedCount = paths.reduce((sum: number, p: LearningPath) => sum + (p.completedModules || 0), 0);
+          const totalCount = paths.reduce((sum: number, p: LearningPath) => sum + (p.totalModules || 1), 0);
+          setVelocity(`${completedCount} completed`);
+          const completionPct = Math.round((completedCount / totalCount) * 100);
+          if (completionPct > 50) setMasteryRank("Top 10%");
+          else if (completionPct > 20) setMasteryRank("Top 25%");
+          else setMasteryRank("Active Scholar");
+        } else if (modules && modules.length > 0) {
+          setVelocity(`${modules.length} Modules`);
+        }
+      } catch (err) {
+        console.warn("Could not load analytics metrics:", err);
+      }
+    }
+
+    loadAnalytics();
+  }, []);
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -33,42 +73,41 @@ export const AnalyticsView: React.FC = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
           title="Current Streak"
-          value="12 Days"
-          change="Personal Record!"
+          value={`${streakDays} Days`}
+          change="Live Activity Track"
           changeType="positive"
           icon={<Flame className="w-5 h-5 text-[#fb923c]" />}
           variant="white"
         />
         <StatCard
-          title="Weekly Target"
-          value="24 / 30 hrs"
-          change="80% Completed"
+          title="Weekly Hours"
+          value={`${weeklyHours} / 30 hrs`}
+          change={`${Math.min(100, Math.round((weeklyHours / 30) * 100))}% Goal`}
           changeType="positive"
           icon={<Clock className="w-5 h-5 text-[#1e3a8a]" />}
           variant="white"
         />
         <StatCard
-          title="Avg Velocity"
-          value="2.5 nodes/wk"
-          change="+0.5 vs last month"
+          title="Progress Velocity"
+          value={velocity}
+          change="Curriculum Pace"
           changeType="positive"
           icon={<Target className="w-5 h-5 text-[#1e3a8a]" />}
           variant="white"
         />
         <StatCard
-          title="Global Ranking"
-          value="Top 5%"
-          change="Fullstack Students"
+          title="Student Rank"
+          value={masteryRank}
+          change="Based on live progress"
           changeType="positive"
           icon={<Award className="w-5 h-5 text-emerald-600" />}
           variant="white"
         />
       </div>
 
-      {/* Grid Row 1: Activity Trend & Competency Radar */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* Grid Row 1: Activity Trend */}
+      <div>
         <WeeklyActivityChart />
-        <SkillRadarChart />
       </div>
 
       {/* Grid Row 2: Module Progress Bar & Time Distribution Donut */}

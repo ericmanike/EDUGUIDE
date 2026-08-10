@@ -1,17 +1,31 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { GraduationCap, CheckCircle2, QrCode, Sparkles, ShieldCheck } from "lucide-react";
-import { User } from "@/lib/api";
+import { User, getCurrentUser } from "@/lib/api";
 
 interface StudentCardProps {
   user?: User | null;
 }
 
-export const StudentCard: React.FC<StudentCardProps> = ({ user }) => {
-  const studentName = user?.name || "Manike";
-  const studentEmail = user?.email || "manikeeric@gmail.com";
-  const studentRole = user?.role || "STUDENT";
+export const StudentCard: React.FC<StudentCardProps> = ({ user: propUser }) => {
+  const [activeUser, setActiveUser] = useState<User | null>(propUser || null);
+
+  useEffect(() => {
+    if (!propUser) {
+      const u = getCurrentUser();
+      if (u) setActiveUser(u);
+    } else {
+      setActiveUser(propUser);
+    }
+  }, [propUser]);
+
+  const studentName = activeUser?.name || "Student User";
+  const studentEmail = activeUser?.email || "student@skillsbank.com";
+  const studentRole = activeUser?.role || "STUDENT";
+  const studentIdStr = activeUser?.id
+    ? `STU-${activeUser.id.slice(-6).toUpperCase()}`
+    : `STU-${studentName.slice(0, 3).toUpperCase()}-10492`;
 
   return (
     <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#1e3a8a] via-indigo-900 to-slate-950 p-6 text-white shadow-2xl shadow-[#1e3a8a]/30 border border-white/20 group">
@@ -65,7 +79,7 @@ export const StudentCard: React.FC<StudentCardProps> = ({ user }) => {
             Student ID
           </p>
           <p className="font-mono text-xs font-bold text-slate-200">
-            STU-{studentName.toUpperCase().slice(0, 3)}-884920
+            {studentIdStr}
           </p>
           <div className="flex items-center gap-1 text-[10px] text-slate-300 font-semibold pt-1">
             <ShieldCheck className="w-3 h-3 text-emerald-400" />

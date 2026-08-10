@@ -10,7 +10,6 @@ import {
 import { RecommendedCourses } from "@/components/dashboard/RecommendedCourses";
 import {
   WeeklyActivityChart,
-  SkillRadarChart,
 } from "@/components/dashboard/AnalyticsCharts";
 import { Badge } from "@/components/ui/Badge";
 import {
@@ -20,54 +19,17 @@ import {
   Sparkles,
   TrendingUp,
 } from "lucide-react";
-import { fetchLearningPaths, fetchUsers, User, getCurrentUser } from "@/lib/api";
+import {
+  fetchLearningPaths,
+  fetchUserLearningPaths,
+  getCurrentUser,
+  enrollInLearningPath,
+} from "@/lib/api";
 import { DashboardSkeleton } from "@/components/dashboard/DashboardSkeleton";
 
-const initialPaths: LearningPathData[] = [
-  {
-    id: "p1",
-    title: "Full-Stack Spring Boot + Next.js Specialist",
-    description:
-      "Master modern Java 21, Spring Boot REST APIs, PostgreSQL, and Next.js frontend with Tailwind CSS.",
-    matchScore: 98,
-    level: "Intermediate",
-    estimatedHours: 65,
-    totalModules: 14,
-    completedModules: 9,
-    skillsCovered: ["Java 21", "Spring Boot 3", "PostgreSQL", "Next.js 16", "Tailwind CSS"],
-    isActive: true,
-  },
-  {
-    id: "p2",
-    title: "AI-Driven Learning Path Recommender Engineer",
-    description:
-      "Learn Python, recommendation algorithms, student graph modeling, and machine learning pipelines.",
-    matchScore: 92,
-    level: "Advanced",
-    estimatedHours: 50,
-    totalModules: 10,
-    completedModules: 3,
-    skillsCovered: ["Python", "Recommender Systems", "Graph Algorithms", "REST API"],
-    isActive: false,
-  },
-  {
-    id: "p3",
-    title: "Database Optimization & Cloud Deployment",
-    description:
-      "Deep dive into PostgreSQL indexing, Docker containerization, CI/CD pipelines, and AWS deployment.",
-    matchScore: 88,
-    level: "Intermediate",
-    estimatedHours: 35,
-    totalModules: 8,
-    completedModules: 1,
-    skillsCovered: ["PostgreSQL", "Docker", "AWS", "Spring Boot"],
-    isActive: false,
-  },
-];
-
 export const OverviewView: React.FC = () => {
-  const [paths, setPaths] = useState<LearningPathData[]>(initialPaths);
-  const [activeTitle, setActiveTitle] = useState("Full-Stack Spring Boot + Next.js Specialist");
+  const [paths, setPaths] = useState<LearningPathData[]>([]);
+  const [activeTitle, setActiveTitle] = useState("");
   const [userName, setUserName] = useState("Student");
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
@@ -81,21 +43,34 @@ export const OverviewView: React.FC = () => {
         }
 
         const apiPaths = await fetchLearningPaths();
+        let userPaths: any[] = [];
+        if (currentUser?.id) {
+          userPaths = await fetchUserLearningPaths(currentUser.id);
+        }
+
         if (apiPaths && apiPaths.length > 0) {
-          const formatted: LearningPathData[] = apiPaths.map((ap, idx) => ({
-            id: ap.id,
-            title: ap.title,
-            description: ap.description || "Custom backend learning path.",
-            matchScore: ap.matchScore || 95,
-            level: (ap.level as any) || "Intermediate",
-            estimatedHours: ap.estimatedHours || 40,
-            totalModules: ap.totalModules || 10,
-            completedModules: ap.completedModules || 2,
-            skillsCovered: ap.skillsCovered || ["Spring Boot", "REST API"],
-            isActive: idx === 0,
-          }));
+          const activeUserPath = userPaths.find((up) => up.isActive);
+          const activePathId = activeUserPath?.path?.id || activeUserPath?.pathId;
+
+          const formatted: LearningPathData[] = apiPaths.map((ap, idx) => {
+            const isCurrentlyActive = activePathId ? ap.id === activePathId : idx === 0;
+            return {
+              id: ap.id,
+              title: ap.title,
+              description: ap.description || "Custom backend learning path.",
+              matchScore: ap.matchScore || 95,
+              level: (ap.level as any) || "Intermediate",
+              estimatedHours: ap.estimatedHours || 40,
+              totalModules: ap.totalModules || 10,
+              completedModules: ap.completedModules || 0,
+              skillsCovered: ap.skillsCovered || ["Spring Boot", "REST API"],
+              isActive: isCurrentlyActive,
+            };
+          });
+
           setPaths(formatted);
-          if (formatted[0]) setActiveTitle(formatted[0].title);
+          const activeItem = formatted.find((p) => p.isActive) || formatted[0];
+          if (activeItem) setActiveTitle(activeItem.title);
         }
       } catch (error) {
         console.error("Failed to load user data/paths:", error);
@@ -107,7 +82,7 @@ export const OverviewView: React.FC = () => {
     loadData();
   }, []);
 
-  const handleSelectPath = (id: string) => {
+  const handleSelectPath = async (id: string) => {
     setPaths((prev) =>
       prev.map((p) => {
         if (p.id === id) {
@@ -117,11 +92,22 @@ export const OverviewView: React.FC = () => {
         return { ...p, isActive: false };
       })
     );
+    await enrollInLearningPath(id);
   };
 
   if (isLoading) {
     return <DashboardSkeleton />;
   }
+
+  const activePath = paths.find((p) => p.isActive) || paths[0];
+  const calculatedProgress = activePath && activePath.totalModules > 0
+    ? `${Math.round((activePath.completedModules / activePath.totalModules) * 100)}%`
+    : "0%";
+  const totalCompletedModules = paths.reduce((sum, p) => sum + (p.completedModules || 0), 0);
+  const totalAllModules = paths.reduce((sum, p) => sum + (p.totalModules || 0), 0);
+  const calculatedMastery = totalAllModules > 0
+    ? `${totalCompletedModules} / ${totalAllModules} Modules`
+    : `${paths.length} Active Tracks`;
 
   return (
     <div className="space-y-8">
@@ -141,7 +127,7 @@ export const OverviewView: React.FC = () => {
             </h1>
             <p className="text-xs md:text-sm text-slate-300 max-w-2xl leading-relaxed">
             <span className="text-blue-300 font-bold">{activeTitle}</span>.
-              SkillsBank has structured your  modules for optimal skill acceleration.
+              SkillsBank has structured your modules for optimal skill acceleration.
             </p>
           </div>
         </div>
@@ -151,33 +137,32 @@ export const OverviewView: React.FC = () => {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <StatCard
           title="Active Path"
-          value={activeTitle || "Full-Stack Track"}
+          value={activeTitle || (paths.length > 0 ? paths[0].title : "No Active Path")}
           icon={<Route className="w-4 h-4 text-[#1e3a8a]" />}
           variant="white"
         />
         <StatCard
           title="Path Progress"
-          value="68%"
+          value={calculatedProgress}
           icon={<Award className="w-4 h-4 text-[#1e3a8a]" />}
           variant="white"
         />
         <StatCard
           title="Skill Mastery"
-          value="8 / 12 Nodes"
+          value={calculatedMastery}
           icon={<Sparkles className="w-4 h-4 text-[#1e3a8a]" />}
           variant="white"
         />
       </div>
 
       {/* Analytics Grid */}
-      <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <section>
         <WeeklyActivityChart />
-        <SkillRadarChart />
       </section>
 
       {/* Learning Path Visualizer */}
       <section id="interactive-roadmap" className="space-y-3 scroll-mt-20">
-        <PathVisualizer />
+        <PathVisualizer activePath={activePath} />
       </section>
 
       {/* Recommended Learning Paths Section */}

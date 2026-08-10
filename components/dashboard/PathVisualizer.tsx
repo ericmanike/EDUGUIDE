@@ -28,64 +28,61 @@ export interface PathNode {
   topics: string[];
 }
 
-const mockNodes: PathNode[] = [
-  {
-    id: 1,
-    title: "Java 21 & Modern OOP Foundations",
-    category: "Foundations",
-    icon: <Code2 className="w-5 h-5" />,
-    duration: "12 Hours",
-    status: "completed",
-    description: "Master records, sealed classes, pattern matching, and memory optimization.",
-    topics: ["Core Syntax", "Records & Enums", "Collections API", "Streams & Lambdas"],
-  },
-  {
-    id: 2,
-    title: "Spring Boot 3 REST Services",
-    category: "Backend",
-    icon: <Layers className="w-5 h-5" />,
-    duration: "18 Hours",
-    status: "current",
-    description: "Build robust REST APIs, dependency injection, and spring-web validation.",
-    topics: ["Spring Initializr", "@RestController", "DTO Pattern", "Spring Validation"],
-  },
-  {
-    id: 3,
-    title: "PostgreSQL & Hibernate JPA",
-    category: "Database",
-    icon: <Database className="w-5 h-5" />,
-    duration: "15 Hours",
-    status: "locked",
-    description: "Design relational database schemas, repositories, joins, and migrations.",
-    topics: ["Entity Mapping", "Spring Data JPA", "PostgreSQL Dialect", "Queries"],
-  },
-  {
-    id: 4,
-    title: "Next.js 16 & Tailwind Dashboard",
-    category: "Frontend",
-    icon: <Zap className="w-5 h-5" />,
-    duration: "16 Hours",
-    status: "locked",
-    description: "Build responsive React components, server components, and Tailwind CSS layouts.",
-    topics: ["App Router", "Reusability", "State Management", "Tailwind UI"],
-  },
-  {
-    id: 5,
-    title: "Security & Full-Stack Deployment",
-    category: "Deployment",
-    icon: <ShieldCheck className="w-5 h-5" />,
-    duration: "10 Hours",
-    status: "locked",
-    description: "Configure CORS, Spring Security JWT tokens, Docker containers, and Cloud deployment.",
-    topics: ["JWT Tokens", "CORS Configuration", "Docker", "CI/CD Pipeline"],
-  },
-];
+import { fetchModules, fetchPathModulesByPath, CourseModule } from "@/lib/api";
+import { LearningPathData } from "@/components/dashboard/LearningPathCard";
 
-export const PathVisualizer: React.FC = () => {
-  const [nodes, setNodes] = useState<PathNode[]>(mockNodes);
-  const [selectedNode, setSelectedNode] = useState<PathNode>(mockNodes[1]);
+interface PathVisualizerProps {
+  activePath?: LearningPathData | null;
+}
 
-  const toggleComplete = (id: number) => {
+export const PathVisualizer: React.FC<PathVisualizerProps> = ({ activePath }) => {
+  const [nodes, setNodes] = useState<PathNode[]>([]);
+  const [selectedNode, setSelectedNode] = useState<PathNode | null>(null);
+
+  React.useEffect(() => {
+    async function loadLiveModules() {
+      try {
+        let apiModules: CourseModule[] = [];
+        if (activePath?.id) {
+          const pathModules = await fetchPathModulesByPath(activePath.id);
+          const allMods = await fetchModules();
+          if (pathModules && pathModules.length > 0) {
+            apiModules = allMods.filter((m) =>
+              pathModules.some((pm) => pm.moduleId === m.id)
+            );
+          } else {
+            apiModules = allMods;
+          }
+        } else {
+          apiModules = await fetchModules();
+        }
+
+        if (apiModules && apiModules.length > 0) {
+          const mapped: PathNode[] = apiModules.map((m, idx) => ({
+            id: idx + 1,
+            title: m.title,
+            category: (m.topic as any) || "Backend",
+            icon: <Code2 className="w-5 h-5" />,
+            duration: `${Math.round((m.durationMinutes || 120) / 60) || 2} Hours`,
+            status: idx === 0 ? "completed" : idx === 1 ? "current" : "locked",
+            description: m.description || "Core database curriculum module.",
+            topics: [m.topic || "Core", "Module Hands-on Lab"],
+          }));
+          setNodes(mapped);
+          setSelectedNode(mapped[0]);
+        } else {
+          setNodes([]);
+          setSelectedNode(null);
+        }
+      } catch (err) {
+        console.warn("Error fetching visualizer modules:", err);
+      }
+    }
+    loadLiveModules();
+  }, [activePath]);
+
+  const toggleComplete = (id?: number) => {
+    if (!id) return;
     setNodes((prev) =>
       prev.map((node) => {
         if (node.id === id) {
@@ -96,11 +93,11 @@ export const PathVisualizer: React.FC = () => {
         return node;
       })
     );
-    if (selectedNode.id === id) {
-      setSelectedNode((prev) => ({
+    if (selectedNode?.id === id) {
+      setSelectedNode((prev) => (prev ? {
         ...prev,
         status: prev.status === "completed" ? "current" : "completed",
-      }));
+      } : null));
     }
   };
 
@@ -108,29 +105,36 @@ export const PathVisualizer: React.FC = () => {
     <Card variant="white" hoverEffect={false} className="relative overflow-hidden border border-slate-100/90 shadow-lg shadow-slate-200/80">
       <CardHeader>
         <div>
-          <div className="flex items-center gap-2 mb-1">
+          <div className="flex items-center gap-2 mb-1 flex-wrap">
             <Badge variant="indigo" icon={<Zap className="w-3 h-3 text-[#1e3a8a]" />}>
               Interactive Learning Roadmap
             </Badge>
+            {activePath?.level && (
+              <Badge variant="slate" className="bg-slate-900 text-white font-bold">
+                Level: {activePath.level}
+              </Badge>
+            )}
           </div>
           <CardTitle className="text-slate-900 text-xl font-black">
-            Full-Stack Spring Boot + Next.js Track
+            {activePath?.title || "Full-Stack Spring Boot + Next.js Track"}
           </CardTitle>
         </div>
-        <Button
-          variant="primary"
-          size="sm"
-          icon={<Play className="w-3.5 h-3.5 fill-white" />}
-          onClick={() => toggleComplete(selectedNode.id)}
-        >
-          {selectedNode.status === "completed" ? "Completed!" : "Mark Current Complete"}
-        </Button>
+        {selectedNode && (
+          <Button
+            variant="primary"
+            size="sm"
+            icon={<Play className="w-3.5 h-3.5 fill-white" />}
+            onClick={() => toggleComplete(selectedNode.id)}
+          >
+            {selectedNode.status === "completed" ? "Completed!" : "Mark Current Complete"}
+          </Button>
+        )}
       </CardHeader>
 
       {/* Nodes Timeline / Steps Grid */}
       <div className="grid grid-cols-1 md:grid-cols-5 gap-3.5 my-6 relative">
         {nodes.map((node, index) => {
-          const isSelected = selectedNode.id === node.id;
+          const isSelected = selectedNode?.id === node.id;
           const isCompleted = node.status === "completed";
           const isCurrent = node.status === "current";
 
@@ -183,56 +187,58 @@ export const PathVisualizer: React.FC = () => {
       </div>
 
       {/* Selected Node Details Box */}
-      <div className="p-5 rounded-2xl bg-white border border-slate-100 shadow-md shadow-slate-200/70 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <span className="text-xs font-bold text-[#1e3a8a] uppercase tracking-wider">
-              {selectedNode.category} Module
-            </span>
-            <span className="text-slate-300">•</span>
-            <span className="text-xs text-slate-500 font-semibold">
-              {selectedNode.duration} Estimated
-            </span>
-          </div>
-          <h4 className="text-base font-bold text-slate-900 mb-1">
-            {selectedNode.title}
-          </h4>
-          <p className="text-xs text-slate-600 max-w-2xl leading-relaxed">
-            {selectedNode.description}
-          </p>
-
-          {/* Topics Badges */}
-          <div className="flex items-center gap-1.5 flex-wrap mt-3">
-            {selectedNode.topics.map((t, idx) => (
-              <span
-                key={idx}
-                className="text-[11px] font-semibold bg-slate-50 text-slate-700 px-2.5 py-1 rounded-lg border border-slate-200/60 shadow-2xs"
-              >
-                {t}
+      {selectedNode && (
+        <div className="p-5 rounded-2xl bg-white border border-slate-100 shadow-md shadow-slate-200/70 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-xs font-bold text-[#1e3a8a] uppercase tracking-wider">
+                {selectedNode.category} Module
               </span>
-            ))}
+              <span className="text-slate-300">•</span>
+              <span className="text-xs text-slate-500 font-semibold">
+                {selectedNode.duration} Estimated
+              </span>
+            </div>
+            <h4 className="text-base font-bold text-slate-900 mb-1">
+              {selectedNode.title}
+            </h4>
+            <p className="text-xs text-slate-600 max-w-2xl leading-relaxed">
+              {selectedNode.description}
+            </p>
+
+            {/* Topics Badges */}
+            <div className="flex items-center gap-1.5 flex-wrap mt-3">
+              {selectedNode.topics.map((t, idx) => (
+                <span
+                  key={idx}
+                  className="text-[11px] font-semibold bg-slate-50 text-slate-700 px-2.5 py-1 rounded-lg border border-slate-200/60 shadow-2xs"
+                >
+                  {t}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          <div className="shrink-0 flex items-center gap-2">
+            <Button
+              variant={selectedNode.status === "completed" ? "outline" : "primary"}
+              size="sm"
+              onClick={() => toggleComplete(selectedNode.id)}
+              icon={
+                selectedNode.status === "completed" ? (
+                  <Check className="w-3.5 h-3.5" />
+                ) : (
+                  <ArrowRight className="w-3.5 h-3.5" />
+                )
+              }
+            >
+              {selectedNode.status === "completed"
+                ? "Completed"
+                : "Start Module"}
+            </Button>
           </div>
         </div>
-
-        <div className="shrink-0 flex items-center gap-2">
-          <Button
-            variant={selectedNode.status === "completed" ? "outline" : "primary"}
-            size="sm"
-            onClick={() => toggleComplete(selectedNode.id)}
-            icon={
-              selectedNode.status === "completed" ? (
-                <Check className="w-3.5 h-3.5" />
-              ) : (
-                <ArrowRight className="w-3.5 h-3.5" />
-              )
-            }
-          >
-            {selectedNode.status === "completed"
-              ? "Completed"
-              : "Start Module"}
-          </Button>
-        </div>
-      </div>
+      )}
     </Card>
   );
 };

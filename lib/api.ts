@@ -386,14 +386,40 @@ export async function registerUser(userData: {
 }
 
 
+export interface UserLearningPath {
+  id?: string;
+  user?: { id: string; username?: string; name?: string; email?: string };
+  userId?: string;
+  path?: LearningPath;
+  pathId?: string;
+  matchScore?: number;
+  progressPercentage?: number;
+  isActive?: boolean;
+  enrolledAt?: string;
+  createdAt?: string;
+}
+
 export interface PathModule {
   id: string;
-  pathId: string;
-  moduleId: string;
+  path?: { id: string; title: string; description?: string; level?: string; estimatedHours?: number };
+  pathId?: string;
+  module?: CourseModule;
+  moduleId?: string;
   sequenceOrder: number;
   moduleTitle?: string;
   pathTitle?: string;
   createdAt?: string;
+}
+
+export interface UserModuleProgress {
+  id: string;
+  user?: { id: string; username?: string };
+  userId?: string;
+  module?: { id: string; title: string; topic?: string; description?: string; durationMinutes?: number };
+  moduleId?: string;
+  progressPercentage: number;
+  completedAt?: string | null;
+  lastAccessedAt?: string;
 }
 
 export async function createLearningPath(pathData: {
@@ -456,6 +482,36 @@ export async function deleteLearningPath(id: string): Promise<boolean> {
   }
 }
 
+export async function fetchPathModulesByPath(pathId: string): Promise<PathModule[]> {
+  try {
+    const res = await fetch(`${API_BASE_URL}/path-modules/path/${pathId}`, {
+      method: "GET",
+      headers: getAuthHeaders(),
+      cache: "no-store",
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return await res.json();
+  } catch (error) {
+    console.error(`Failed to fetch path modules for path ${pathId}:`, error);
+    return [];
+  }
+}
+
+export async function fetchPathModules(): Promise<PathModule[]> {
+  try {
+    const res = await fetch(`${API_BASE_URL}/path-modules`, {
+      method: "GET",
+      headers: getAuthHeaders(),
+      cache: "no-store",
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return await res.json();
+  } catch (error) {
+    console.error("Failed to fetch path modules:", error);
+    return [];
+  }
+}
+
 export async function createModule(moduleData: {
   title: string;
   topic: string;
@@ -508,36 +564,6 @@ export async function deleteModule(id: string): Promise<boolean> {
   } catch (error) {
     console.error("Failed to delete module:", error);
     return false;
-  }
-}
-
-export async function fetchPathModules(): Promise<PathModule[]> {
-  try {
-    const res = await fetch(`${API_BASE_URL}/path-modules`, {
-      method: "GET",
-      headers: getAuthHeaders(),
-      cache: "no-store",
-    });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    return await res.json();
-  } catch (error) {
-    console.error("Failed to fetch path-modules:", error);
-    return [];
-  }
-}
-
-export async function fetchPathModulesByPath(pathId: string): Promise<PathModule[]> {
-  try {
-    const res = await fetch(`${API_BASE_URL}/path-modules/path/${pathId}`, {
-      method: "GET",
-      headers: getAuthHeaders(),
-      cache: "no-store",
-    });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    return await res.json();
-  } catch (error) {
-    console.error("Failed to fetch modules for path:", error);
-    return [];
   }
 }
 
@@ -864,4 +890,190 @@ export async function fetchUserModuleProgressStats(
     return null;
   }
 }
+
+/* ==========================================================================
+   USER LEARNING PATH & ENROLLMENT APIs
+   ========================================================================== */
+
+export async function enrollInLearningPath(pathIdOrSlug: string): Promise<boolean> {
+  try {
+    const user = getCurrentUser();
+    const userId = user?.id || "u-guest";
+
+    // 1. Resolve target learning path ID from backend catalog
+    let resolvedPathId = pathIdOrSlug;
+    const allBackendPaths = await fetchLearningPaths();
+
+    if (allBackendPaths && allBackendPaths.length > 0) {
+      const match = allBackendPaths.find(
+        (p) =>
+          p.id === pathIdOrSlug ||
+          p.title.toLowerCase().includes(pathIdOrSlug.toLowerCase()) ||
+          pathIdOrSlug.toLowerCase().includes(p.title.toLowerCase().split(" ")[0])
+      );
+      if (match) {
+        resolvedPathId = match.id;
+      } else if (allBackendPaths[0]?.id) {
+        resolvedPathId = allBackendPaths[0].id;
+      }
+    }
+
+    // 2. Post enrollment record to user_learning_paths table
+    if (user?.id) {
+      try {
+        await fetch(`${API_BASE_URL}/user-learning-paths`, {
+          method: "POST",
+          headers: getAuthHeaders(),
+          body: JSON.stringify({
+            userId: user.id,
+            pathId: resolvedPathId,
+            isActive: true,
+            progressPercentage: 0,
+          }),
+        });
+      } catch (err) {
+        console.warn("Backend user-learning-paths post notice:", err);
+      }
+    }
+
+    // 3. Initialize module and lesson progress records
+    try {
+      const pathModules = await fetchPathModulesByPath(resolvedPathId);
+      const allModules = await fetchModules();
+      const targetModules =
+        pathModules.length > 0
+          ? allModules.filter((m) => pathModules.some((pm) => pm.moduleId === m.id))
+          : allModules;
+
+      for (const mod of targetModules) {
+        // Upsert user_module_progress record
+        if (user?.id) {
+          try {
+            await fetch(`${API_BASE_URL}/user-module-progress`, {
+              method: "POST",
+              headers: getAuthHeaders(),
+              body: JSON.stringify({
+                userId: user.id,
+                moduleId: mod.id,
+                status: "IN_PROGRESS",
+              }),
+            });
+          } catch (e) {}
+        }
+
+        // Fetch lessons in module & upsert user_lesson_progress records
+        const lessons = await fetchLessonsByModuleId(mod.id);
+        for (const lesson of lessons) {
+          if (user?.id) {
+            await upsertUserLessonProgress({
+              userId: user.id,
+              lessonId: lesson.id,
+              status: "NOT_STARTED",
+            });
+          }
+        }
+      }
+    } catch (e) {
+      console.warn("Module & lesson progress initialization notice:", e);
+    }
+
+    // 4. Save persistent client-side progress state in localStorage
+    if (typeof window !== "undefined") {
+      const enrollmentObj = {
+        userId,
+        pathId: resolvedPathId,
+        pathSlug: pathIdOrSlug,
+        enrolledAt: new Date().toISOString(),
+        isActive: true,
+        progressPercentage: 0,
+      };
+      localStorage.setItem("edtech_active_enrollment", JSON.stringify(enrollmentObj));
+
+      const existingProgressRaw = localStorage.getItem("edtech_user_progress");
+      const progressMap = existingProgressRaw ? JSON.parse(existingProgressRaw) : {};
+      progressMap[resolvedPathId] = {
+        pathId: resolvedPathId,
+        enrolled: true,
+        progressPercentage: 0,
+        completedModules: 0,
+        updatedAt: new Date().toISOString(),
+      };
+      localStorage.setItem("edtech_user_progress", JSON.stringify(progressMap));
+    }
+
+    return true;
+  } catch (error) {
+    console.error("Failed to enroll in learning path:", error);
+    return false;
+  }
+}
+
+export async function fetchUserLearningPaths(userId: string): Promise<UserLearningPath[]> {
+  try {
+    const res = await fetch(`${API_BASE_URL}/user-learning-paths/user/${userId}`, {
+      method: "GET",
+      headers: getAuthHeaders(),
+      cache: "no-store",
+    });
+
+    let backendPaths: UserLearningPath[] = [];
+    if (res.ok) {
+      backendPaths = await res.json();
+    }
+
+    if (typeof window !== "undefined") {
+      const localEnrollmentRaw = localStorage.getItem("edtech_active_enrollment");
+      if (localEnrollmentRaw) {
+        const localObj = JSON.parse(localEnrollmentRaw);
+        if (localObj.pathId && !backendPaths.some((p) => p.pathId === localObj.pathId)) {
+          backendPaths.push({
+            userId: localObj.userId,
+            pathId: localObj.pathId,
+            isActive: true,
+            progressPercentage: localObj.progressPercentage || 0,
+            createdAt: localObj.enrolledAt,
+          });
+        }
+      }
+    }
+
+    return backendPaths;
+  } catch (error) {
+    console.error("Failed to fetch user learning paths:", error);
+
+    if (typeof window !== "undefined") {
+      const localEnrollmentRaw = localStorage.getItem("edtech_active_enrollment");
+      if (localEnrollmentRaw) {
+        const localObj = JSON.parse(localEnrollmentRaw);
+        return [
+          {
+            userId: localObj.userId,
+            pathId: localObj.pathId,
+            isActive: true,
+            progressPercentage: localObj.progressPercentage || 0,
+            createdAt: localObj.enrolledAt,
+          },
+        ];
+      }
+    }
+
+    return [];
+  }
+}
+
+export async function fetchUserModuleProgress(userId: string): Promise<UserModuleProgress[]> {
+  try {
+    const res = await fetch(`${API_BASE_URL}/user-module-progress/user/${userId}`, {
+      method: "GET",
+      headers: getAuthHeaders(),
+      cache: "no-store",
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return await res.json();
+  } catch (error) {
+    console.error(`Failed to fetch user module progress for ${userId}:`, error);
+    return [];
+  }
+}
+
 

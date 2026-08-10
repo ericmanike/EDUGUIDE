@@ -108,10 +108,15 @@ export default function CurriculumMappingsPage() {
 
   const openEdit = (mapping: PathModule) => {
     setEditingMapping(mapping);
+    const raw = mapping as any;
+    const pId = mapping.pathId || raw.path_id || raw.path?.id || "";
+    const mId = mapping.moduleId || raw.module_id || raw.module?.id || "";
+    const seq = mapping.sequenceOrder ?? raw.sequence_order ?? 1;
+
     setForm({
-      pathId: mapping.pathId,
-      moduleId: mapping.moduleId,
-      sequenceOrder: mapping.sequenceOrder || 1,
+      pathId: pId,
+      moduleId: mId,
+      sequenceOrder: seq,
     });
     setShowModal(true);
   };
@@ -178,20 +183,40 @@ export default function CurriculumMappingsPage() {
               </tr>
             ) : (
               mappings.map((pm) => {
-                const targetPath = paths.find((p) => p.id === pm.pathId);
-                const targetModule = modules.find((m) => m.id === pm.moduleId);
+                const rawPm = pm as any;
+                const pId = pm.pathId || rawPm.path_id || rawPm.path?.id || "";
+                const mId = pm.moduleId || rawPm.module_id || rawPm.module?.id || "";
+
+                const targetPath = paths.find((p) => p.id === pId || String(p.id) === String(pId));
+                const targetModule = modules.find((m) => m.id === mId || String(m.id) === String(mId));
+
+                const displayPathTitle =
+                  pm.pathTitle ||
+                  rawPm.path_title ||
+                  rawPm.path?.title ||
+                  targetPath?.title ||
+                  (pId ? `Path ID: ${pId.slice(0, 8)}...` : "Unknown Learning Path");
+
+                const displayModuleTitle =
+                  pm.moduleTitle ||
+                  rawPm.module_title ||
+                  rawPm.module?.title ||
+                  targetModule?.title ||
+                  (mId ? `Module ID: ${mId.slice(0, 8)}...` : "Unknown Course Module");
+
+                const seqOrder = pm.sequenceOrder ?? rawPm.sequence_order ?? 1;
 
                 return (
-                  <tr key={pm.id} className="hover:bg-slate-50/80 transition-colors">
+                  <tr key={pm.id || rawPm.id || `${pId}-${mId}`} className="hover:bg-slate-50/80 transition-colors">
                     <td className="p-4 font-bold text-slate-900">
-                      {pm.pathTitle || targetPath?.title || pm.pathId}
+                      {displayPathTitle}
                     </td>
                     <td className="p-4 font-semibold text-slate-700">
-                      {pm.moduleTitle || targetModule?.title || pm.moduleId}
+                      {displayModuleTitle}
                     </td>
                     <td className="p-4">
                       <span className="px-2.5 py-1 rounded-full bg-slate-100 font-bold text-slate-800 text-[11px]">
-                        Step #{pm.sequenceOrder}
+                        Step #{seqOrder}
                       </span>
                     </td>
                     <td className="p-4 text-right space-x-2">
@@ -203,7 +228,7 @@ export default function CurriculumMappingsPage() {
                         <Edit2 className="w-4 h-4" />
                       </button>
                       <button
-                        onClick={() => handleDelete(pm.id)}
+                        onClick={() => handleDelete(pm.id || rawPm.id)}
                         className="p-2 rounded-lg text-slate-400 hover:bg-red-50 hover:text-red-600 transition-all cursor-pointer"
                         title="Remove Mapping"
                       >

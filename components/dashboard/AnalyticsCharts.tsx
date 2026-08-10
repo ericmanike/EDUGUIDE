@@ -19,44 +19,46 @@ import {
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { TrendingUp, Award, PieChart as PieIcon } from "lucide-react";
-
-// Mock Data for Weekly Study Activity
-const weeklyActivityData = [
-  { day: "Mon", hours: 2.5, completedNodes: 2 },
-  { day: "Tue", hours: 4.0, completedNodes: 3 },
-  { day: "Wed", hours: 3.2, completedNodes: 2 },
-  { day: "Thu", hours: 5.5, completedNodes: 4 },
-  { day: "Fri", hours: 4.8, completedNodes: 3 },
-  { day: "Sat", hours: 6.5, completedNodes: 5 },
-  { day: "Sun", hours: 4.0, completedNodes: 3 },
-];
-
-// Mock Data for Skill Competency Breakdown Pie Chart
-const skillCompetencyPieData = [
-  { name: "Next.js 16 (88% Level)", value: 88, color: "#1e3a8a" },
-  { name: "Java 21 (85% Level)", value: 85, color: "#2563eb" },
-  { name: "Spring Boot 3 (75% Level)", value: 75, color: "#fb923c" },
-  { name: "PostgreSQL (70% Level)", value: 70, color: "#f97316" },
-  { name: "Algorithms (68% Level)", value: 68, color: "#10b981" },
-  { name: "System Design (60% Level)", value: 60, color: "#64748b" },
-];
-
-// Mock Data for Track Progress Bar Chart
-const pathProgressData = [
-  { name: "Spring Boot Track", completed: 9, remaining: 5 },
-  { name: "AI Recommender", completed: 3, remaining: 7 },
-  { name: "Database & Cloud", completed: 1, remaining: 7 },
-];
-
-// Mock Data for Time Breakdown Donut Chart
-const timeDistributionData = [
-  { name: "Backend (Spring/Java)", value: 45, color: "#1e3a8a" },
-  { name: "Frontend (Next.js/React)", value: 30, color: "#fb923c" },
-  { name: "Database (PostgreSQL)", value: 15, color: "#0f172a" },
-  { name: "System Design & DevOps", value: 10, color: "#10b981" },
-];
+import {
+  fetchActivityLogs,
+  fetchSkills,
+  fetchLearningPaths,
+  fetchModules,
+  ActivityLog,
+  Skill,
+  LearningPath,
+} from "@/lib/api";
 
 export const WeeklyActivityChart: React.FC = () => {
+  const [data, setData] = React.useState<Array<{ day: string; hours: number }>>([]);
+
+  React.useEffect(() => {
+    async function loadActivity() {
+      try {
+        const logs = await fetchActivityLogs();
+        if (logs && logs.length > 0) {
+          const formatted = logs.slice(0, 7).map((l: ActivityLog) => ({
+            day: new Date(l.activityDate).toLocaleDateString("en-US", { weekday: "short" }),
+            hours: Number(l.hoursSpent) || 0,
+          }));
+          setData(formatted);
+        } else {
+          setData([
+            { day: "Mon", hours: 0 },
+            { day: "Tue", hours: 0 },
+            { day: "Wed", hours: 0 },
+            { day: "Thu", hours: 0 },
+            { day: "Fri", hours: 0 },
+            { day: "Sat", hours: 0 },
+            { day: "Sun", hours: 0 },
+          ]);
+        }
+      } catch (e) {
+        console.warn("Could not load activity logs:", e);
+      }
+    }
+    loadActivity();
+  }, []);
   return (
     <Card variant="white" className="w-full">
       <CardHeader>
@@ -76,7 +78,7 @@ export const WeeklyActivityChart: React.FC = () => {
       <div className="h-72 w-full mt-4">
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart
-            data={weeklyActivityData}
+            data={data}
             margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
           >
             <defs>
@@ -116,6 +118,50 @@ export const WeeklyActivityChart: React.FC = () => {
 };
 
 export const SkillRadarChart: React.FC = () => {
+  const [skillsData, setSkillsData] = React.useState<Array<{ name: string; value: number; color: string }>>([]);
+
+  React.useEffect(() => {
+    async function loadSkills() {
+      try {
+        const colors = ["#1e3a8a", "#2563eb", "#fb923c", "#f97316", "#10b981", "#64748b"];
+        const liveSkills = await fetchSkills();
+
+        if (liveSkills && liveSkills.length > 0) {
+          const formatted = liveSkills.map((s: Skill, idx: number) => ({
+            name: s.name,
+            value: 85 - idx * 6,
+            color: colors[idx % colors.length],
+          }));
+          setSkillsData(formatted);
+        } else {
+          const modules = await fetchModules();
+          if (modules && modules.length > 0) {
+            const formatted = modules.slice(0, 5).map((m, idx: number) => ({
+              name: m.topic || m.title,
+              value: Math.max(50, 85 - idx * 7),
+              color: colors[idx % colors.length],
+            }));
+            setSkillsData(formatted);
+          } else {
+            const lps = await fetchLearningPaths();
+            if (lps && lps.length > 0) {
+              const allSkills = Array.from(new Set(lps.flatMap((p) => p.skillsCovered || ["Spring Boot", "Next.js", "PostgreSQL"])));
+              const formatted = allSkills.slice(0, 5).map((sk: string, idx: number) => ({
+                name: sk,
+                value: Math.max(50, 85 - idx * 7),
+                color: colors[idx % colors.length],
+              }));
+              setSkillsData(formatted);
+            }
+          }
+        }
+      } catch (e) {
+        console.warn("Could not load skills matrix:", e);
+      }
+    }
+    loadSkills();
+  }, []);
+
   return (
     <Card variant="white" className="w-full">
       <CardHeader>
@@ -130,48 +176,73 @@ export const SkillRadarChart: React.FC = () => {
       </CardHeader>
 
       <div className="h-72 w-full mt-4 flex items-center justify-center">
-        <ResponsiveContainer width="100%" height="100%">
-          <PieChart>
-            <Pie
-              data={skillCompetencyPieData}
-              cx="50%"
-              cy="50%"
-              outerRadius={85}
-              innerRadius={35}
-              paddingAngle={3}
-              dataKey="value"
-              label={({ name }: { name?: string }) => (name ? name.split(" ")[0] : "")}
-            >
-              {skillCompetencyPieData.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={entry.color} />
-              ))}
-            </Pie>
-            <Tooltip
-              contentStyle={{
-                backgroundColor: "#ffffff",
-                borderColor: "#e2e8f0",
-                borderRadius: "12px",
-                color: "#0f172a",
-                fontSize: "12px",
-                boxShadow: "0 10px 25px rgba(0,0,0,0.08)",
-              }}
-              formatter={(value) => [`${value}%`, "Competency Score"]}
-            />
-            <Legend
-              layout="horizontal"
-              align="center"
-              verticalAlign="bottom"
-              wrapperStyle={{ fontSize: "11px", paddingTop: "12px" }}
-              formatter={(value) => <span className="text-slate-700 font-semibold">{value}</span>}
-            />
-          </PieChart>
-        </ResponsiveContainer>
+        {skillsData.length === 0 ? (
+          <div className="text-slate-400 text-xs font-semibold">No skills registered yet</div>
+        ) : (
+          <ResponsiveContainer width="100%" height="100%">
+            <PieChart>
+              <Pie
+                data={skillsData}
+                cx="50%"
+                cy="50%"
+                outerRadius={85}
+                innerRadius={35}
+                paddingAngle={3}
+                dataKey="value"
+                label={({ name }: { name?: string }) => (name ? name.split(" ")[0] : "")}
+              >
+                {skillsData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={entry.color} />
+                ))}
+              </Pie>
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: "#ffffff",
+                  borderColor: "#e2e8f0",
+                  borderRadius: "12px",
+                  color: "#0f172a",
+                  fontSize: "12px",
+                  boxShadow: "0 10px 25px rgba(0,0,0,0.08)",
+                }}
+                formatter={(value) => [`${value}%`, "Competency Score"]}
+              />
+              <Legend
+                layout="horizontal"
+                align="center"
+                verticalAlign="bottom"
+                wrapperStyle={{ fontSize: "11px", paddingTop: "12px" }}
+                formatter={(value) => <span className="text-slate-700 font-semibold">{value}</span>}
+              />
+            </PieChart>
+          </ResponsiveContainer>
+        )}
       </div>
     </Card>
   );
 };
 
 export const PathProgressBarChart: React.FC = () => {
+  const [chartData, setChartData] = React.useState<Array<{ name: string; completed: number; remaining: number }>>([]);
+
+  React.useEffect(() => {
+    async function loadPaths() {
+      try {
+        const lps = await fetchLearningPaths();
+        if (lps && lps.length > 0) {
+          const formatted = lps.map((lp: LearningPath) => ({
+            name: lp.title.length > 18 ? lp.title.substring(0, 18) + "..." : lp.title,
+            completed: lp.completedModules || 0,
+            remaining: Math.max(0, (lp.totalModules || 10) - (lp.completedModules || 0)),
+          }));
+          setChartData(formatted);
+        }
+      } catch (e) {
+        console.warn("Could not load path progress bar chart:", e);
+      }
+    }
+    loadPaths();
+  }, []);
+
   return (
     <Card variant="white" className="w-full">
       <CardHeader>
@@ -184,32 +255,60 @@ export const PathProgressBarChart: React.FC = () => {
       </CardHeader>
 
       <div className="h-64 w-full mt-2">
-        <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={pathProgressData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-            <XAxis dataKey="name" stroke="#94a3b8" fontSize={11} tickLine={false} />
-            <YAxis stroke="#94a3b8" fontSize={12} tickLine={false} />
-            <Tooltip
-              contentStyle={{
-                backgroundColor: "#ffffff",
-                borderColor: "#e2e8f0",
-                borderRadius: "12px",
-                color: "#0f172a",
-                fontSize: "12px",
-                boxShadow: "0 10px 25px rgba(0,0,0,0.08)",
-              }}
-            />
-            <Legend wrapperStyle={{ fontSize: "11px" }} />
-            <Bar dataKey="completed" name="Completed Modules" fill="#1e3a8a" radius={[6, 6, 0, 0]} />
-            <Bar dataKey="remaining" name="Remaining Modules" fill="#e2e8f0" radius={[6, 6, 0, 0]} />
-          </BarChart>
-        </ResponsiveContainer>
+        {chartData.length === 0 ? (
+          <div className="h-full flex items-center justify-center text-slate-400 text-xs font-semibold">
+            No learning paths available
+          </div>
+        ) : (
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+              <XAxis dataKey="name" stroke="#94a3b8" fontSize={11} tickLine={false} />
+              <YAxis stroke="#94a3b8" fontSize={12} tickLine={false} />
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: "#ffffff",
+                  borderColor: "#e2e8f0",
+                  borderRadius: "12px",
+                  color: "#0f172a",
+                  fontSize: "12px",
+                  boxShadow: "0 10px 25px rgba(0,0,0,0.08)",
+                }}
+              />
+              <Legend wrapperStyle={{ fontSize: "11px" }} />
+              <Bar dataKey="completed" name="Completed Modules" fill="#1e3a8a" radius={[6, 6, 0, 0]} />
+              <Bar dataKey="remaining" name="Remaining Modules" fill="#e2e8f0" radius={[6, 6, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        )}
       </div>
     </Card>
   );
 };
 
 export const TimeDistributionDonut: React.FC = () => {
+  const [donutData, setDonutData] = React.useState<Array<{ name: string; value: number; color: string }>>([]);
+
+  React.useEffect(() => {
+    async function loadDonut() {
+      try {
+        const mods = await fetchModules();
+        if (mods && mods.length > 0) {
+          const colors = ["#1e3a8a", "#fb923c", "#0f172a", "#10b981", "#64748b"];
+          const formatted = mods.slice(0, 5).map((m, idx) => ({
+            name: m.topic || m.title,
+            value: m.durationMinutes || 120,
+            color: colors[idx % colors.length],
+          }));
+          setDonutData(formatted);
+        }
+      } catch (e) {
+        console.warn("Could not load donut time distribution:", e);
+      }
+    }
+    loadDonut();
+  }, []);
+
   return (
     <Card variant="white" className="w-full">
       <CardHeader>
@@ -227,40 +326,46 @@ export const TimeDistributionDonut: React.FC = () => {
       </CardHeader>
 
       <div className="h-64 w-full mt-2">
-        <ResponsiveContainer width="100%" height="100%">
-          <PieChart>
-            <Pie
-              data={timeDistributionData}
-              cx="50%"
-              cy="50%"
-              innerRadius={55}
-              outerRadius={80}
-              paddingAngle={4}
-              dataKey="value"
-            >
-              {timeDistributionData.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={entry.color} />
-              ))}
-            </Pie>
-            <Tooltip
-              contentStyle={{
-                backgroundColor: "#ffffff",
-                borderColor: "#e2e8f0",
-                borderRadius: "12px",
-                color: "#0f172a",
-                fontSize: "12px",
-                boxShadow: "0 10px 25px rgba(0,0,0,0.08)",
-              }}
-              formatter={(value) => [`${value}%`, "Time Spent"]}
-            />
-            <Legend
-              layout="vertical"
-              align="right"
-              verticalAlign="middle"
-              wrapperStyle={{ fontSize: "11px", color: "#334155" }}
-            />
-          </PieChart>
-        </ResponsiveContainer>
+        {donutData.length === 0 ? (
+          <div className="h-full flex items-center justify-center text-slate-400 text-xs font-semibold">
+            No course modules found
+          </div>
+        ) : (
+          <ResponsiveContainer width="100%" height="100%">
+            <PieChart>
+              <Pie
+                data={donutData}
+                cx="50%"
+                cy="50%"
+                innerRadius={55}
+                outerRadius={80}
+                paddingAngle={4}
+                dataKey="value"
+              >
+                {donutData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={entry.color} />
+                ))}
+              </Pie>
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: "#ffffff",
+                  borderColor: "#e2e8f0",
+                  borderRadius: "12px",
+                  color: "#0f172a",
+                  fontSize: "12px",
+                  boxShadow: "0 10px 25px rgba(0,0,0,0.08)",
+                }}
+                formatter={(value) => [`${value} mins`, "Duration"]}
+              />
+              <Legend
+                layout="vertical"
+                align="right"
+                verticalAlign="middle"
+                wrapperStyle={{ fontSize: "11px", color: "#334155" }}
+              />
+            </PieChart>
+          </ResponsiveContainer>
+        )}
       </div>
     </Card>
   );

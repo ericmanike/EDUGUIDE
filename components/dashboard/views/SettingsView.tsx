@@ -1,6 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
@@ -10,13 +12,33 @@ export const SettingsView: React.FC = () => {
   const [weeklyGoal, setWeeklyGoal] = useState<number>(30);
   const [targetRole, setTargetRole] = useState<string>("Full-Stack Developer");
 
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const savedSettings = localStorage.getItem("edtech_user_settings");
+      if (savedSettings) {
+        try {
+          const parsed = JSON.parse(savedSettings);
+          if (parsed.weeklyGoal) setWeeklyGoal(parsed.weeklyGoal);
+          if (parsed.targetRole) setTargetRole(parsed.targetRole);
+        } catch (e) {}
+      }
+    }
+  }, []);
+
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
-    alert("Settings saved! SkillsBank recommendation algorithm has updated.");
+    if (typeof window !== "undefined") {
+      localStorage.setItem(
+        "edtech_user_settings",
+        JSON.stringify({ weeklyGoal, targetRole, updatedAt: new Date().toISOString() })
+      );
+    }
+    toast.success("Settings saved! SkillsBank recommendation parameters updated.");
   };
 
   return (
     <div className="space-y-6 max-w-4xl">
+      <ToastContainer position="top-right" autoClose={3000} />
       {/* Header */}
       <div>
         <div className="flex items-center gap-2 mb-1">

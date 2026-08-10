@@ -2,7 +2,6 @@ import React from "react";
 import { Card, CardHeader, CardTitle, CardFooter } from "../ui/Card";
 import { Badge } from "../ui/Badge";
 import { Button } from "../ui/Button";
-import { ProgressBar } from "../ui/ProgressBar";
 import { Clock, BookOpen, ArrowRight, CheckCircle2 } from "lucide-react";
 
 export interface LearningPathData {
@@ -49,9 +48,6 @@ export const LearningPathCard: React.FC<LearningPathCardProps> = ({
           <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/20 to-transparent" />
           <div className="absolute top-3 left-3 right-3 z-10 flex items-center justify-between flex-wrap gap-1.5">
             <div className="flex items-center gap-1.5">
-              <Badge variant="orange" className="shadow-xs font-bold">
-                {path.matchScore}% Match
-              </Badge>
               <Badge variant="slate" className="bg-slate-900/80 text-white backdrop-blur-md border-0 font-bold">
                 {path.level}
               </Badge>
@@ -99,10 +95,8 @@ export const LearningPathCard: React.FC<LearningPathCardProps> = ({
         </div>
       </div>
 
-      {/* Progress & Actions */}
+      {/* Actions */}
       <div>
-        <ProgressBar progress={progressPercent} color="indigo" />
-
         <CardFooter className="gap-2">
           <Button
             variant="ghost"

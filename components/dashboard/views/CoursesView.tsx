@@ -42,7 +42,7 @@ export const CoursesView: React.FC = () => {
       </div>
 
       {/* Main Course Modules Grid */}
-      <RecommendedCourses />
+      <RecommendedCourses selectedTopic={selectedTopic} />
     </div>
   );
 };

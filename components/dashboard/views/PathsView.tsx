@@ -5,66 +5,11 @@ import { Badge } from "@/components/ui/Badge";
 import { LearningPathCard, LearningPathData } from "@/components/dashboard/LearningPathCard";
 import { PathProgressBarChart } from "@/components/dashboard/AnalyticsCharts";
 import { SlidersHorizontal } from "lucide-react";
-import { fetchLearningPaths } from "@/lib/api";
+import { fetchLearningPaths, fetchUserLearningPaths, getCurrentUser, enrollInLearningPath } from "@/lib/api";
 import { DashboardSkeleton } from "@/components/dashboard/DashboardSkeleton";
 
-const allPaths: LearningPathData[] = [
-  {
-    id: "p1",
-    title: "Full-Stack Spring Boot + Next.js Specialist",
-    description:
-      "Master modern Java 21, Spring Boot REST APIs, PostgreSQL, and Next.js frontend with Tailwind CSS.",
-    matchScore: 98,
-    level: "Intermediate",
-    estimatedHours: 65,
-    totalModules: 14,
-    completedModules: 9,
-    skillsCovered: ["Java 21", "Spring Boot 3", "PostgreSQL", "Next.js 16", "Tailwind CSS"],
-    isActive: true,
-  },
-  {
-    id: "p2",
-    title: "AI-Driven Learning Path Recommender Engineer",
-    description:
-      "Learn Python, recommendation algorithms, student graph modeling, and machine learning pipelines.",
-    matchScore: 92,
-    level: "Advanced",
-    estimatedHours: 50,
-    totalModules: 10,
-    completedModules: 3,
-    skillsCovered: ["Python", "Recommender Systems", "Graph Algorithms", "REST API"],
-    isActive: false,
-  },
-  {
-    id: "p3",
-    title: "Database Optimization & Cloud Deployment",
-    description:
-      "Deep dive into PostgreSQL indexing, Docker containerization, CI/CD pipelines, and AWS deployment.",
-    matchScore: 88,
-    level: "Intermediate",
-    estimatedHours: 35,
-    totalModules: 8,
-    completedModules: 1,
-    skillsCovered: ["PostgreSQL", "Docker", "AWS", "Spring Boot"],
-    isActive: false,
-  },
-  {
-    id: "p4",
-    title: "Cybersecurity & OAuth2 Security Specialist",
-    description:
-      "Configure Spring Security, JWT authentication, OAuth2, and web vulnerability protection.",
-    matchScore: 84,
-    level: "Advanced",
-    estimatedHours: 40,
-    totalModules: 9,
-    completedModules: 0,
-    skillsCovered: ["Spring Security", "JWT", "OAuth2", "OWASP"],
-    isActive: false,
-  },
-];
-
 export const PathsView: React.FC = () => {
-  const [paths, setPaths] = useState<LearningPathData[]>(allPaths);
+  const [paths, setPaths] = useState<LearningPathData[]>([]);
   const [filter, setFilter] = useState<string>("All");
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
@@ -72,20 +17,32 @@ export const PathsView: React.FC = () => {
     const loadPaths = async () => {
       setIsLoading(true);
       try {
+        const currentUser = getCurrentUser();
         const apiData = await fetchLearningPaths();
+        let userPaths: any[] = [];
+        if (currentUser?.id) {
+          userPaths = await fetchUserLearningPaths(currentUser.id);
+        }
+
         if (apiData && apiData.length > 0) {
-          const formatted: LearningPathData[] = apiData.map((ap, idx) => ({
-            id: ap.id,
-            title: ap.title,
-            description: ap.description || "Custom learning path.",
-            matchScore: ap.matchScore || 95,
-            level: (ap.level as any) || "Intermediate",
-            estimatedHours: ap.estimatedHours || 40,
-            totalModules: ap.totalModules || 10,
-            completedModules: ap.completedModules || 2,
-            skillsCovered: ap.skillsCovered || ["Spring Boot", "REST API"],
-            isActive: idx === 0,
-          }));
+          const activeUserPath = userPaths.find((up) => up.isActive);
+          const activePathId = activeUserPath?.path?.id || activeUserPath?.pathId;
+
+          const formatted: LearningPathData[] = apiData.map((ap, idx) => {
+            const isCurrentlyActive = activePathId ? ap.id === activePathId : idx === 0;
+            return {
+              id: ap.id,
+              title: ap.title,
+              description: ap.description || "Custom learning path.",
+              matchScore: ap.matchScore || 95,
+              level: (ap.level as any) || "",
+              estimatedHours: ap.estimatedHours || 40,
+              totalModules: ap.totalModules || 10,
+              completedModules: ap.completedModules || 0,
+              skillsCovered: ap.skillsCovered || ["Spring Boot", "REST API"],
+              isActive: isCurrentlyActive,
+            };
+          });
           setPaths(formatted);
         }
       } catch (error) {
@@ -108,10 +65,11 @@ export const PathsView: React.FC = () => {
     return true;
   });
 
-  const handleSelect = (id: string) => {
+  const handleSelect = async (id: string) => {
     setPaths((prev) =>
       prev.map((p) => ({ ...p, isActive: p.id === id }))
     );
+    await enrollInLearningPath(id);
   };
 
   return (

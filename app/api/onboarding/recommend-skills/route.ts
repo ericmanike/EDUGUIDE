@@ -18,6 +18,8 @@ export interface RecommendedModule {
 }
 
 export interface AIRecommendationResult {
+  recommendedTrackId?: string;
+  recommendedTrackTitle?: string;
   overallEvaluation: string;
   matchScorePercent: number;
   recommendedLevelTier: "BEGINNER" | "INTERMEDIATE" | "ADVANCED";
@@ -63,11 +65,21 @@ export async function POST(request: Request) {
     }
 
     const systemPrompt = `You are an elite EdTech AI Learning Architect.
-Analyze the student's diagnostic assessment responses and output a personalized Skill Recommendation report.
+Analyze the student's diagnostic assessment responses and determine the BEST Learning Path Track and Level for them.
+Available Tracks:
+- "web-dev" -> Full-Stack Web Development Track
+- "ai-data" -> AI & Data Science Track
+- "cloud-devops" -> Cloud Architecture & DevOps Track
+- "mobile-dev" -> Mobile App Development Track
+- "cybersecurity" -> Cybersecurity & Ethical Hacking Track
+- "uiux-design" -> UI/UX & Product Design Track
+
 Return ONLY valid JSON matching this exact schema:
 {
-  "overallEvaluation": "Comprehensive 2-3 sentence assessment of user's current baseline and growth vector.",
-  "matchScorePercent": 92,
+  "recommendedTrackId": "web-dev",
+  "recommendedTrackTitle": "Full-Stack Web Development Track",
+  "overallEvaluation": "Comprehensive 2-3 sentence assessment of user's current baseline and why this path was selected.",
+  "matchScorePercent": 94,
   "recommendedLevelTier": "INTERMEDIATE",
   "strengths": ["Demonstrated Strength 1", "Demonstrated Strength 2"],
   "knowledgeGaps": ["Area for Growth 1", "Area for Growth 2"],
@@ -99,7 +111,6 @@ Return ONLY valid JSON matching this exact schema:
 }`;
 
     const userPrompt = `Student Onboarding Diagnostic Submission:
-- Target Track / Learning Path: "${trackName || "Full-Stack Software Development"}"
 - Diagnostic Baseline Score: ${diagnosticScore || 50}%
 - Target Level Tier: ${skillLevel || "INTERMEDIATE"}
 - Weekly Commitment: ${weeklyHours || 5} hours per week
@@ -107,7 +118,7 @@ Return ONLY valid JSON matching this exact schema:
 User Diagnostic Responses:
 ${answersSummary || "Answers provided: Intermediate performance across core technical modules."}
 
-Task: Recommend the exact high-impact skills to learn next to bridge gaps and achieve mastery in ${trackName}. Output ONLY valid JSON.`;
+Task: Analyze the user's responses, select the single best learning path track for them from the available tracks list, and recommend the exact high-impact skills to learn. Output ONLY valid JSON.`;
 
     const rawContent = await callOpenRouter({
       messages: [

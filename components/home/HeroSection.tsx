@@ -51,16 +51,6 @@ export const HeroSection: React.FC = () => {
                   <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
                 </Link>
               </div>
-
-              {/* Secondary Annual Option Link */}
-              <div>
-                <Link
-                  href="/auth/signUp?plan=annual"
-                  className="inline-block text-xs md:text-sm font-bold text-[#1e3a8a] hover:underline underline-offset-4 decoration-2 transition-all"
-                >
-                  or GHS 600/year with 14-day money-back guarantee
-                </Link>
-              </div>
             </div>
 
             {/* Value Highlights */}
