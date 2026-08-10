@@ -41,9 +41,42 @@ export interface CourseModule {
   title: string;
   topic: string;
   description: string;
+  videoUrl?: string;
   durationMinutes: number;
   createdAt?: string;
   updatedAt?: string;
+}
+
+export interface Lesson {
+  id: string;
+  moduleId: string;
+  title: string;
+  videoUrl: string;
+  durationMinutes?: number;
+  sequenceOrder: number;
+  summary?: string;
+  resourcesUrl?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface UserLessonProgress {
+  id?: string;
+  userId: string;
+  lessonId: string;
+  status: "NOT_STARTED" | "IN_PROGRESS" | "COMPLETED";
+  completedAt?: string | null;
+  updatedAt?: string | null;
+}
+
+export interface ModuleProgressStats {
+  userId: string;
+  moduleId: string;
+  totalLessons: number;
+  completedLessons: number;
+  inProgressLessons: number;
+  notStartedLessons: number;
+  completionPercentage: number;
 }
 
 export interface Skill {
@@ -563,3 +596,272 @@ export function getStoredAIRecommendations() {
     return null;
   }
 }
+
+export async function fetchAllLessons(): Promise<Lesson[]> {
+  try {
+    const res = await fetch(`${API_BASE_URL}/lessons`, {
+      method: "GET",
+      headers: getAuthHeaders(),
+      cache: "no-store",
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return await res.json();
+  } catch (error) {
+    console.error("Failed to fetch all lessons:", error);
+    return [];
+  }
+}
+
+export async function fetchLessonById(id: string): Promise<Lesson | null> {
+  try {
+    const res = await fetch(`${API_BASE_URL}/lessons/${id}`, {
+      method: "GET",
+      headers: getAuthHeaders(),
+      cache: "no-store",
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return await res.json();
+  } catch (error) {
+    console.error("Failed to fetch lesson by ID:", error);
+    return null;
+  }
+}
+
+export async function fetchLessonsByModuleId(moduleId: string): Promise<Lesson[]> {
+  try {
+    const res = await fetch(`${API_BASE_URL}/lessons/module/${moduleId}`, {
+      method: "GET",
+      headers: getAuthHeaders(),
+      cache: "no-store",
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return await res.json();
+  } catch (error) {
+    console.error("Failed to fetch lessons for module:", error);
+    return [];
+  }
+}
+
+export async function createLesson(lessonData: {
+  moduleId: string;
+  title: string;
+  videoUrl: string;
+  durationMinutes?: number;
+  sequenceOrder: number;
+  summary?: string;
+  resourcesUrl?: string;
+}): Promise<Lesson | null> {
+  try {
+    const res = await fetch(`${API_BASE_URL}/lessons/module/${lessonData.moduleId}`, {
+      method: "POST",
+      headers: getAuthHeaders(),
+      body: JSON.stringify(lessonData),
+    });
+    if (!res.ok) {
+      // Fallback to /lessons if /lessons/module/{moduleId} fails
+      const fallbackRes = await fetch(`${API_BASE_URL}/lessons`, {
+        method: "POST",
+        headers: getAuthHeaders(),
+        body: JSON.stringify(lessonData),
+      });
+      if (!fallbackRes.ok) throw new Error(`HTTP ${fallbackRes.status}`);
+      return await fallbackRes.json();
+    }
+    return await res.json();
+  } catch (error) {
+    console.error("Failed to create lesson:", error);
+    return null;
+  }
+}
+
+export async function updateLesson(
+  id: string,
+  lessonData: Partial<Omit<Lesson, "id" | "createdAt" | "updatedAt">>
+): Promise<boolean> {
+  try {
+    const res = await fetch(`${API_BASE_URL}/lessons/${id}`, {
+      method: "PUT",
+      headers: getAuthHeaders(),
+      body: JSON.stringify(lessonData),
+    });
+    return res.ok;
+  } catch (error) {
+    console.error("Failed to update lesson:", error);
+    return false;
+  }
+}
+
+export async function deleteLesson(id: string): Promise<boolean> {
+  try {
+    const res = await fetch(`${API_BASE_URL}/lessons/${id}`, {
+      method: "DELETE",
+      headers: getAuthHeaders(),
+    });
+    return res.ok;
+  } catch (error) {
+    console.error("Failed to delete lesson:", error);
+    return false;
+  }
+}
+
+export async function uploadLessonVideo(
+  lessonId: string,
+  file: File
+): Promise<{ videoUrl: string } | null> {
+  try {
+    const formData = new FormData();
+    formData.append("file", file);
+    const token = getToken();
+    const headers: Record<string, string> = {};
+    if (token) headers["Authorization"] = `Bearer ${token}`;
+
+    const res = await fetch(`${API_BASE_URL}/lessons/${lessonId}/upload-video`, {
+      method: "POST",
+      headers,
+      body: formData,
+    });
+
+    const responseText = await res.text();
+
+    if (!res.ok) {
+      console.error(`HTTP ${res.status} Video upload error response:`, responseText);
+      return null;
+    }
+
+    try {
+      const data = JSON.parse(responseText);
+      if (typeof data === "string") {
+        return { videoUrl: data };
+      }
+      if (data && typeof data === "object") {
+        if (data.videoUrl) return { videoUrl: data.videoUrl };
+        if (data.url) return { videoUrl: data.url };
+        if (data.fileUrl) return { videoUrl: data.fileUrl };
+      }
+      return data;
+    } catch {
+      // Backend returned plain text (e.g. direct video URL string) instead of JSON
+      const trimmed = responseText.trim();
+      if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) {
+        return { videoUrl: trimmed };
+      }
+      console.error("Failed to parse video upload response as JSON or URL:", responseText);
+      return null;
+    }
+  } catch (error) {
+    console.error("Failed to upload video for lesson:", error);
+    return null;
+  }
+}
+
+export async function getLessonVideoSignedUrl(
+  lessonId: string
+): Promise<{ videoUrl: string } | null> {
+  try {
+    const res = await fetch(`${API_BASE_URL}/lessons/${lessonId}/video-url`, {
+      method: "GET",
+      headers: getAuthHeaders(),
+      cache: "no-store",
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return await res.json();
+  } catch (error) {
+    console.error("Failed to get signed video URL:", error);
+    return null;
+  }
+}
+
+/* ==========================================================================
+   USER LESSON PROGRESS APIs
+   ========================================================================== */
+
+export async function upsertUserLessonProgress(progressData: {
+  userId: string;
+  lessonId: string;
+  status: "IN_PROGRESS" | "COMPLETED" | "NOT_STARTED";
+}): Promise<UserLessonProgress | null> {
+  try {
+    const res = await fetch(`${API_BASE_URL}/user-lesson-progress`, {
+      method: "POST",
+      headers: getAuthHeaders(),
+      body: JSON.stringify(progressData),
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return await res.json();
+  } catch (error) {
+    console.error("Failed to upsert user lesson progress:", error);
+    return null;
+  }
+}
+
+export async function fetchUserLessonProgress(
+  userId: string,
+  lessonId: string
+): Promise<UserLessonProgress | null> {
+  try {
+    const res = await fetch(`${API_BASE_URL}/user-lesson-progress/user/${userId}/lesson/${lessonId}`, {
+      method: "GET",
+      headers: getAuthHeaders(),
+      cache: "no-store",
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return await res.json();
+  } catch (error) {
+    console.error("Failed to fetch user lesson progress:", error);
+    return null;
+  }
+}
+
+export async function fetchAllUserLessonProgress(
+  userId: string
+): Promise<UserLessonProgress[]> {
+  try {
+    const res = await fetch(`${API_BASE_URL}/user-lesson-progress/user/${userId}`, {
+      method: "GET",
+      headers: getAuthHeaders(),
+      cache: "no-store",
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return await res.json();
+  } catch (error) {
+    console.error("Failed to fetch all user lesson progress:", error);
+    return [];
+  }
+}
+
+export async function fetchUserLessonProgressByModule(
+  userId: string,
+  moduleId: string
+): Promise<UserLessonProgress[]> {
+  try {
+    const res = await fetch(`${API_BASE_URL}/user-lesson-progress/user/${userId}/module/${moduleId}`, {
+      method: "GET",
+      headers: getAuthHeaders(),
+      cache: "no-store",
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return await res.json();
+  } catch (error) {
+    console.error("Failed to fetch module lesson progress for user:", error);
+    return [];
+  }
+}
+
+export async function fetchUserModuleProgressStats(
+  userId: string,
+  moduleId: string
+): Promise<ModuleProgressStats | null> {
+  try {
+    const res = await fetch(`${API_BASE_URL}/user-lesson-progress/user/${userId}/module/${moduleId}/stats`, {
+      method: "GET",
+      headers: getAuthHeaders(),
+      cache: "no-store",
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return await res.json();
+  } catch (error) {
+    console.error("Failed to fetch module progress stats:", error);
+    return null;
+  }
+}
+

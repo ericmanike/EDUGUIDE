@@ -9,20 +9,24 @@ import {
   Link as LinkIcon,
   ArrowRight,
   RefreshCw,
+  PlayCircle,
 } from "lucide-react";
 import {
   fetchLearningPaths,
   fetchModules,
   fetchPathModules,
+  fetchAllLessons,
   LearningPath,
   CourseModule,
   PathModule,
+  Lesson,
 } from "@/lib/api";
 
 export default function CurriculumOverviewPage() {
   const [paths, setPaths] = useState<LearningPath[]>([]);
   const [modules, setModules] = useState<CourseModule[]>([]);
   const [mappings, setMappings] = useState<PathModule[]>([]);
+  const [lessons, setLessons] = useState<Lesson[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
@@ -32,14 +36,16 @@ export default function CurriculumOverviewPage() {
   const loadData = async () => {
     setIsLoading(true);
     try {
-      const [pathsData, modulesData, mappingsData] = await Promise.all([
+      const [pathsData, modulesData, mappingsData, lessonsData] = await Promise.all([
         fetchLearningPaths(),
         fetchModules(),
         fetchPathModules(),
+        fetchAllLessons(),
       ]);
       setPaths(pathsData || []);
       setModules(modulesData || []);
       setMappings(mappingsData || []);
+      setLessons(lessonsData || []);
     } catch (error) {
       console.error("Failed to load curriculum stats:", error);
       toast.error("Failed to load curriculum data.");
@@ -72,7 +78,7 @@ export default function CurriculumOverviewPage() {
       </div>
 
       {/* Metrics Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
         <div className="p-6 rounded-2xl bg-white border border-slate-100 shadow-sm space-y-4 flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between mb-3">
@@ -112,6 +118,27 @@ export default function CurriculumOverviewPage() {
             className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-[#1e3a8a] hover:bg-[#1d4ed8] text-white text-xs font-bold transition-all shadow-md shadow-[#1e3a8a]/20 cursor-pointer active:scale-[0.98]"
           >
             Manage Modules <ArrowRight className="w-3.5 h-3.5" />
+          </Link>
+        </div>
+
+        <div className="p-6 rounded-2xl bg-white border border-slate-100 shadow-sm space-y-4 flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <div className="p-3 rounded-xl bg-emerald-50 text-emerald-600">
+                <PlayCircle className="w-6 h-6" />
+              </div>
+              <span className="text-2xl font-black text-slate-900">{lessons.length}</span>
+            </div>
+            <div>
+              <h4 className="text-sm font-bold text-slate-900">Video Lessons</h4>
+              <p className="text-xs text-slate-400 font-medium">Granular lesson sequence nodes</p>
+            </div>
+          </div>
+          <Link
+            href="/dashboard/curriculum/lessons"
+            className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-[#1e3a8a] hover:bg-[#1d4ed8] text-white text-xs font-bold transition-all shadow-md shadow-[#1e3a8a]/20 cursor-pointer active:scale-[0.98]"
+          >
+            Manage Lessons <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </div>
 

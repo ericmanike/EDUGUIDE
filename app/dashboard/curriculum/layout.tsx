@@ -11,6 +11,7 @@ import {
   BookOpen,
   Link as LinkIcon,
   LayoutDashboard,
+  PlayCircle,
 } from "lucide-react";
 import { getCurrentUser } from "@/lib/api";
 
@@ -48,6 +49,12 @@ export default function CurriculumLayout({
       href: "/dashboard/curriculum/modules",
       exact: false,
       icon: BookOpen,
+    },
+    {
+      label: "Lessons",
+      href: "/dashboard/curriculum/lessons",
+      exact: false,
+      icon: PlayCircle,
     },
     {
       label: "Path Mappings",

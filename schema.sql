@@ -46,7 +46,22 @@ CREATE TABLE modules (
     title VARCHAR(255) NOT NULL,
     topic VARCHAR(100) NOT NULL,
     description TEXT,
+    video_url TEXT, -- Primary video URL for the module (YouTube/Vimeo/S3)
     duration_minutes INTEGER NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 5b. Lessons (Video Lessons inside Modules)
+CREATE TABLE lessons (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    module_id UUID REFERENCES modules(id) ON DELETE CASCADE,
+    title VARCHAR(255) NOT NULL,
+    video_url TEXT NOT NULL,          -- Video link (YouTube embed, Vimeo, MP4 URL)
+    duration_minutes INTEGER DEFAULT 0,
+    sequence_order INTEGER NOT NULL,  -- Order of lesson inside module (1, 2, 3...)
+    summary TEXT,                      -- Lesson notes or transcript
+    resources_url TEXT,               -- Link to downloadable source code or PDF
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
@@ -82,6 +97,17 @@ CREATE TABLE user_module_progress (
     completed_at TIMESTAMP WITH TIME ZONE,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     UNIQUE(user_id, module_id)
+);
+
+-- 8b. User Lesson Progress (Individual Student Progress per Lesson)
+CREATE TABLE user_lesson_progress (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+    lesson_id UUID REFERENCES lessons(id) ON DELETE CASCADE,
+    status progress_status DEFAULT 'NOT_STARTED', -- NOT_STARTED, IN_PROGRESS, COMPLETED
+    completed_at TIMESTAMP WITH TIME ZONE,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(user_id, lesson_id)
 );
 
 -- 9. Skills

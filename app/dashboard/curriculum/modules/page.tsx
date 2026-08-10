@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
+import Link from "next/link";
 import {
   BookOpen,
   Plus,
@@ -10,6 +11,7 @@ import {
   RefreshCw,
   X,
   Clock,
+  PlayCircle,
 } from "lucide-react";
 import {
   fetchModules,
@@ -185,6 +187,14 @@ export default function CurriculumModulesPage() {
                   </td>
                   <td className="p-4 font-semibold text-slate-700">{m.durationMinutes} mins</td>
                   <td className="p-4 text-right space-x-2">
+                    <Link
+                      href={`/dashboard/curriculum/lessons?moduleId=${m.id}`}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-bold bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition-all cursor-pointer"
+                      title="Manage Lessons for this Module"
+                    >
+                      <PlayCircle className="w-3.5 h-3.5" />
+                      Manage Lessons
+                    </Link>
                     <button
                       onClick={() => openEdit(m)}
                       className="p-2 rounded-lg text-slate-600 hover:bg-slate-100 hover:text-blue-600 transition-all cursor-pointer"
