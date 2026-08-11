@@ -560,7 +560,7 @@ export function OnboardingWizard() {
                   <Split className="w-5 h-5" />
                 </span>
                 <h2 className="text-xl sm:text-2xl font-bold text-slate-900">
-                  Step 1: Diagnostic & Skill Assessment
+                  Step 1: Onboarding  Assessment
                 </h2>
               </div>
               <p className="text-sm text-slate-500 mt-1">

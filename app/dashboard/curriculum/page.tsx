@@ -96,7 +96,7 @@ export default function CurriculumOverviewPage() {
             href="/dashboard/curriculum/paths"
             className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-[#1e3a8a] hover:bg-[#1d4ed8] text-white text-xs font-bold transition-all shadow-md shadow-[#1e3a8a]/20 cursor-pointer active:scale-[0.98]"
           >
-            Manage Paths <ArrowRight className="w-3.5 h-3.5" />
+            Manage Courses <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </div>
 
@@ -151,7 +151,7 @@ export default function CurriculumOverviewPage() {
               <span className="text-2xl font-black text-slate-900">{mappings.length}</span>
             </div>
             <div>
-              <h4 className="text-sm font-bold text-slate-900">Path-Module Mappings</h4>
+              <h4 className="text-sm font-bold text-slate-900">Course-Module Mappings</h4>
               <p className="text-xs text-slate-400 font-medium">Sequence node ordering</p>
             </div>
           </div>

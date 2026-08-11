@@ -20,6 +20,7 @@ import {
   fetchModules,
   fetchLessonsByModuleId,
   fetchUserLessonProgressByModule,
+  fetchUserLessonProgress,
   upsertUserLessonProgress,
   getCurrentUser,
   CourseModule,
@@ -71,6 +72,19 @@ export default function CoursePage({ params }: { params: Promise<{ id: string }>
               pMap[up.lessonId] = up.status;
             });
           }
+
+          // Fetch individual lesson progress using GET /api/user-lesson-progress/user/{userId}/lesson/{lessonId}
+          if (moduleLessons && moduleLessons.length > 0) {
+            const individualProgresses = await Promise.all(
+              moduleLessons.map((lesson) => fetchUserLessonProgress(currentUser.id, lesson.id))
+            );
+            individualProgresses.forEach((prog) => {
+              if (prog && prog.lessonId) {
+                pMap[prog.lessonId] = prog.status;
+              }
+            });
+          }
+
           setProgressMap(pMap);
         }
       } catch (err) {
@@ -82,6 +96,20 @@ export default function CoursePage({ params }: { params: Promise<{ id: string }>
 
     loadCourseContent();
   }, [moduleId]);
+
+  const handleSelectLesson = async (lessonId: string) => {
+    setActiveLessonId(lessonId);
+    const currentUser = getCurrentUser();
+    if (currentUser?.id) {
+      const prog = await fetchUserLessonProgress(currentUser.id, lessonId);
+      if (prog) {
+        setProgressMap((prev) => ({
+          ...prev,
+          [lessonId]: prog.status,
+        }));
+      }
+    }
+  };
 
   const handleToggleLessonProgress = async (lessonId: string) => {
     const currentStatus = progressMap[lessonId] || "NOT_STARTED";
@@ -96,6 +124,15 @@ export default function CoursePage({ params }: { params: Promise<{ id: string }>
         lessonId,
         status: nextStatus,
       });
+
+      // Refetch specific lesson progress via GET /api/user-lesson-progress/user/{userId}/lesson/{lessonId}
+      const updatedProg = await fetchUserLessonProgress(currentUser.id, lessonId);
+      if (updatedProg) {
+        setProgressMap((prev) => ({
+          ...prev,
+          [lessonId]: updatedProg.status,
+        }));
+      }
     }
   };
 
@@ -256,7 +293,7 @@ export default function CoursePage({ params }: { params: Promise<{ id: string }>
                 return (
                   <button
                     key={lesson.id}
-                    onClick={() => setActiveLessonId(lesson.id)}
+                    onClick={() => handleSelectLesson(lesson.id)}
                     className={`w-full flex items-start gap-3 p-3 text-left rounded-xl transition-all duration-200 ${
                       isActive
                         ? "bg-indigo-50 border border-indigo-100 shadow-sm relative overflow-hidden"

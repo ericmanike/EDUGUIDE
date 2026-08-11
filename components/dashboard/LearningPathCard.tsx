@@ -97,18 +97,11 @@ export const LearningPathCard: React.FC<LearningPathCardProps> = ({
 
       {/* Actions */}
       <div>
-        <CardFooter className="gap-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => onViewNodes && onViewNodes(path)}
-          >
-            View Roadmap
-          </Button>
-
+        <CardFooter>
           <Button
             variant={path.isActive ? "primary" : "slate"}
             size="sm"
+            className="w-full"
             icon={<ArrowRight className="w-3.5 h-3.5" />}
             onClick={() => onSelectPath && onSelectPath(path.id)}
           >

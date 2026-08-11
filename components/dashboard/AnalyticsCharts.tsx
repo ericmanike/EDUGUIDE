@@ -23,10 +23,16 @@ import {
   fetchActivityLogs,
   fetchSkills,
   fetchLearningPaths,
+  fetchUserLearningPaths,
+  fetchPathModulesByPath,
+  fetchUserModuleProgress,
+  getCurrentUser,
   fetchModules,
   ActivityLog,
   Skill,
   LearningPath,
+  UserLearningPath,
+  UserModuleProgress,
 } from "@/lib/api";
 
 export const WeeklyActivityChart: React.FC = () => {
@@ -222,22 +228,107 @@ export const SkillRadarChart: React.FC = () => {
 };
 
 export const PathProgressBarChart: React.FC = () => {
-  const [chartData, setChartData] = React.useState<Array<{ name: string; completed: number; remaining: number }>>([]);
+  const [chartData, setChartData] = React.useState<
+    Array<{ fullName: string; name: string; completed: number; remaining: number }>
+  >([]);
+  const [isLoading, setIsLoading] = React.useState<boolean>(true);
 
   React.useEffect(() => {
     async function loadPaths() {
+      setIsLoading(true);
       try {
-        const lps = await fetchLearningPaths();
+        const currentUser = getCurrentUser();
+        const userId = currentUser?.id || "u-guest";
+
+        const [lps, userPaths] = await Promise.all([
+          fetchLearningPaths(),
+          fetchUserLearningPaths(userId),
+        ]);
+
         if (lps && lps.length > 0) {
-          const formatted = lps.map((lp: LearningPath) => ({
-            name: lp.title.length > 18 ? lp.title.substring(0, 18) + "..." : lp.title,
-            completed: lp.completedModules || 0,
-            remaining: Math.max(0, (lp.totalModules || 10) - (lp.completedModules || 0)),
-          }));
+          const enrolledPathIds = new Set<string>();
+
+          if (userPaths && userPaths.length > 0) {
+            userPaths.forEach((up: UserLearningPath) => {
+              const pId = up.path?.id || up.pathId;
+              if (pId) enrolledPathIds.add(pId);
+            });
+          }
+
+          if (typeof window !== "undefined") {
+            try {
+              const activeEnrollmentRaw = localStorage.getItem("edtech_active_enrollment");
+              if (activeEnrollmentRaw) {
+                const activeObj = JSON.parse(activeEnrollmentRaw);
+                if (activeObj.pathId) enrolledPathIds.add(activeObj.pathId);
+              }
+              const userProgressRaw = localStorage.getItem("edtech_user_progress");
+              if (userProgressRaw) {
+                const progressMap = JSON.parse(userProgressRaw);
+                Object.keys(progressMap).forEach((pId) => {
+                  if (progressMap[pId]?.enrolled) enrolledPathIds.add(pId);
+                });
+              }
+            } catch (e) {}
+          }
+
+          let enrolledLps = lps.filter((lp: LearningPath) => enrolledPathIds.has(lp.id));
+
+          // Fallback if user has no explicit enrollments recorded yet: show first/active path
+          if (enrolledLps.length === 0 && lps.length > 0) {
+            enrolledLps = [lps[0]];
+          }
+
+          let userModuleProgress: UserModuleProgress[] = [];
+          if (currentUser?.id) {
+            try {
+              userModuleProgress = await fetchUserModuleProgress(currentUser.id);
+            } catch (e) {}
+          }
+
+          const formatted = await Promise.all(
+            enrolledLps.map(async (lp: LearningPath) => {
+              let totalModules = lp.totalModules || 10;
+              let completedModules = lp.completedModules || 0;
+
+              try {
+                const pathMods = await fetchPathModulesByPath(lp.id);
+                if (pathMods && pathMods.length > 0) {
+                  totalModules = pathMods.length;
+                  if (userModuleProgress && userModuleProgress.length > 0) {
+                    const pathModIds = new Set(
+                      pathMods.map((pm) => pm.module?.id || pm.moduleId).filter(Boolean)
+                    );
+                    const completedCount = userModuleProgress.filter(
+                      (ump) =>
+                        pathModIds.has(ump.module?.id || ump.moduleId) &&
+                        (ump.progressPercentage === 100 || (ump as any).completedAt)
+                    ).length;
+                    if (completedCount > 0) completedModules = completedCount;
+                  }
+                }
+              } catch (e) {}
+
+              let displayName = lp.title;
+              if (displayName.length > 20) {
+                displayName = displayName.substring(0, 20) + "...";
+              }
+
+              return {
+                fullName: lp.title,
+                name: displayName,
+                completed: completedModules,
+                remaining: Math.max(0, totalModules - completedModules),
+              };
+            })
+          );
+
           setChartData(formatted);
         }
       } catch (e) {
         console.warn("Could not load path progress bar chart:", e);
+      } finally {
+        setIsLoading(false);
       }
     }
     loadPaths();
@@ -247,17 +338,26 @@ export const PathProgressBarChart: React.FC = () => {
     <Card variant="white" className="w-full">
       <CardHeader>
         <div>
+          <div className="flex items-center gap-2 mb-1">
+            <Badge variant="indigo">
+              Enrolled Courses
+            </Badge>
+          </div>
           <CardTitle>Module Completion Comparison</CardTitle>
           <CardDescription>
-            Completed modules vs remaining modules per path
+            Completed modules vs remaining modules for enrolled paths
           </CardDescription>
         </div>
       </CardHeader>
 
       <div className="h-64 w-full mt-2">
-        {chartData.length === 0 ? (
+        {isLoading ? (
           <div className="h-full flex items-center justify-center text-slate-400 text-xs font-semibold">
-            No learning paths available
+            Loading enrolled courses...
+          </div>
+        ) : chartData.length === 0 ? (
+          <div className="h-full flex items-center justify-center text-slate-400 text-xs font-semibold">
+            No enrolled learning paths found
           </div>
         ) : (
           <ResponsiveContainer width="100%" height="100%">
@@ -273,6 +373,12 @@ export const PathProgressBarChart: React.FC = () => {
                   color: "#0f172a",
                   fontSize: "12px",
                   boxShadow: "0 10px 25px rgba(0,0,0,0.08)",
+                }}
+                labelFormatter={(label, items) => {
+                  if (items && items.length > 0 && items[0].payload?.fullName) {
+                    return items[0].payload.fullName;
+                  }
+                  return label;
                 }}
               />
               <Legend wrapperStyle={{ fontSize: "11px" }} />
