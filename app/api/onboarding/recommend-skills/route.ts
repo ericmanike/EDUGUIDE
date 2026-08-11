@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { callOpenRouter } from "@/lib/openrouter";
+import { fetchLearningPaths } from "@/lib/api";
 
 export interface SkillRecommendation {
   name: string;
@@ -38,8 +39,9 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
     const {
-      trackId,
-      trackName,
+      availableTracks,
+      selectedTrackId,
+      selectedTrackTitle,
       skillLevel,
       diagnosticAnswers,
       weeklyHours,
@@ -47,6 +49,15 @@ export async function POST(request: Request) {
       diagnosticScore,
       questions = [],
     } = body;
+
+    // Fetch dynamic learning paths if availableTracks not provided in body
+    const tracksToConsider = availableTracks && Array.isArray(availableTracks) && availableTracks.length > 0
+      ? availableTracks
+      : await fetchLearningPaths();
+
+    const formattedTracksList = tracksToConsider
+      .map((t: any) => `- ID: "${t.id}" -> Title: "${t.title}" (Category: "${t.category || t.level || 'Software Engineering'}", Description: "${t.description || ''}")`)
+      .join("\n");
 
     // Format diagnostic answers into a readable diagnostic summary
     let answersSummary = "";
@@ -65,19 +76,20 @@ export async function POST(request: Request) {
     }
 
     const systemPrompt = `You are an elite EdTech AI Learning Architect.
-Analyze the student's diagnostic assessment responses and determine the BEST Learning Path Track and Level for them.
-Available Tracks:
-- "web-dev" -> Full-Stack Web Development Track
-- "ai-data" -> AI & Data Science Track
-- "cloud-devops" -> Cloud Architecture & DevOps Track
-- "mobile-dev" -> Mobile App Development Track
-- "cybersecurity" -> Cybersecurity & Ethical Hacking Track
-- "uiux-design" -> UI/UX & Product Design Track
+Analyze the student's diagnostic assessment responses and determine the BEST Learning Path Track and Level for them from the provided available learning paths list.
+
+Available Learning Paths (Dynamic Catalog):
+${formattedTracksList}
+
+Instructions:
+1. Select the single best recommended learning path from the list above based on user score and answers.
+2. Ensure "recommendedTrackId" EXACTLY matches the ID of the chosen learning path from the list.
+3. Ensure "recommendedTrackTitle" EXACTLY matches the Title of the chosen learning path.
 
 Return ONLY valid JSON matching this exact schema:
 {
-  "recommendedTrackId": "web-dev",
-  "recommendedTrackTitle": "Full-Stack Web Development Track",
+  "recommendedTrackId": "${tracksToConsider[0]?.id || 'web-dev'}",
+  "recommendedTrackTitle": "${tracksToConsider[0]?.title || 'Full-Stack Web Development Track'}",
   "overallEvaluation": "Comprehensive 2-3 sentence assessment of user's current baseline and why this path was selected.",
   "matchScorePercent": 94,
   "recommendedLevelTier": "INTERMEDIATE",

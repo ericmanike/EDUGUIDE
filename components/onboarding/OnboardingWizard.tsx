@@ -373,10 +373,11 @@ export function OnboardingWizard() {
     // 4. Advance to next question or trigger early stopping once placement confidence > 85% or reached end
     if (newAnsweredCount >= 4 || nextConfidence >= 88 || activeQuestionIndex >= diagnosticQuestions.length - 1) {
       toast.success("Placement placement confidence high! Calibration complete.");
-      // Auto move to step 3 after brief delay or let user proceed
-      setTimeout(() => {
-        setCurrentStep(3);
+      // Auto move to step 2 recommendations after brief delay
+      setTimeout(async () => {
+        setCurrentStep(2);
         window.scrollTo({ top: 0, behavior: "smooth" });
+        await generateAISkillRecommendations();
       }, 400);
     } else {
       setActiveQuestionIndex((prev) => prev + 1);
@@ -386,7 +387,7 @@ export function OnboardingWizard() {
   // Generate AI Skill Recommendations & Track Matching using OpenRouter API
   const generateAISkillRecommendations = async () => {
     setIsGeneratingRecommendation(true);
-    setLoadingStepText("Evaluating assessment responses & matching optimal learning path...");
+    setLoadingStepText(" matching optimal learning path...");
 
     setTimeout(() => {
       setLoadingStepText("Evaluating skill gap matrix & mastery baseline...");
@@ -398,11 +399,21 @@ export function OnboardingWizard() {
 
     try {
       const payload = {
+        availableTracks: tracks.map((t) => ({
+          id: t.id,
+          title: t.title,
+          category: t.category,
+          description: t.description,
+          skills: t.skills,
+        })),
+        selectedTrackId: selectedTrack,
+        selectedTrackTitle: activeTrackDetails.title,
         skillLevel: getRecommendedLevel(),
         diagnosticAnswers,
         weeklyHours,
         learningStyles: selectedStyles,
         diagnosticScore: diagnosticPercentage,
+        questions: diagnosticQuestions,
       };
 
       const res = await fetch("/api/onboarding/recommend-skills", {
@@ -429,20 +440,16 @@ export function OnboardingWizard() {
   };
 
   const handleNextStep = async () => {
-    if (currentStep === 2) {
-      // Submit responses to AI model for track & skill recommendations
-      setCurrentStep(3);
+    if (currentStep === 1) {
+      setCurrentStep(2);
       window.scrollTo({ top: 0, behavior: "smooth" });
       await generateAISkillRecommendations();
-    } else if (currentStep < 3) {
-      setCurrentStep((prev) => prev + 1);
-      window.scrollTo({ top: 0, behavior: "smooth" });
     }
   };
 
   const handlePrevStep = () => {
     if (currentStep > 1) {
-      setCurrentStep((prev) => prev - 1);
+      setCurrentStep(1);
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
   };
@@ -501,16 +508,15 @@ export function OnboardingWizard() {
       {/* Header & Stepper */}
       <div className="text-center space-y-3 mb-10">
         <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
-          Adaptive AI Learning Placement
+           Assessment 
         </h1>
 
         {/* Step Progress Bar */}
         <div className="pt-6 max-w-xl mx-auto">
           <div className="flex items-center justify-between relative mb-2">
             {[
-              { step: 1, title: "Adaptive Assessment" },
-              { step: 2, title: "Commitment & Pace" },
-              { step: 3, title: "AI Recommended Track" },
+              { step: 1, title: "Onboarding Assessment" },
+              { step: 2, title: "Recommended Course" },
             ].map((s) => {
               const isPassed = currentStep > s.step;
               const isCurrent = currentStep === s.step;
@@ -543,7 +549,7 @@ export function OnboardingWizard() {
             <div className="absolute top-5 left-5 right-5 h-[3px] bg-slate-200 -z-0 rounded-full overflow-hidden">
               <div
                 className="h-full bg-gradient-to-r from-[#1e3a8a] to-[#fb923c] transition-all duration-500"
-                style={{ width: `${((currentStep - 1) / 2) * 100}%` }}
+                style={{ width: `${((currentStep - 1) / 1) * 100}%` }}
               />
             </div>
           </div>
@@ -564,7 +570,7 @@ export function OnboardingWizard() {
                 </h2>
               </div>
               <p className="text-sm text-slate-500 mt-1">
-                Answer these quick questions. AI will evaluate your answers to automatically recommend your optimal learning path and level.
+                Answer these quick questions. We will evaluate your answers and recommend the most suitable learning course for you.
               </p>
             </div>
           </div>
@@ -642,90 +648,22 @@ export function OnboardingWizard() {
           {/* Action buttons */}
           <div className="flex items-center justify-end pt-6 border-t border-slate-100">
             <button
-              onClick={() => {
+              onClick={async () => {
                 setCurrentStep(2);
                 window.scrollTo({ top: 0, behavior: "smooth" });
+                await generateAISkillRecommendations();
               }}
               className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-[#1e3a8a] hover:bg-[#1d4ed8] text-white font-bold text-xs shadow-md transition-all cursor-pointer"
             >
-              Next: Commitment & Pace
+              Analyze & Recommend
               <ArrowRight className="w-4 h-4" />
             </button>
           </div>
         </div>
       )}
 
-      {/* STEP 2: COMMITMENT & PACE */}
+      {/* STEP 2: AI REVEAL & TRACK RECOMMENDATION SUMMARY */}
       {currentStep === 2 && (
-        <div className="bg-white rounded-3xl border border-slate-200/80 p-6 sm:p-10 shadow-xl shadow-slate-200/40 space-y-8 animate-in fade-in zoom-in-95 duration-300">
-          <div>
-            <h2 className="text-xl sm:text-2xl font-bold text-slate-900">
-              Step 2: Define Your Learning Pace & Preferred Style
-            </h2>
-            <p className="text-sm text-slate-500 mt-1">
-              Specify your available weekly hours so AI can calculate your expected completion timeline.
-            </p>
-          </div>
-
-          {/* Weekly Hours Presets */}
-          <div className="space-y-4 bg-slate-50/80 p-6 rounded-2xl border border-slate-200/80">
-            <div className="flex items-center justify-between">
-              <label className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                <Clock className="w-4 h-4 text-[#fb923c]" />
-                Weekly Study Time Commitment
-              </label>
-              <span className="px-3 py-1 bg-[#1e3a8a] text-white rounded-lg text-xs font-bold shadow-xs">
-                {weeklyHours} Hours / Week
-              </span>
-            </div>
-
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              {[
-                { hours: 3, label: "Casual (2-4 hrs/wk)" },
-                { hours: 7, label: "Regular (5-8 hrs/wk)" },
-                { hours: 12, label: "Intensive (10-15 hrs/wk)" },
-                { hours: 25, label: "Full-Time (20+ hrs/wk)" },
-              ].map((item) => (
-                <button
-                  key={item.hours}
-                  type="button"
-                  onClick={() => setWeeklyHours(item.hours)}
-                  className={`p-3 rounded-xl border text-center transition-all cursor-pointer ${
-                    weeklyHours === item.hours
-                      ? "border-[#1e3a8a] bg-white text-[#1e3a8a] font-bold shadow-sm ring-2 ring-[#1e3a8a]/20"
-                      : "border-slate-200 bg-white/60 text-slate-600 hover:bg-white hover:border-slate-300 text-xs font-semibold"
-                  }`}
-                >
-                  <p className="text-sm font-bold text-slate-900">{item.hours} hrs/wk</p>
-                  <p className="text-[11px] text-slate-500 mt-0.5">{item.label}</p>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Action buttons */}
-          <div className="flex items-center justify-between pt-6 border-t border-slate-100">
-            <button
-              onClick={handlePrevStep}
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-100 font-bold text-xs transition-all cursor-pointer"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              Back to Assessment
-            </button>
-
-            <button
-              onClick={handleNextStep}
-              className="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl bg-[#1e3a8a] hover:bg-[#1d4ed8] text-white font-bold text-sm shadow-md shadow-[#1e3a8a]/25 transition-all cursor-pointer active:scale-[0.98]"
-            >
-              Analyze & Recommend My Learning Path
-              <Sparkles className="w-4 h-4 text-[#fb923c]" />
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* STEP 3: AI REVEAL & TRACK RECOMMENDATION SUMMARY */}
-      {currentStep === 3 && (
         <div className="bg-white rounded-3xl border border-slate-200/80 p-6 sm:p-10 shadow-xl shadow-slate-200/40 space-y-8 animate-in fade-in zoom-in-95 duration-300">
           {isGeneratingRecommendation ? (
             <div className="py-20 flex justify-center">
@@ -751,7 +689,7 @@ export function OnboardingWizard() {
 
                   <div>
                     <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
-                      AI Recommended Track & Skills Roadmap
+                      Recommended Courses Base on Your Response
                     </h2>
                     <p className="text-sm text-slate-300 mt-2 max-w-2xl leading-relaxed">
                       {aiRecommendation?.overallEvaluation ||
@@ -762,10 +700,29 @@ export function OnboardingWizard() {
                   {/* Summary Cards Grid */}
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
                     <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/10">
-                      <p className="text-[11px] font-semibold text-slate-300 uppercase">AI Recommended Track & Level</p>
-                      <p className="text-base font-bold text-white mt-1">
-                        {aiRecommendation?.recommendedTrackTitle || activeTrackDetails.title} ({aiRecommendation?.recommendedLevelTier || getRecommendedLevel()})
-                      </p>
+                      <p className="text-[11px] font-semibold text-slate-300 uppercase mb-1">AI Recommended Track & Level</p>
+                      <select
+                        value={selectedTrack}
+                        onChange={(e) => {
+                          const newTrackId = e.target.value;
+                          const foundTrack = tracks.find((tr) => tr.id === newTrackId);
+                          setSelectedTrack(newTrackId);
+                          if (aiRecommendation && foundTrack) {
+                            setAiRecommendation({
+                              ...aiRecommendation,
+                              recommendedTrackId: foundTrack.id,
+                              recommendedTrackTitle: foundTrack.title,
+                            });
+                          }
+                        }}
+                        className="bg-slate-900/90 text-white font-bold text-xs sm:text-sm rounded-xl px-2.5 py-1.5 border border-white/20 focus:outline-none focus:ring-2 focus:ring-amber-400 cursor-pointer w-full"
+                      >
+                        {tracks.map((tr) => (
+                          <option key={tr.id} value={tr.id} className="bg-slate-900 text-white font-semibold">
+                            {tr.title} ({aiRecommendation?.recommendedLevelTier || getRecommendedLevel()})
+                          </option>
+                        ))}
+                      </select>
                     </div>
                     <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/10">
                       <p className="text-[11px] font-semibold text-slate-300 uppercase">Starting Placement</p>
@@ -781,77 +738,8 @@ export function OnboardingWizard() {
                 </div>
               </div>
 
-              {/* AI RECOMMENDED SKILLS SECTION */}
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                    <Zap className="w-5 h-5 text-[#fb923c]" />
-                    AI Recommended Skills to Learn (Priority Ranked)
-                  </h3>
-
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {(aiRecommendation?.recommendedSkills || [
-                    {
-                      name: `${activeTrackDetails.title} Architecture`,
-                      category: "Core Engineering",
-                      priority: "CRITICAL",
-                      whyRecommended: "Essential foundation tailored to adaptive placement.",
-                      estimatedHours: 12,
-                    },
-                    {
-                      name: "REST API & Async Data Flows",
-                      category: "Backend Integration",
-                      priority: "HIGH",
-                      whyRecommended: "Bridges network & state handling gaps.",
-                      estimatedHours: 10,
-                    },
-                  ]).map((skill, idx) => (
-                    <div
-                      key={idx}
-                      className="p-5 rounded-2xl border border-slate-200 bg-slate-50/60 hover:bg-white hover:shadow-md transition-all space-y-3"
-                    >
-                      <div className="flex items-start justify-between gap-2">
-                        <div>
-                          <span className="text-[10px] font-extrabold uppercase text-slate-400 tracking-wider">
-                            {skill.category}
-                          </span>
-                          <h4 className="text-base font-bold text-slate-900">{skill.name}</h4>
-                        </div>
-                        <span
-                          className={`px-2.5 py-1 rounded-md text-[10px] font-black uppercase ${
-                            skill.priority === "CRITICAL"
-                              ? "bg-red-100 text-red-700"
-                              : skill.priority === "HIGH"
-                              ? "bg-orange-100 text-orange-800"
-                              : "bg-blue-100 text-blue-700"
-                          }`}
-                        >
-                          {skill.priority} PRIORITY
-                        </span>
-                      </div>
-
-                      <p className="text-xs text-slate-600 leading-relaxed font-medium">
-                        {skill.whyRecommended}
-                      </p>
-
-                      <div className="flex items-center justify-between text-xs font-semibold text-slate-500 pt-2 border-t border-slate-200/60">
-                        <span className="flex items-center gap-1.5">
-                          <Clock className="w-3.5 h-3.5 text-slate-400" />
-                          Est. ~{skill.estimatedHours} hours
-                        </span>
-                        {skill.prerequisite && (
-                          <span className="text-slate-400">Prereq: {skill.prerequisite}</span>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Strengths & Knowledge Gaps Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Strengths Grid */}
+              <div className="grid grid-cols-1 gap-6">
                 <div className="p-6 rounded-2xl border border-emerald-100 bg-emerald-50/40 space-y-3">
                   <h3 className="text-xs font-bold text-emerald-900 uppercase tracking-wider flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-emerald-600" />
@@ -869,54 +757,72 @@ export function OnboardingWizard() {
                     ))}
                   </ul>
                 </div>
+              </div>
 
-                <div className="p-6 rounded-2xl border border-amber-100 bg-amber-50/40 space-y-3">
-                  <h3 className="text-xs font-bold text-amber-900 uppercase tracking-wider flex items-center gap-2">
-                    <TrendingUp className="w-4 h-4 text-amber-600" />
-                    Target Knowledge Growth Areas
+              {/* TRACK SWITCHER SELECTION GRID */}
+              <div className="space-y-4 pt-2">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
+                    <BookOpen className="w-5 h-5 text-[#1e3a8a]" />
+                    Available Learning Tracks (Tap to Switch)
                   </h3>
-                  <ul className="space-y-2">
-                    {(aiRecommendation?.knowledgeGaps || [
-                      "Advanced state management & error boundaries",
-                      "Database query tuning & production security",
-                    ]).map((gap, idx) => (
-                      <li key={idx} className="text-xs font-semibold text-amber-950 flex items-start gap-2">
-                        <span className="w-1.5 h-1.5 rounded-full bg-amber-500 mt-1.5 shrink-0" />
-                        {gap}
-                      </li>
-                    ))}
-                  </ul>
+                  <span className="text-xs font-semibold text-slate-500">
+                    Switch your target course anytime
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                  {tracks.map((t) => {
+                    const isSelected = selectedTrack === t.id;
+                    const IconComponent = t.icon;
+
+                    return (
+                      <div
+                        key={t.id}
+                        onClick={() => {
+                          setSelectedTrack(t.id);
+                          if (aiRecommendation) {
+                            setAiRecommendation({
+                              ...aiRecommendation,
+                              recommendedTrackId: t.id,
+                              recommendedTrackTitle: t.title,
+                            });
+                          }
+                        }}
+                        className={`p-4 rounded-2xl border-2 transition-all cursor-pointer space-y-2 relative ${
+                          isSelected
+                            ? "border-[#1e3a8a] bg-blue-50/70 shadow-md ring-2 ring-[#1e3a8a]/20"
+                            : "border-slate-200 bg-white hover:border-[#1e3a8a]/50 hover:bg-slate-50"
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <div className={`p-2 rounded-xl bg-slate-100 ${t.color}`}>
+                              <IconComponent className="w-5 h-5" />
+                            </div>
+                            <span className="text-[10px] font-extrabold uppercase text-slate-400">
+                              {t.category}
+                            </span>
+                          </div>
+                          {isSelected && (
+                            <span className="px-2 py-0.5 rounded-full bg-[#1e3a8a] text-white text-[10px] font-bold">
+                              Selected
+                            </span>
+                          )}
+                        </div>
+
+                        <h4 className="text-sm font-bold text-slate-900 leading-snug">
+                          {t.title}
+                        </h4>
+                        <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed font-medium">
+                          {t.description}
+                        </p>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
 
-              {/* Weekly Action Roadmap */}
-              {aiRecommendation?.weeklyPlan && aiRecommendation.weeklyPlan.length > 0 && (
-                <div className="space-y-4 pt-2">
-                  <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
-                    <ListChecks className="w-5 h-5 text-[#1e3a8a]" />
-                  Customized Weekly Learning Roadmap
-                  </h3>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-                    {aiRecommendation.weeklyPlan.map((wp) => (
-                      <div
-                        key={wp.week}
-                        className="p-4 rounded-2xl border border-slate-200 bg-slate-50/80 space-y-2"
-                      >
-                        <div className="flex items-center justify-between">
-                          <span className="px-2.5 py-0.5 rounded-md bg-[#1e3a8a] text-white text-[10px] font-bold">
-                            WEEK {wp.week}
-                          </span>
-                        </div>
-                        <h4 className="text-xs font-bold text-slate-900">{wp.focus}</h4>
-                        <p className="text-[11px] text-slate-600 font-medium leading-normal">
-                          <span className="font-bold text-slate-800">Outcome:</span> {wp.deliverable}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
 
               {/* Final CTA Button */}
               <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-6 border-t border-slate-100">
@@ -934,10 +840,10 @@ export function OnboardingWizard() {
                   className="w-full sm:w-auto inline-flex items-center justify-center gap-3 px-8 py-4 rounded-xl bg-gradient-to-r from-[#1e3a8a] to-[#1d4ed8] hover:from-[#1d4ed8] hover:to-[#1e3a8a] text-white font-bold text-base shadow-lg shadow-[#1e3a8a]/30 transition-all cursor-pointer active:scale-[0.98] disabled:opacity-50"
                 >
                   {isSubmitting ? (
-                    <span>Creating Enrollment & Initializing Course...</span>
+                    <span>Please wait..</span>
                   ) : (
                     <>
-                      Enroll in AI Recommended Track
+                      Enroll in Course
                       <ArrowRight className="w-5 h-5" />
                     </>
                   )}

@@ -61,6 +61,8 @@ Keep questions extremely short, basic, and simple. Output ONLY valid JSON.`;
 
     const questions: GeneratedQuestion[] = parsed?.questions || [];
 
+    console.log("Generated questions:", questions);
+
     if (questions.length === 0) {
       throw new Error("OpenRouter AI returned an empty questions array.");
     }

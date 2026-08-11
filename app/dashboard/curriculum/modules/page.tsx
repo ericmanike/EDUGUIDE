@@ -30,7 +30,7 @@ export default function CurriculumModulesPage() {
   const [editingModule, setEditingModule] = useState<CourseModule | null>(null);
   const [form, setForm] = useState({
     title: "",
-    topic: "Spring Boot",
+    topic: "",
     description: "",
     durationMinutes: 120,
   });
@@ -86,7 +86,7 @@ export default function CurriculumModulesPage() {
       if (created) {
         toast.success("Module created successfully!");
         setShowModal(false);
-        setForm({ title: "", topic: "Spring Boot", description: "", durationMinutes: 120 });
+        setForm({ title: "", topic: "", description: "", durationMinutes: 120 });
         loadModules();
       } else {
         toast.error("Failed to create module.");
@@ -110,7 +110,7 @@ export default function CurriculumModulesPage() {
     setEditingModule(mod);
     setForm({
       title: mod.title,
-      topic: mod.topic || "Spring Boot",
+      topic: mod.topic || "",
       description: mod.description || "",
       durationMinutes: mod.durationMinutes || 60,
     });
@@ -144,7 +144,7 @@ export default function CurriculumModulesPage() {
           <button
             onClick={() => {
               setEditingModule(null);
-              setForm({ title: "", topic: "Spring Boot", description: "", durationMinutes: 120 });
+              setForm({ title: "", topic: "", description: "", durationMinutes: 120 });
               setShowModal(true);
             }}
             className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#1e3a8a] hover:bg-[#1d4ed8] text-white text-xs font-bold shadow-md shadow-[#1e3a8a]/20 transition-all cursor-pointer"

@@ -23,7 +23,7 @@ import {
   fetchActivityLogs,
   fetchSkills,
   fetchLearningPaths,
-  fetchUserLearningPaths,
+  fetchUserLearningPaths, 
   fetchPathModulesByPath,
   fetchUserModuleProgress,
   getCurrentUser,
@@ -151,7 +151,7 @@ export const SkillRadarChart: React.FC = () => {
           } else {
             const lps = await fetchLearningPaths();
             if (lps && lps.length > 0) {
-              const allSkills = Array.from(new Set(lps.flatMap((p) => p.skillsCovered || ["Spring Boot", "Next.js", "PostgreSQL"])));
+              const allSkills = Array.from(new Set(lps.flatMap((p) => p.skillsCovered || [])));
               const formatted = allSkills.slice(0, 5).map((sk: string, idx: number) => ({
                 name: sk,
                 value: Math.max(50, 85 - idx * 7),

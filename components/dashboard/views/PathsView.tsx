@@ -39,7 +39,7 @@ export const PathsView: React.FC = () => {
               estimatedHours: ap.estimatedHours || 40,
               totalModules: ap.totalModules || 10,
               completedModules: ap.completedModules || 0,
-              skillsCovered: ap.skillsCovered || ["Spring Boot", "REST API"],
+              skillsCovered: ap.skillsCovered || [],
               isActive: isCurrentlyActive,
             };
           });

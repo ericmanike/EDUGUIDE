@@ -58,7 +58,7 @@ export const ExplorerView: React.FC = () => {
               estimatedHours: ap.estimatedHours || 40,
               totalModules: ap.totalModules || 10,
               completedModules: ap.completedModules || 0,
-              skillsCovered: ap.skillsCovered || ["Spring Boot", "Next.js", "PostgreSQL", "REST API"],
+              skillsCovered: ap.skillsCovered || [],
               isActive: isCurrentlyActive,
             };
           });

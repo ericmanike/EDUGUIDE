@@ -41,6 +41,20 @@ export default function CoursePage({ params }: { params: Promise<{ id: string }>
   useEffect(() => {
     async function loadCourseContent() {
       setIsLoading(true);
+
+      // Restore cached lesson progress from localStorage immediately
+      const storageKey = `edtech_lesson_progress_${moduleId}`;
+      let cachedProgress: Record<string, "NOT_STARTED" | "IN_PROGRESS" | "COMPLETED"> = {};
+      if (typeof window !== "undefined") {
+        try {
+          const raw = localStorage.getItem(storageKey) || localStorage.getItem("edtech_global_lesson_progress");
+          if (raw) {
+            cachedProgress = JSON.parse(raw);
+            setProgressMap(cachedProgress);
+          }
+        } catch (e) {}
+      }
+
       try {
         const [allModules, moduleLessons] = await Promise.all([
           fetchModules(),
@@ -64,28 +78,35 @@ export default function CoursePage({ params }: { params: Promise<{ id: string }>
         }
 
         const currentUser = getCurrentUser();
-        if (currentUser?.id) {
-          const userProgressList = await fetchUserLessonProgressByModule(currentUser.id, moduleId);
-          const pMap: Record<string, "NOT_STARTED" | "IN_PROGRESS" | "COMPLETED"> = {};
-          if (userProgressList && userProgressList.length > 0) {
-            userProgressList.forEach((up: UserLessonProgress) => {
-              pMap[up.lessonId] = up.status;
-            });
-          }
+        const userId = currentUser?.id || "u-guest";
 
-          // Fetch individual lesson progress using GET /api/user-lesson-progress/user/{userId}/lesson/{lessonId}
-          if (moduleLessons && moduleLessons.length > 0) {
-            const individualProgresses = await Promise.all(
-              moduleLessons.map((lesson) => fetchUserLessonProgress(currentUser.id, lesson.id))
-            );
-            individualProgresses.forEach((prog) => {
-              if (prog && prog.lessonId) {
-                pMap[prog.lessonId] = prog.status;
-              }
-            });
-          }
+        const userProgressList = await fetchUserLessonProgressByModule(userId, moduleId);
+        const pMap: Record<string, "NOT_STARTED" | "IN_PROGRESS" | "COMPLETED"> = { ...cachedProgress };
 
-          setProgressMap(pMap);
+        if (userProgressList && userProgressList.length > 0) {
+          userProgressList.forEach((up: UserLessonProgress) => {
+            pMap[up.lessonId] = up.status;
+          });
+        }
+
+        // Fetch individual lesson progress using GET /api/user-lesson-progress/user/{userId}/lesson/{lessonId}
+        if (moduleLessons && moduleLessons.length > 0) {
+          const individualProgresses = await Promise.all(
+            moduleLessons.map((lesson) => fetchUserLessonProgress(userId, lesson.id))
+          );
+          individualProgresses.forEach((prog) => {
+            if (prog && prog.lessonId) {
+              pMap[prog.lessonId] = prog.status;
+            }
+          });
+        }
+
+        setProgressMap(pMap);
+
+        // Update local storage cache
+        if (typeof window !== "undefined") {
+          localStorage.setItem(storageKey, JSON.stringify(pMap));
+          localStorage.setItem("edtech_global_lesson_progress", JSON.stringify(pMap));
         }
       } catch (err) {
         console.error("Failed to load course page data:", err);
@@ -100,14 +121,17 @@ export default function CoursePage({ params }: { params: Promise<{ id: string }>
   const handleSelectLesson = async (lessonId: string) => {
     setActiveLessonId(lessonId);
     const currentUser = getCurrentUser();
-    if (currentUser?.id) {
-      const prog = await fetchUserLessonProgress(currentUser.id, lessonId);
-      if (prog) {
-        setProgressMap((prev) => ({
-          ...prev,
-          [lessonId]: prog.status,
-        }));
-      }
+    const userId = currentUser?.id || "u-guest";
+    const prog = await fetchUserLessonProgress(userId, lessonId);
+    if (prog) {
+      setProgressMap((prev) => {
+        const updated = { ...prev, [lessonId]: prog.status };
+        if (typeof window !== "undefined") {
+          localStorage.setItem(`edtech_lesson_progress_${moduleId}`, JSON.stringify(updated));
+          localStorage.setItem("edtech_global_lesson_progress", JSON.stringify(updated));
+        }
+        return updated;
+      });
     }
   };
 
@@ -115,24 +139,35 @@ export default function CoursePage({ params }: { params: Promise<{ id: string }>
     const currentStatus = progressMap[lessonId] || "NOT_STARTED";
     const nextStatus = currentStatus === "COMPLETED" ? "IN_PROGRESS" : "COMPLETED";
 
-    setProgressMap((prev) => ({ ...prev, [lessonId]: nextStatus }));
+    // 1. Immediately update local React state and persist to localStorage
+    const updatedMap = { ...progressMap, [lessonId]: nextStatus };
+    setProgressMap(updatedMap);
+    if (typeof window !== "undefined") {
+      localStorage.setItem(`edtech_lesson_progress_${moduleId}`, JSON.stringify(updatedMap));
+      localStorage.setItem("edtech_global_lesson_progress", JSON.stringify(updatedMap));
+    }
 
+    // 2. Persist to backend database via REST API
     const currentUser = getCurrentUser();
-    if (currentUser?.id) {
-      await upsertUserLessonProgress({
-        userId: currentUser.id,
-        lessonId,
-        status: nextStatus,
-      });
+    const userId = currentUser?.id || "u-guest";
 
-      // Refetch specific lesson progress via GET /api/user-lesson-progress/user/{userId}/lesson/{lessonId}
-      const updatedProg = await fetchUserLessonProgress(currentUser.id, lessonId);
-      if (updatedProg) {
-        setProgressMap((prev) => ({
-          ...prev,
-          [lessonId]: updatedProg.status,
-        }));
-      }
+    await upsertUserLessonProgress({
+      userId,
+      lessonId,
+      status: nextStatus,
+    });
+
+    // 3. Refetch specific lesson progress via GET /api/user-lesson-progress/user/{userId}/lesson/{lessonId}
+    const updatedProg = await fetchUserLessonProgress(userId, lessonId);
+    if (updatedProg) {
+      setProgressMap((prev) => {
+        const synced = { ...prev, [lessonId]: updatedProg.status };
+        if (typeof window !== "undefined") {
+          localStorage.setItem(`edtech_lesson_progress_${moduleId}`, JSON.stringify(synced));
+          localStorage.setItem("edtech_global_lesson_progress", JSON.stringify(synced));
+        }
+        return synced;
+      });
     }
   };
 
