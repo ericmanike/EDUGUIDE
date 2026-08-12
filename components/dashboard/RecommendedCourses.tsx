@@ -93,12 +93,11 @@ export const RecommendedCourses: React.FC<RecommendedCoursesProps> = ({
           }
 
           if (userPaths && userPaths.length > 0) {
-            // Step 2: For each enrolled path, fetch its modules
-            const enrolledPathIds = userPaths
-              .map((up) => up.path?.id || up.pathId)
-              .filter(Boolean) as string[];
+            // Find active path association first
+            const activeUserPath = userPaths.find((up) => up.isActive || up.active) || userPaths[0];
+            const activePathId = activeUserPath?.path?.id || activeUserPath?.pathId;
 
-            // Populate pathLevelMap from userPaths if nested path object is present
+            // Populate pathLevelMap from userPaths
             userPaths.forEach((up) => {
               const pId = up.path?.id || up.pathId;
               const pLvl = up.path?.level;
@@ -107,42 +106,84 @@ export const RecommendedCourses: React.FC<RecommendedCoursesProps> = ({
               }
             });
 
-            const pathModulesArrays = await Promise.all(
-              enrolledPathIds.map((pId) => fetchPathModulesByPath(pId))
-            );
+            // 1. Fetch modules for the active path
+            if (activePathId) {
+              const pMods = await fetchPathModulesByPath(activePathId);
+              if (pMods && pMods.length > 0) {
+                const activePathLevel = pathLevelMap[activePathId] || "";
+                const enrolledModuleMap = new Map<string, CourseModule>();
 
-            const enrolledModuleMap = new Map<string, CourseModule>();
-            pathModulesArrays.forEach((pMods, idx) => {
-              const parentPathId = enrolledPathIds[idx];
-              const parentLevel = pathLevelMap[parentPathId] || "";
+                pMods.forEach((pm) => {
+                  const mId = pm.module?.id || pm.moduleId;
+                  const pmLevel = pm.path?.level ? formatPathLevel(pm.path.level) : activePathLevel;
 
-              pMods?.forEach((pm) => {
-                const mId = pm.module?.id || pm.moduleId;
-                const pmLevel = pm.path?.level ? formatPathLevel(pm.path.level) : parentLevel;
+                  if (mId) {
+                    if (pmLevel) moduleLevelMap[mId] = pmLevel;
 
-                if (mId) {
-                  if (pmLevel) moduleLevelMap[mId] = pmLevel;
-
-                  if (pm.module?.id) {
-                    enrolledModuleMap.set(pm.module.id, {
-                      id: pm.module.id,
-                      title: pm.module.title,
-                      topic: pm.module.topic || "Core",
-                      description: pm.module.description || "",
-                      durationMinutes: pm.module.durationMinutes || 120,
-                    });
-                  } else if (pm.moduleId) {
-                    const matched = allModules.find((m) => m.id === pm.moduleId);
-                    if (matched) enrolledModuleMap.set(matched.id, matched);
+                    if (pm.module?.id) {
+                      enrolledModuleMap.set(pm.module.id, {
+                        id: pm.module.id,
+                        title: pm.module.title,
+                        topic: pm.module.topic || "Core",
+                        description: pm.module.description || "",
+                        durationMinutes: pm.module.durationMinutes || 120,
+                      });
+                    } else if (pm.moduleId) {
+                      const matched = allModules.find((m) => m.id === pm.moduleId);
+                      if (matched) enrolledModuleMap.set(matched.id, matched);
+                    }
                   }
-                }
-              });
-            });
+                });
 
-            if (enrolledModuleMap.size > 0) {
-              activeModules = Array.from(enrolledModuleMap.values());
-            } else {
-              activeModules = allModules;
+                if (enrolledModuleMap.size > 0) {
+                  activeModules = Array.from(enrolledModuleMap.values());
+                }
+              }
+            }
+
+            // 2. Fallback to all enrolled paths if active path has no mapped modules
+            if (activeModules.length === 0) {
+              const enrolledPathIds = userPaths
+                .map((up) => up.path?.id || up.pathId)
+                .filter(Boolean) as string[];
+
+              const pathModulesArrays = await Promise.all(
+                enrolledPathIds.map((pId) => fetchPathModulesByPath(pId))
+              );
+
+              const enrolledModuleMap = new Map<string, CourseModule>();
+              pathModulesArrays.forEach((pMods, idx) => {
+                const parentPathId = enrolledPathIds[idx];
+                const parentLevel = pathLevelMap[parentPathId] || "";
+
+                pMods?.forEach((pm) => {
+                  const mId = pm.module?.id || pm.moduleId;
+                  const pmLevel = pm.path?.level ? formatPathLevel(pm.path.level) : parentLevel;
+
+                  if (mId) {
+                    if (pmLevel) moduleLevelMap[mId] = pmLevel;
+
+                    if (pm.module?.id) {
+                      enrolledModuleMap.set(pm.module.id, {
+                        id: pm.module.id,
+                        title: pm.module.title,
+                        topic: pm.module.topic || "Core",
+                        description: pm.module.description || "",
+                        durationMinutes: pm.module.durationMinutes || 120,
+                      });
+                    } else if (pm.moduleId) {
+                      const matched = allModules.find((m) => m.id === pm.moduleId);
+                      if (matched) enrolledModuleMap.set(matched.id, matched);
+                    }
+                  }
+                });
+              });
+
+              if (enrolledModuleMap.size > 0) {
+                activeModules = Array.from(enrolledModuleMap.values());
+              } else {
+                activeModules = allModules;
+              }
             }
           } else {
             activeModules = allModules;

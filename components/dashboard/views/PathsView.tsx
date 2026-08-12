@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from "react";
 import { Badge } from "@/components/ui/Badge";
 import { LearningPathCard, LearningPathData } from "@/components/dashboard/LearningPathCard";
-import { PathProgressBarChart } from "@/components/dashboard/AnalyticsCharts";
 import { SlidersHorizontal } from "lucide-react";
 import { fetchLearningPaths, fetchUserLearningPaths, getCurrentUser, enrollInLearningPath, UserLearningPath } from "@/lib/api";
 import { DashboardSkeleton } from "@/components/dashboard/DashboardSkeleton";
@@ -85,20 +84,17 @@ export const PathsView: React.FC = () => {
         <div>
           <div className="flex items-center gap-2 mb-1">
             <Badge variant="indigo">
-              AI Recommender
+              Enrolled Courses
             </Badge>
           </div>
           <h1 className="text-2xl font-black text-slate-900 tracking-tight">
-            Recommended Learning Paths
+            Enrolled Courses
           </h1>
           <p className="text-xs text-slate-500 font-medium">
-            Personalized career roadmaps generated dynamically for your skill profile
+            Explore and continue your enrolled courses and learning tracks
           </p>
         </div>
       </div>
-
-      {/* Module Progress Comparison Chart */}
-      <PathProgressBarChart />
 
       {/* Filters Bar */}
       <div className="flex items-center justify-between bg-white p-3 rounded-2xl border border-slate-100 shadow-sm">

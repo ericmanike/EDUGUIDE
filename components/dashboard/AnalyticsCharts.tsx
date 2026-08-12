@@ -20,16 +20,12 @@ import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/Ca
 import { Badge } from "@/components/ui/Badge";
 import { TrendingUp, Award, PieChart as PieIcon } from "lucide-react";
 import {
-  fetchActivityLogs,
-  fetchSkills,
   fetchLearningPaths,
   fetchUserLearningPaths, 
   fetchPathModulesByPath,
   fetchUserModuleProgress,
   getCurrentUser,
   fetchModules,
-  ActivityLog,
-  Skill,
   LearningPath,
   UserLearningPath,
   UserModuleProgress,
@@ -41,11 +37,12 @@ export const WeeklyActivityChart: React.FC = () => {
   React.useEffect(() => {
     async function loadActivity() {
       try {
-        const logs = await fetchActivityLogs();
-        if (logs && logs.length > 0) {
-          const formatted = logs.slice(0, 7).map((l: ActivityLog) => ({
-            day: new Date(l.activityDate).toLocaleDateString("en-US", { weekday: "short" }),
-            hours: Number(l.hoursSpent) || 0,
+        const modules = await fetchModules();
+        if (modules && modules.length > 0) {
+          const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+          const formatted = days.map((day, idx) => ({
+            day,
+            hours: idx < modules.length ? Math.round((modules[idx]?.durationMinutes || 60) / 60) : 0,
           }));
           setData(formatted);
         } else {
@@ -60,7 +57,7 @@ export const WeeklyActivityChart: React.FC = () => {
           ]);
         }
       } catch (e) {
-        console.warn("Could not load activity logs:", e);
+        console.warn("Could not load activity chart:", e);
       }
     }
     loadActivity();
@@ -130,35 +127,24 @@ export const SkillRadarChart: React.FC = () => {
     async function loadSkills() {
       try {
         const colors = ["#1e3a8a", "#2563eb", "#fb923c", "#f97316", "#10b981", "#64748b"];
-        const liveSkills = await fetchSkills();
-
-        if (liveSkills && liveSkills.length > 0) {
-          const formatted = liveSkills.map((s: Skill, idx: number) => ({
-            name: s.name,
-            value: 85 - idx * 6,
+        const modules = await fetchModules();
+        if (modules && modules.length > 0) {
+          const formatted = modules.slice(0, 5).map((m, idx: number) => ({
+            name: m.topic || m.title,
+            value: Math.max(50, 85 - idx * 7),
             color: colors[idx % colors.length],
           }));
           setSkillsData(formatted);
         } else {
-          const modules = await fetchModules();
-          if (modules && modules.length > 0) {
-            const formatted = modules.slice(0, 5).map((m, idx: number) => ({
-              name: m.topic || m.title,
+          const lps = await fetchLearningPaths();
+          if (lps && lps.length > 0) {
+            const allSkills = Array.from(new Set(lps.flatMap((p) => p.skillsCovered || [])));
+            const formatted = allSkills.slice(0, 5).map((sk: string, idx: number) => ({
+              name: sk,
               value: Math.max(50, 85 - idx * 7),
               color: colors[idx % colors.length],
             }));
             setSkillsData(formatted);
-          } else {
-            const lps = await fetchLearningPaths();
-            if (lps && lps.length > 0) {
-              const allSkills = Array.from(new Set(lps.flatMap((p) => p.skillsCovered || [])));
-              const formatted = allSkills.slice(0, 5).map((sk: string, idx: number) => ({
-                name: sk,
-                value: Math.max(50, 85 - idx * 7),
-                color: colors[idx % colors.length],
-              }));
-              setSkillsData(formatted);
-            }
           }
         }
       } catch (e) {
@@ -255,23 +241,6 @@ export const PathProgressBarChart: React.FC = () => {
             });
           }
 
-          if (typeof window !== "undefined") {
-            try {
-              const activeEnrollmentRaw = localStorage.getItem("edtech_active_enrollment");
-              if (activeEnrollmentRaw) {
-                const activeObj = JSON.parse(activeEnrollmentRaw);
-                if (activeObj.pathId) enrolledPathIds.add(activeObj.pathId);
-              }
-              const userProgressRaw = localStorage.getItem("edtech_user_progress");
-              if (userProgressRaw) {
-                const progressMap = JSON.parse(userProgressRaw);
-                Object.keys(progressMap).forEach((pId) => {
-                  if (progressMap[pId]?.enrolled) enrolledPathIds.add(pId);
-                });
-              }
-            } catch (e) {}
-          }
-
           let enrolledLps = lps.filter((lp: LearningPath) => enrolledPathIds.has(lp.id));
 
           // Fallback if user has no explicit enrollments recorded yet: show first/active path
@@ -283,12 +252,12 @@ export const PathProgressBarChart: React.FC = () => {
           if (currentUser?.id) {
             try {
               userModuleProgress = await fetchUserModuleProgress(currentUser.id);
-            } catch (e) {}
+            } catch {}
           }
 
           const formatted = await Promise.all(
             enrolledLps.map(async (lp: LearningPath) => {
-              let totalModules = lp.totalModules || 10;
+              let totalModules = lp.totalModules || 6;
               let completedModules = lp.completedModules || 0;
 
               try {
@@ -302,12 +271,12 @@ export const PathProgressBarChart: React.FC = () => {
                     const completedCount = userModuleProgress.filter(
                       (ump) =>
                         pathModIds.has(ump.module?.id || ump.moduleId) &&
-                        (ump.progressPercentage === 100 || (ump as any).completedAt)
+                        (ump.progressPercentage === 100 || ump.status === "COMPLETED" || ump.completedAt)
                     ).length;
                     if (completedCount > 0) completedModules = completedCount;
                   }
                 }
-              } catch (e) {}
+              } catch {}
 
               let displayName = lp.title;
               if (displayName.length > 20) {

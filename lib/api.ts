@@ -79,28 +79,7 @@ export interface ModuleProgressStats {
   completionPercentage: number;
 }
 
-export interface Skill {
-  id: string;
-  name: string;
-  createdAt?: string;
-}
 
-export interface Transaction {
-  id: string;
-  userId: string;
-  amount: number;
-  type: "CREDIT" | "DEBIT";
-  description: string;
-  createdAt?: string;
-}
-
-export interface ActivityLog {
-  id: string;
-  userId: string;
-  activityDate: string;
-  hoursSpent: number;
-  createdAt?: string;
-}
 
 /**
  * Decode JWT token payload on the frontend without needing the secret key
@@ -259,50 +238,6 @@ export async function fetchModules(): Promise<CourseModule[]> {
   }
 }
 
-export async function fetchSkills(): Promise<Skill[]> {
-  try {
-    const res = await fetch(`${API_BASE_URL}/skills`, {
-      method: "GET",
-      headers: getAuthHeaders(),
-      cache: "no-store",
-    });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    return await res.json();
-  } catch (error) {
-    console.error("Failed to fetch skills from backend:", error);
-    return [];
-  }
-}
-
-export async function fetchTransactions(): Promise<Transaction[]> {
-  try {
-    const res = await fetch(`${API_BASE_URL}/transactions`, {
-      method: "GET",
-      headers: getAuthHeaders(),
-      cache: "no-store",
-    });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    return await res.json();
-  } catch (error) {
-    console.error("Failed to fetch transactions from backend:", error);
-    return [];
-  }
-}
-
-export async function fetchActivityLogs(): Promise<ActivityLog[]> {
-  try {
-    const res = await fetch(`${API_BASE_URL}/activity-logs`, {
-      method: "GET",
-      headers: getAuthHeaders(),
-      cache: "no-store",
-    });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    return await res.json();
-  } catch (error) {
-    console.error("Failed to fetch activity logs from backend:", error);
-    return [];
-  }
-}
 
 export async function loginUser(email: string, pass: string): Promise<User> {
   try {
@@ -1026,22 +961,6 @@ export async function fetchUserLearningPaths(userId: string): Promise<UserLearni
     let backendPaths: UserLearningPath[] = [];
     if (res.ok) {
       backendPaths = await res.json();
-    }
-
-    if (typeof window !== "undefined") {
-      const localEnrollmentRaw = localStorage.getItem("edtech_active_enrollment");
-      if (localEnrollmentRaw) {
-        const localObj = JSON.parse(localEnrollmentRaw);
-        if (localObj.pathId && !backendPaths.some((p) => p.pathId === localObj.pathId)) {
-          backendPaths.push({
-            userId: localObj.userId,
-            pathId: localObj.pathId,
-            isActive: true,
-            progressPercentage: localObj.progressPercentage || 0,
-            createdAt: localObj.enrolledAt,
-          });
-        }
-      }
     }
 
     return backendPaths;

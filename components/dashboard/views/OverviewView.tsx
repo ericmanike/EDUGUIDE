@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from "react";
 import { StatCard } from "@/components/ui/StatCard";
-import { PathVisualizer } from "@/components/dashboard/PathVisualizer";
 import {
   LearningPathCard,
   LearningPathData,
@@ -126,8 +125,8 @@ export const OverviewView: React.FC = () => {
                 Welcome back, {userName}!
               </Badge>
             </div>
-            <h1 className="text-2xl md:text-3xl font-black text-white tracking-tight">
-              Student Learning Dashboard
+            <h1 suppressHydrationWarning className="text-1xl md:text-2xl font-black text-white tracking-tight">
+              It&apos;s {new Date().toLocaleDateString("en-US", { weekday: "long",year: "numeric",  month: "short", day: "numeric" })}
             </h1>
             <p className="text-xs md:text-sm text-slate-300 max-w-2xl leading-relaxed">
             <span className="text-blue-300 font-bold">{activeTitle}</span>.
@@ -140,19 +139,19 @@ export const OverviewView: React.FC = () => {
       {/* Key Metrics / Stat Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <StatCard
-          title="Active Path"
-          value={activeTitle || (paths.length > 0 ? paths[0].title : "No Active Path")}
+          title="Active Course"
+          value={activeTitle || (paths.length > 0 ? paths[0].title : "No Active Course")}
           icon={<Route className="w-4 h-4 text-[#1e3a8a]" />}
           variant="white"
         />
         <StatCard
-          title="Path Progress"
+          title="Course Progress"
           value={calculatedProgress}
           icon={<Award className="w-4 h-4 text-[#1e3a8a]" />}
           variant="white"
         />
         <StatCard
-          title="Skill Mastery"
+          title=" Active Modules"
           value={calculatedMastery}
           icon={<Sparkles className="w-4 h-4 text-[#1e3a8a]" />}
           variant="white"
@@ -164,11 +163,7 @@ export const OverviewView: React.FC = () => {
         <WeeklyActivityChart />
       </section>
 
-      {/* Learning Path Visualizer */}
-      <section id="interactive-roadmap" className="space-y-3 scroll-mt-20">
-        <PathVisualizer activePath={activePath} />
-      </section>
-
+    
       {/* Recommended Learning Paths Section */}
       <section className="space-y-4">
         <div className="flex items-center justify-between">

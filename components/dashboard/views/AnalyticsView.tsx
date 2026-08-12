@@ -9,7 +9,7 @@ import {
 import { StatCard } from "@/components/ui/StatCard";
 import { Badge } from "@/components/ui/Badge";
 import { TrendingUp, Clock, Award, Target, Flame } from "lucide-react";
-import { fetchActivityLogs, fetchLearningPaths, fetchModules, ActivityLog, LearningPath, CourseModule } from "@/lib/api";
+import { fetchLearningPaths, fetchModules, LearningPath } from "@/lib/api";
 
 export const AnalyticsView: React.FC = () => {
   const [streakDays, setStreakDays] = useState<number>(0);
@@ -20,18 +20,10 @@ export const AnalyticsView: React.FC = () => {
   useEffect(() => {
     async function loadAnalytics() {
       try {
-        const [logs, paths, modules] = await Promise.all([
-          fetchActivityLogs(),
+        const [paths, modules] = await Promise.all([
           fetchLearningPaths(),
           fetchModules(),
         ]);
-
-        if (logs && logs.length > 0) {
-          const activeDays = logs.filter((l: ActivityLog) => Number(l.hoursSpent) > 0).length;
-          setStreakDays(activeDays || logs.length);
-          const totalHours = logs.reduce((sum: number, l: ActivityLog) => sum + (Number(l.hoursSpent) || 0), 0);
-          setWeeklyHours(Math.round(totalHours));
-        }
 
         if (paths && paths.length > 0) {
           const completedCount = paths.reduce((sum: number, p: LearningPath) => sum + (p.completedModules || 0), 0);
@@ -43,6 +35,12 @@ export const AnalyticsView: React.FC = () => {
           else setMasteryRank("Active Scholar");
         } else if (modules && modules.length > 0) {
           setVelocity(`${modules.length} Modules`);
+        }
+
+        if (modules && modules.length > 0) {
+          setStreakDays(modules.length);
+          const totalMins = modules.reduce((sum, m) => sum + (m.durationMinutes || 60), 0);
+          setWeeklyHours(Math.round(totalMins / 60));
         }
       } catch (err) {
         console.warn("Could not load analytics metrics:", err);
