@@ -26,13 +26,13 @@ export default function OnboardingPage() {
           </div>
         </Link>
 
-        <div className="text-xs font-semibold text-slate-500 hidden sm:flex items-center gap-1.5">
-          <HelpCircle className="w-4 h-4 text-[#1e3a8a]" />
-          <span>Need help?</span>
-          <a href="mailto:support@skillsbank.edtech" className="text-[#1e3a8a] hover:underline font-bold">
-            Contact Support
-          </a>
-        </div>
+        <a
+          href="mailto:support@skillsbank.edtech"
+          className="hidden sm:flex items-center justify-center text-[#1e3a8a] hover:opacity-80 transition-opacity"
+          title="Contact Support"
+        >
+          <HelpCircle className="w-5 h-5" />
+        </a>
       </header>
 
       {/* Main Wizard */}

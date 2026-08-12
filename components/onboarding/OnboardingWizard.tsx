@@ -396,7 +396,7 @@ export function OnboardingWizard() {
       <div className="w-full max-w-5xl mx-auto px-4 py-24 flex flex-col items-center justify-center gap-4">
         <ToastContainer position="top-right" autoClose={3000} />
         <Loader2 className="w-10 h-10 text-[#1e3a8a] animate-spin" />
-        <p className="text-sm font-bold text-slate-700">Loading available learning paths...</p>
+        <p className="text-sm font-bold text-slate-700">Welcome to skillsBank. please wait </p>
       </div>
     );
   }
@@ -424,10 +424,8 @@ export function OnboardingWizard() {
 
       {/* Header & Stepper */}
       <div className="text-center space-y-3 mb-10">
-        <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
-          Onboarding  Assessment 
-        </h1>
-
+      
+<h2 className="text-2xl font-bold text-slate-800">Kindly Answer These Questions To Get Started</h2>
         {/* Step Progress Bar */}
         <div className="pt-6 max-w-xl mx-auto">
           <div className="flex items-center justify-between relative mb-2">
@@ -486,9 +484,6 @@ export function OnboardingWizard() {
                   Step 1: Onboarding  Assessment
                 </h2>
               </div>
-              <p className="text-sm text-slate-500 mt-1">
-                Answer these quick questions. We will evaluate your answers and recommend the most suitable learning course for you.
-              </p>
             </div>
           </div>
 
@@ -497,7 +492,7 @@ export function OnboardingWizard() {
             <div className="py-16 text-center space-y-4">
               <Loader2 className="w-10 h-10 text-[#1e3a8a] animate-spin mx-auto" />
               <p className="text-sm font-bold text-slate-700">
-                Generating your 10-question diagnostic assessment...
+               Please wait while we Generate your  diagnostic assessment...
               </p>
             </div>
           ) : assessmentError ? (
@@ -606,7 +601,7 @@ export function OnboardingWizard() {
                 <div className="relative z-10 space-y-6">
                   <div className="flex flex-wrap items-center justify-end gap-4">
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-semibold text-slate-300">Placement Match Confidence:</span>
+                      <span className="text-xs font-semibold text-slate-300">Recommendation Confidence:</span>
                       <span className="px-3 py-1 bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 font-extrabold text-sm rounded-lg">
                         {aiRecommendation.matchScorePercent}% Confidence
                       </span>
@@ -615,7 +610,7 @@ export function OnboardingWizard() {
 
                   <div>
                     <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
-                      Recommended Courses Base on Your Response
+                      Your Personalized Learning Pathway
                     </h2>
                   </div>
 
@@ -628,7 +623,7 @@ export function OnboardingWizard() {
                       </p>
                     </div>
                     <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/10">
-                      <p className="text-[11px] font-semibold text-slate-300 uppercase">Starting Placement</p>
+                      <p className="text-[11px] font-semibold text-slate-300 uppercase">Level</p>
                       <p className="text-base font-bold text-amber-300 mt-1">
                         {aiRecommendation.recommendedLevelTier}
                       </p>
@@ -715,7 +710,14 @@ export function OnboardingWizard() {
               {/* Final CTA Button */}
               <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-6 border-t border-slate-100">
                 <button
-                  onClick={handlePrevStep}
+                  onClick={
+                    (e) => {
+                       window.location.reload()
+                      handlePrevStep();
+                     ;
+                    }
+                    
+                  }
                   className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-100 font-bold text-xs transition-all cursor-pointer"
                 >
                   <ArrowLeft className="w-4 h-4" />
