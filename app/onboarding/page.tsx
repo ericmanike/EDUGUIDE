@@ -10,7 +10,7 @@ export const metadata = {
 
 export default function OnboardingPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-blue-50/30 flex flex-col justify-between font-sans">
+    <div className="min-h-screen bg-white flex flex-col justify-between font-sans">
       {/* Top Header Navbar */}
       <header className="w-full bg-white/80 backdrop-blur-md border-b border-slate-100 px-6 py-4 flex items-center justify-between sticky top-0 z-30">
         <Link href="/" className="flex items-center gap-3 hover:opacity-90 transition-opacity">
