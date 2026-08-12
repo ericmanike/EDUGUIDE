@@ -362,6 +362,7 @@ export interface UserModuleProgress {
   progressPercentage: number;
   completedAt?: string | null;
   lastAccessedAt?: string;
+  status?: string;
 }
 
 export async function createLearningPath(pathData: {

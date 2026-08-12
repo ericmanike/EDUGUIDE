@@ -1,5 +1,5 @@
 import React from "react";
-import { GraduationCap } from "lucide-react";
+import { GraduationCap, HelpCircle } from "lucide-react";
 import Link from "next/link";
 import { OnboardingWizard } from "@/components/onboarding/OnboardingWizard";
 
@@ -26,8 +26,12 @@ export default function OnboardingPage() {
           </div>
         </Link>
 
-        <div className="text-xs font-semibold text-slate-500 hidden sm:block">
-          Need help? <a href="mailto:support@skillsbank.edtech" className="text-[#1e3a8a] hover:underline font-bold">Contact Support</a>
+        <div className="text-xs font-semibold text-slate-500 hidden sm:flex items-center gap-1.5">
+          <HelpCircle className="w-4 h-4 text-[#1e3a8a]" />
+          <span>Need help?</span>
+          <a href="mailto:support@skillsbank.edtech" className="text-[#1e3a8a] hover:underline font-bold">
+            Contact Support
+          </a>
         </div>
       </header>
 

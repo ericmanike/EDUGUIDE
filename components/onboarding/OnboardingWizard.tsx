@@ -33,6 +33,7 @@ import {
   ListChecks,
   Split,
   ChevronRight,
+  AlertTriangle,
 } from "lucide-react";
 import { AIRecommendationResult } from "@/app/api/onboarding/recommend-skills/route";
 import { fetchLearningPaths, LearningPath, enrollInLearningPath } from "@/lib/api";
@@ -74,77 +75,6 @@ export interface DiagnosticQuestion {
     nextBranch?: "foundational" | "advanced";
   }>;
 }
-
-const DEFAULT_TRACKS: TrackOption[] = [
-  {
-    id: "web-dev",
-    title: "Full-Stack Web Development Track",
-    category: "Software Engineering",
-    description: "Master modern React, Next.js, Node.js, databases, and enterprise architecture.",
-    icon: Code2,
-    popular: true,
-    color: "text-blue-600",
-    bgLight: "bg-blue-50/80",
-    borderAccent: "border-blue-500",
-    skills: ["React & Next.js", "TypeScript", "Node.js & APIs", "SQL & Postgres"],
-  },
-  {
-    id: "ai-data",
-    title: "AI & Data Science Track",
-    category: "Artificial Intelligence",
-    description: "Build Machine Learning models, Neural Networks, Python analytics & LLM pipelines.",
-    icon: BrainCircuit,
-    popular: true,
-    color: "text-[#1e3a8a]",
-    bgLight: "bg-blue-50/80",
-    borderAccent: "border-[#1e3a8a]",
-    skills: ["Python & PyTorch", "Data Wrangling", "Machine Learning", "LLM Fine-Tuning"],
-  },
-  {
-    id: "cloud-devops",
-    title: "Cloud Architecture & DevOps Track",
-    category: "Infrastructure",
-    description: "Deploy scalable microservices with Docker, Kubernetes, AWS, and CI/CD pipelines.",
-    icon: Cloud,
-    color: "text-sky-600",
-    bgLight: "bg-sky-50/80",
-    borderAccent: "border-sky-500",
-    skills: ["Docker & Kubernetes", "AWS & Terraform", "CI/CD Pipelines", "System Design"],
-  },
-  {
-    id: "mobile-dev",
-    title: "Mobile App Development Track",
-    category: "Cross-Platform",
-    description: "Craft performant iOS & Android mobile applications using React Native & Flutter.",
-    icon: Smartphone,
-    color: "text-emerald-600",
-    bgLight: "bg-emerald-50/80",
-    borderAccent: "border-emerald-500",
-    skills: ["React Native", "iOS & Android", "State Management", "Mobile APIs"],
-  },
-  {
-    id: "cybersecurity",
-    title: "Cybersecurity & Ethical Hacking Track",
-    category: "Security",
-    description: "Learn penetration testing, network defense, cryptography, and cloud auditing.",
-    icon: ShieldCheck,
-    color: "text-amber-600",
-    bgLight: "bg-amber-50/80",
-    borderAccent: "border-amber-500",
-    skills: ["Network Defense", "Penetration Testing", "Cryptography", "Security Compliance"],
-  },
-  {
-    id: "uiux-design",
-    title: "UI/UX & Product Design Track",
-    category: "Design & Product",
-    description: "Design intuitive user interfaces, user research, wireframing, and Figma design systems.",
-    icon: Palette,
-    color: "text-pink-600",
-    bgLight: "bg-pink-50/80",
-    borderAccent: "border-pink-500",
-    skills: ["Figma Systems", "User Research", "Wireframing", "Interactive Prototypes"],
-  },
-];
 
 function mapLearningPathToTrack(lp: LearningPath): TrackOption {
   const lowerTitle = lp.title.toLowerCase();
@@ -189,70 +119,6 @@ function mapLearningPathToTrack(lp: LearningPath): TrackOption {
   };
 }
 
-// Short 1 to 2 line questions with Gatekeeper Adaptive Branching
-const DEFAULT_DIAGNOSTIC_QUESTIONS: DiagnosticQuestion[] = [
-  {
-    id: "q1",
-    question: "Have you written code, scripts, or built applications before?",
-    category: "gatekeeper",
-    targetSkill: "Gatekeeper Baseline",
-    options: [
-      { label: "No prior coding experience", score: 1, nextBranch: "foundational" },
-      { label: "Written basic scripts or completed tutorials", score: 2, nextBranch: "foundational" },
-      { label: "Built functional projects independently", score: 4, nextBranch: "advanced" },
-      { label: "Work professionally as a software engineer", score: 5, nextBranch: "advanced" },
-    ],
-  },
-  {
-    id: "q2_foundational",
-    question: "How do you store and loop through lists of data in code?",
-    category: "foundational",
-    targetSkill: "Programming Basics",
-    options: [
-      { label: "Unfamiliar with loops or data arrays", score: 1 },
-      { label: "Use basic for-loops & list iteration", score: 2 },
-      { label: "Use array transformation methods (map/filter)", score: 4 },
-      { label: "Optimize data structure complexity & memory", score: 5 },
-    ],
-  },
-  {
-    id: "q2_advanced",
-    question: "How do you handle REST APIs, HTTP requests, and state in apps?",
-    category: "advanced",
-    targetSkill: "APIs & State Management",
-    options: [
-      { label: "Haven't built or connected APIs yet", score: 1 },
-      { label: "Fetch REST endpoints in UI components", score: 2 },
-      { label: "Manage global state (Redux/Zustand) & caching", score: 4 },
-      { label: "Architect microservices, GraphQL, or RPC pipelines", score: 5 },
-    ],
-  },
-  {
-    id: "q3",
-    question: "What is your experience working with databases (SQL or NoSQL)?",
-    category: "foundational",
-    targetSkill: "Databases & Persistence",
-    options: [
-      { label: "Never created or queried databases", score: 1 },
-      { label: "Write basic SELECT and INSERT queries", score: 2 },
-      { label: "Design tables, JOINs, ORMs, and migrations", score: 4 },
-      { label: "Optimize query indexing, sharding, & performance", score: 5 },
-    ],
-  },
-  {
-    id: "q4",
-    question: "How do you test code and deploy applications to production?",
-    category: "advanced",
-    targetSkill: "Testing & Deployment",
-    options: [
-      { label: "Manual click-testing in browser or console", score: 1 },
-      { label: "Write basic unit tests occasionally", score: 2 },
-      { label: "Implement automated test suites (Jest/Vitest)", score: 4 },
-      { label: "Maintain CI/CD automated deployment pipelines", score: 5 },
-    ],
-  },
-];
-
 const LEARNING_STYLE_OPTIONS = [
   { id: "projects", label: "Hands-on Interactive Projects", icon: Code2, desc: "Learn by building real software" },
   { id: "challenges", label: "Algorithmic Challenges & Quizzes", icon: Target, desc: "Test knowledge with active recall" },
@@ -264,33 +130,47 @@ export function OnboardingWizard() {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(1);
 
-  // Dynamic Learning Paths State
-  const [tracks, setTracks] = useState<TrackOption[]>(DEFAULT_TRACKS);
+  // Dynamic Learning Paths State (always sourced live from the backend catalog)
+  const [tracks, setTracks] = useState<TrackOption[]>([]);
   const [isLoadingPaths, setIsLoadingPaths] = useState<boolean>(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   // Form states
-  const [selectedTrack, setSelectedTrack] = useState<string>("web-dev");
-  const [diagnosticQuestions, setDiagnosticQuestions] = useState<DiagnosticQuestion[]>(DEFAULT_DIAGNOSTIC_QUESTIONS);
+  const [selectedTrack, setSelectedTrack] = useState<string>("");
+  const [diagnosticQuestions, setDiagnosticQuestions] = useState<DiagnosticQuestion[]>([]);
   const [isGeneratingQuestions, setIsGeneratingQuestions] = useState(false);
+  const [assessmentError, setAssessmentError] = useState<string | null>(null);
 
-  // Fetch available learning paths dynamically from backend API on mount
-  useEffect(() => {
-    async function loadBackendPaths() {
-      setIsLoadingPaths(true);
-      try {
-        const backendPaths = await fetchLearningPaths();
-        if (backendPaths && backendPaths.length > 0) {
-          const mappedTracks = backendPaths.map(mapLearningPathToTrack);
-          setTracks(mappedTracks);
-          setSelectedTrack(mappedTracks[0].id);
-        }
-      } catch (err) {
-        console.warn("Could not fetch learning paths from backend, using default catalog:", err);
-      } finally {
-        setIsLoadingPaths(false);
+  // Fetch the full live learning-path catalog, then generate the 10-question
+  // AI diagnostic assessment spanning all of those tracks. No mock/fallback data.
+  const loadLearningPathsAndAssessment = async () => {
+    setIsLoadingPaths(true);
+    setLoadError(null);
+    try {
+      const backendPaths = await fetchLearningPaths();
+      if (!backendPaths || backendPaths.length === 0) {
+        setTracks([]);
+        setLoadError("No learning paths are currently available from the server. Please try again later.");
+        return;
       }
+      const mappedTracks = backendPaths.map(mapLearningPathToTrack);
+      setTracks(mappedTracks);
+      setSelectedTrack(mappedTracks[0].id);
+      setIsLoadingPaths(false);
+      await fetchAIGeneratedAssessment(mappedTracks);
+      return;
+    } catch (err) {
+      console.error("Failed to load learning paths from backend:", err);
+      setTracks([]);
+      setLoadError("Failed to load learning paths from the server. Please try again.");
+    } finally {
+      setIsLoadingPaths(false);
     }
-    loadBackendPaths();
+  };
+
+  useEffect(() => {
+    loadLearningPathsAndAssessment();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Adaptive Question State (1 question at a time)
@@ -307,6 +187,7 @@ export function OnboardingWizard() {
   const [aiRecommendation, setAiRecommendation] = useState<AIRecommendationResult | null>(null);
   const [isGeneratingRecommendation, setIsGeneratingRecommendation] = useState(false);
   const [loadingStepText, setLoadingStepText] = useState("Sending responses to OpenRouter AI...");
+  const [recommendationError, setRecommendationError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Compute Diagnostic Score & Recommended Level
@@ -321,34 +202,43 @@ export function OnboardingWizard() {
     return "ADVANCED";
   };
 
-  const activeTrackDetails = tracks.find((t) => t.id === selectedTrack) || tracks[0] || DEFAULT_TRACKS[0];
+  const activeTrackDetails = tracks.find((t) => t.id === selectedTrack) || tracks[0];
 
-  // Fetch AI generated adaptive diagnostic questions based on selected Learning Path track
-  const fetchAIGeneratedAssessment = async (track: TrackOption) => {
+  // Fetch AI generated adaptive diagnostic questions (10 questions) spanning the full live track catalog
+  const fetchAIGeneratedAssessment = async (availableTracks: TrackOption[]) => {
     setIsGeneratingQuestions(true);
+    setAssessmentError(null);
     try {
       const res = await fetch("/api/onboarding/generate-assessment", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          trackTitle: track.title,
-          trackDescription: track.description,
-          skills: track.skills,
-          level: getRecommendedLevel(),
+          availableTracks: availableTracks.map((t) => ({
+            id: t.id,
+            title: t.title,
+            category: t.category,
+            description: t.description,
+            skills: t.skills,
+          })),
         }),
       });
 
       const data = await res.json();
-      if (data.success && Array.isArray(data.questions) && data.questions.length > 0) {
-        setDiagnosticQuestions(data.questions);
-        setActiveQuestionIndex(0);
-        setAnsweredCount(0);
-        setPlacementConfidence(50);
-        setDiagnosticAnswers({});
-        setCurrentBranch("gatekeeper");
+      console.log("AI Assessment Data:", data);
+      
+      if (!res.ok || !data.success || !Array.isArray(data.questions) || data.questions.length === 0) {
+        throw new Error(data.error || "The AI did not return any diagnostic questions.");
       }
-    } catch (err) {
-      console.warn("Failed to generate AI assessment questions:", err);
+
+      setDiagnosticQuestions(data.questions);
+      setActiveQuestionIndex(0);
+      setAnsweredCount(0);
+      setPlacementConfidence(50);
+      setDiagnosticAnswers({});
+      setCurrentBranch("gatekeeper");
+    } catch (err: any) {
+      console.error("Failed to generate AI assessment questions:", err);
+      setAssessmentError(err.message || "Failed to generate the diagnostic assessment. Please try again.");
     } finally {
       setIsGeneratingQuestions(false);
     }
@@ -362,7 +252,7 @@ export function OnboardingWizard() {
     setAnsweredCount(newAnsweredCount);
 
     // 2. Increase placement confidence
-    const nextConfidence = Math.min(98, 50 + newAnsweredCount * 15 + (opt.score >= 4 ? 8 : 4));
+    const nextConfidence = Math.min(98, 50 + newAnsweredCount * 5);
     setPlacementConfidence(nextConfidence);
 
     // 3. Branching logic
@@ -370,9 +260,10 @@ export function OnboardingWizard() {
       setCurrentBranch(opt.nextBranch);
     }
 
-    // 4. Advance to next question or trigger early stopping once placement confidence > 85% or reached end
-    if (newAnsweredCount >= 4 || nextConfidence >= 88 || activeQuestionIndex >= diagnosticQuestions.length - 1) {
-      toast.success("Placement placement confidence high! Calibration complete.");
+    // 4. Advance to next question, or move to recommendations once all questions are answered
+    const isLastQuestion = activeQuestionIndex >= diagnosticQuestions.length - 1;
+    if (isLastQuestion) {
+      toast.success("Assessment complete! Analyzing your responses...");
       // Auto move to step 2 recommendations after brief delay
       setTimeout(async () => {
         setCurrentStep(2);
@@ -387,7 +278,8 @@ export function OnboardingWizard() {
   // Generate AI Skill Recommendations & Track Matching using OpenRouter API
   const generateAISkillRecommendations = async () => {
     setIsGeneratingRecommendation(true);
-    setLoadingStepText(" matching optimal learning path...");
+    setRecommendationError(null);
+    setLoadingStepText("Matching optimal learning path...");
 
     setTimeout(() => {
       setLoadingStepText("Evaluating skill gap matrix & mastery baseline...");
@@ -407,7 +299,7 @@ export function OnboardingWizard() {
           skills: t.skills,
         })),
         selectedTrackId: selectedTrack,
-        selectedTrackTitle: activeTrackDetails.title,
+        selectedTrackTitle: activeTrackDetails?.title,
         skillLevel: getRecommendedLevel(),
         diagnosticAnswers,
         weeklyHours,
@@ -423,27 +315,23 @@ export function OnboardingWizard() {
       });
 
       const data = await res.json();
-      if (data.success && data.recommendation) {
-        setAiRecommendation(data.recommendation);
-        if (data.recommendation.recommendedTrackId) {
-          setSelectedTrack(data.recommendation.recommendedTrackId);
-        }
-        if (typeof window !== "undefined") {
-          localStorage.setItem("edtech_ai_recommendations", JSON.stringify(data.recommendation));
-        }
+      if (!res.ok || !data.success || !data.recommendation) {
+        throw new Error(data.error || "The AI did not return a course recommendation.");
       }
-    } catch (error) {
+
+      setAiRecommendation(data.recommendation);
+      if (data.recommendation.recommendedTrackId) {
+        setSelectedTrack(data.recommendation.recommendedTrackId);
+      }
+      if (typeof window !== "undefined") {
+        localStorage.setItem("edtech_ai_recommendations", JSON.stringify(data.recommendation));
+      }
+    } catch (error: any) {
       console.error("Failed to generate AI skill recommendations:", error);
+      setAiRecommendation(null);
+      setRecommendationError(error.message || "Failed to generate your course recommendation. Please try again.");
     } finally {
       setIsGeneratingRecommendation(false);
-    }
-  };
-
-  const handleNextStep = async () => {
-    if (currentStep === 1) {
-      setCurrentStep(2);
-      window.scrollTo({ top: 0, behavior: "smooth" });
-      await generateAISkillRecommendations();
     }
   };
 
@@ -461,15 +349,16 @@ export function OnboardingWizard() {
   };
 
   const handleFinishOnboarding = async () => {
+    if (!aiRecommendation) return;
     setIsSubmitting(true);
 
-    const finalTrackId = aiRecommendation?.recommendedTrackId || selectedTrack || "web-dev";
+    const finalTrackId = aiRecommendation.recommendedTrackId || selectedTrack;
     const matchedTrack = tracks.find((t) => t.id === finalTrackId) || activeTrackDetails;
-    const finalTrackTitle = aiRecommendation?.recommendedTrackTitle || matchedTrack.title;
-    const finalLevel = aiRecommendation?.recommendedLevelTier || getRecommendedLevel();
+    const finalTrackTitle = aiRecommendation.recommendedTrackTitle || matchedTrack?.title || "";
+    const finalLevel = aiRecommendation.recommendedLevelTier;
 
-    const trackNameWithLevel = finalTrackTitle.includes("(") 
-      ? finalTrackTitle 
+    const trackNameWithLevel = finalTrackTitle.includes("(")
+      ? finalTrackTitle
       : `${finalTrackTitle} (${finalLevel})`;
 
     const onboardingSummary: OnboardingData = {
@@ -501,6 +390,34 @@ export function OnboardingWizard() {
 
   const currentQuestion = diagnosticQuestions[activeQuestionIndex] || diagnosticQuestions[0];
 
+  // No learning paths loaded yet, or the live catalog fetch failed — never fall back to mock tracks.
+  if (isLoadingPaths) {
+    return (
+      <div className="w-full max-w-5xl mx-auto px-4 py-24 flex flex-col items-center justify-center gap-4">
+        <ToastContainer position="top-right" autoClose={3000} />
+        <Loader2 className="w-10 h-10 text-[#1e3a8a] animate-spin" />
+        <p className="text-sm font-bold text-slate-700">Loading available learning paths...</p>
+      </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <div className="w-full max-w-2xl mx-auto px-4 py-24 flex flex-col items-center justify-center gap-4 text-center">
+        <ToastContainer position="top-right" autoClose={3000} />
+        <AlertTriangle className="w-10 h-10 text-red-500" />
+        <p className="text-sm font-bold text-slate-700">{loadError}</p>
+        <button
+          onClick={loadLearningPathsAndAssessment}
+          className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-[#1e3a8a] hover:bg-[#1d4ed8] text-white font-bold text-xs shadow-md transition-all cursor-pointer"
+        >
+          <RefreshCw className="w-4 h-4" />
+          Try Again
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className="w-full max-w-5xl mx-auto px-4 py-8 sm:py-12 font-sans">
       <ToastContainer position="top-right" autoClose={3000} />
@@ -508,7 +425,7 @@ export function OnboardingWizard() {
       {/* Header & Stepper */}
       <div className="text-center space-y-3 mb-10">
         <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
-           Assessment 
+          Onboarding  Assessment 
         </h1>
 
         {/* Step Progress Bar */}
@@ -580,8 +497,20 @@ export function OnboardingWizard() {
             <div className="py-16 text-center space-y-4">
               <Loader2 className="w-10 h-10 text-[#1e3a8a] animate-spin mx-auto" />
               <p className="text-sm font-bold text-slate-700">
-                Calibrating diagnostic placement questions...
+                Generating your 10-question diagnostic assessment...
               </p>
+            </div>
+          ) : assessmentError ? (
+            <div className="py-16 text-center space-y-4">
+              <AlertTriangle className="w-10 h-10 text-red-500 mx-auto" />
+              <p className="text-sm font-bold text-slate-700">{assessmentError}</p>
+              <button
+                onClick={() => fetchAIGeneratedAssessment(tracks)}
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-[#1e3a8a] hover:bg-[#1d4ed8] text-white font-bold text-xs shadow-md transition-all cursor-pointer mx-auto"
+              >
+                <RefreshCw className="w-4 h-4" />
+                Try Again
+              </button>
             </div>
           ) : currentQuestion ? (
             <div className="max-w-3xl mx-auto space-y-6">
@@ -644,21 +573,6 @@ export function OnboardingWizard() {
               </div>
             </div>
           ) : null}
-
-          {/* Action buttons */}
-          <div className="flex items-center justify-end pt-6 border-t border-slate-100">
-            <button
-              onClick={async () => {
-                setCurrentStep(2);
-                window.scrollTo({ top: 0, behavior: "smooth" });
-                await generateAISkillRecommendations();
-              }}
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-[#1e3a8a] hover:bg-[#1d4ed8] text-white font-bold text-xs shadow-md transition-all cursor-pointer"
-            >
-              Analyze & Recommend
-              <ArrowRight className="w-4 h-4" />
-            </button>
-          </div>
         </div>
       )}
 
@@ -669,7 +583,19 @@ export function OnboardingWizard() {
             <div className="py-20 flex justify-center">
               <LogoSpinner size="lg" text={loadingStepText || "Generating AI Skill Recommendations..."} />
             </div>
-          ) : (
+          ) : recommendationError ? (
+            <div className="py-20 text-center space-y-4">
+              <AlertTriangle className="w-10 h-10 text-red-500 mx-auto" />
+              <p className="text-sm font-bold text-slate-700">{recommendationError}</p>
+              <button
+                onClick={generateAISkillRecommendations}
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-[#1e3a8a] hover:bg-[#1d4ed8] text-white font-bold text-xs shadow-md transition-all cursor-pointer mx-auto"
+              >
+                <RefreshCw className="w-4 h-4" />
+                Try Again
+              </button>
+            </div>
+          ) : aiRecommendation ? (
             <>
               {/* Header Hero Banner */}
               <div className="bg-gradient-to-r from-slate-900 via-[#1e3a8a] to-slate-900 text-white rounded-3xl p-6 sm:p-8 shadow-2xl relative overflow-hidden">
@@ -682,7 +608,7 @@ export function OnboardingWizard() {
                     <div className="flex items-center gap-2">
                       <span className="text-xs font-semibold text-slate-300">Placement Match Confidence:</span>
                       <span className="px-3 py-1 bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 font-extrabold text-sm rounded-lg">
-                        {aiRecommendation?.matchScorePercent || 96}% Match
+                        {aiRecommendation.matchScorePercent}% Confidence
                       </span>
                     </div>
                   </div>
@@ -691,48 +617,21 @@ export function OnboardingWizard() {
                     <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
                       Recommended Courses Base on Your Response
                     </h2>
-                    <p className="text-sm text-slate-300 mt-2 max-w-2xl leading-relaxed">
-                      {aiRecommendation?.overallEvaluation ||
-                        `Based on your assessment placement score of ${diagnosticPercentage}%, OpenRouter AI has matched you with the optimal learning track and skill roadmap.`}
-                    </p>
                   </div>
 
                   {/* Summary Cards Grid */}
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
                     <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/10">
-                      <p className="text-[11px] font-semibold text-slate-300 uppercase mb-1">AI Recommended Track & Level</p>
-                      <select
-                        value={selectedTrack}
-                        onChange={(e) => {
-                          const newTrackId = e.target.value;
-                          const foundTrack = tracks.find((tr) => tr.id === newTrackId);
-                          setSelectedTrack(newTrackId);
-                          if (aiRecommendation && foundTrack) {
-                            setAiRecommendation({
-                              ...aiRecommendation,
-                              recommendedTrackId: foundTrack.id,
-                              recommendedTrackTitle: foundTrack.title,
-                            });
-                          }
-                        }}
-                        className="bg-slate-900/90 text-white font-bold text-xs sm:text-sm rounded-xl px-2.5 py-1.5 border border-white/20 focus:outline-none focus:ring-2 focus:ring-amber-400 cursor-pointer w-full"
-                      >
-                        {tracks.map((tr) => (
-                          <option key={tr.id} value={tr.id} className="bg-slate-900 text-white font-semibold">
-                            {tr.title} ({aiRecommendation?.recommendedLevelTier || getRecommendedLevel()})
-                          </option>
-                        ))}
-                      </select>
+                      <p className="text-[11px] font-semibold text-slate-300 uppercase mb-1">Best Course Base On Your Experience</p>
+                      <p className="text-white font-bold text-sm sm:text-base leading-snug">
+                        {activeTrackDetails?.title}
+                      </p>
                     </div>
                     <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/10">
                       <p className="text-[11px] font-semibold text-slate-300 uppercase">Starting Placement</p>
                       <p className="text-base font-bold text-amber-300 mt-1">
-                        {aiRecommendation?.recommendedLevelTier || getRecommendedLevel()} Tier
+                        {aiRecommendation.recommendedLevelTier}
                       </p>
-                    </div>
-                    <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/10">
-                      <p className="text-[11px] font-semibold text-slate-300 uppercase">Velocity Commitment</p>
-                      <p className="text-base font-bold text-white mt-1">{weeklyHours} hours / week</p>
                     </div>
                   </div>
                 </div>
@@ -746,10 +645,7 @@ export function OnboardingWizard() {
                     Demonstrated Baseline Strengths
                   </h3>
                   <ul className="space-y-2">
-                    {(aiRecommendation?.strengths || [
-                      "Strong logical problem solving mindset",
-                      "Good comprehension of modern software workflows",
-                    ]).map((str, idx) => (
+                    {aiRecommendation.strengths.map((str, idx) => (
                       <li key={idx} className="text-xs font-semibold text-emerald-950 flex items-start gap-2">
                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mt-1.5 shrink-0" />
                         {str}
@@ -771,7 +667,7 @@ export function OnboardingWizard() {
                   </span>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {tracks.map((t) => {
                     const isSelected = selectedTrack === t.id;
                     const IconComponent = t.icon;
@@ -789,34 +685,26 @@ export function OnboardingWizard() {
                             });
                           }
                         }}
-                        className={`p-4 rounded-2xl border-2 transition-all cursor-pointer space-y-2 relative ${
+                        className={`p-4 rounded-2xl border-2 transition-all cursor-pointer flex items-center justify-between gap-3 ${
                           isSelected
                             ? "border-[#1e3a8a] bg-blue-50/70 shadow-md ring-2 ring-[#1e3a8a]/20"
                             : "border-slate-200 bg-white hover:border-[#1e3a8a]/50 hover:bg-slate-50"
                         }`}
                       >
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <div className={`p-2 rounded-xl bg-slate-100 ${t.color}`}>
-                              <IconComponent className="w-5 h-5" />
-                            </div>
-                            <span className="text-[10px] font-extrabold uppercase text-slate-400">
-                              {t.category}
-                            </span>
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className={`p-2.5 rounded-xl bg-slate-100 ${t.color} shrink-0`}>
+                            <IconComponent className="w-5 h-5" />
                           </div>
-                          {isSelected && (
-                            <span className="px-2 py-0.5 rounded-full bg-[#1e3a8a] text-white text-[10px] font-bold">
-                              Selected
-                            </span>
-                          )}
+                          <h4 className="text-sm font-bold text-slate-900 truncate">
+                            {t.title}
+                          </h4>
                         </div>
 
-                        <h4 className="text-sm font-bold text-slate-900 leading-snug">
-                          {t.title}
-                        </h4>
-                        <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed font-medium">
-                          {t.description}
-                        </p>
+                        {isSelected && (
+                          <span className="px-2.5 py-1 rounded-full bg-[#1e3a8a] text-white text-[10px] font-bold shrink-0">
+                            Selected
+                          </span>
+                        )}
                       </div>
                     );
                   })}
@@ -850,7 +738,7 @@ export function OnboardingWizard() {
                 </button>
               </div>
             </>
-          )}
+          ) : null}
         </div>
       )}
     </div>

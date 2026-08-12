@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
 import {
   Sparkles,
   Infinity as InfinityIcon,
@@ -10,6 +11,7 @@ import {
   Clock,
   Briefcase,
   Layers,
+  ArrowRight,
 } from "lucide-react";
 
 export const FeatureGrid: React.FC = () => {
@@ -46,7 +48,7 @@ export const FeatureGrid: React.FC = () => {
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-14">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-100/80 text-[#1e3a8a] font-bold text-xs uppercase tracking-wider mb-3">
-            <Sparkles className="w-3.5 h-3.5" /> Why SkillsBank Plus
+            Why SkillsBank Plus
           </div>
           <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
             Invest in your career with total flexibility
@@ -77,13 +79,23 @@ export const FeatureGrid: React.FC = () => {
                 </p>
               </div>
 
-              <div className="pt-4 border-t border-slate-100 space-y-2">
-                {item.highlights.map((h, i) => (
-                  <div key={i} className="flex items-center gap-2 text-xs font-semibold text-slate-700">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-[#1e3a8a] shrink-0" />
-                    <span>{h}</span>
-                  </div>
-                ))}
+              <div>
+                <div className="pt-4 border-t border-slate-100 space-y-2 mb-6">
+                  {item.highlights.map((h, i) => (
+                    <div key={i} className="flex items-center gap-2 text-xs font-semibold text-slate-700">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-[#1e3a8a] shrink-0" />
+                      <span>{h}</span>
+                    </div>
+                  ))}
+                </div>
+
+                <Link
+                  href="/dashboard"
+                  className="w-full inline-flex items-center justify-center gap-2 bg-[#1e3a8a] hover:bg-[#1d4ed8] text-white text-xs sm:text-sm font-bold py-2.5 px-4 rounded-xl transition-all shadow-sm hover:shadow-md group/btn"
+                >
+                  <span>Start Now</span>
+                  <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
+                </Link>
               </div>
             </div>
           ))}
@@ -92,3 +104,4 @@ export const FeatureGrid: React.FC = () => {
     </section>
   );
 };
+

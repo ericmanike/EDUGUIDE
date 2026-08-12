@@ -2,7 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
-import { ArrowRight, CheckCircle2, ShieldCheck, Star } from "lucide-react";
+import { ArrowRight, CheckCircle2, ShieldCheck, Star, GraduationCap } from "lucide-react";
 
 export const HeroSection: React.FC = () => {
   return (
@@ -36,7 +36,7 @@ export const HeroSection: React.FC = () => {
             {/* Pricing Callout */}
             <div>
               <p className="text-sm sm:text-base font-bold text-slate-900">
-                GHS 100/month, cancel anytime
+                Learn From The Experts 
               </p>
             </div>
 
@@ -47,7 +47,7 @@ export const HeroSection: React.FC = () => {
                   href="/auth/signUp?plan=plus"
                   className="inline-flex items-center justify-center bg-[#1e3a8a] hover:bg-[#1d4ed8] text-white text-sm md:text-base font-bold px-6 py-3 rounded-xl shadow-md shadow-[#1e3a8a]/30 hover:shadow-lg hover:shadow-[#1e3a8a]/40 transition-all duration-200 transform hover:-translate-y-0.5 active:translate-y-0 group"
                 >
-                  <span>Start 7-day Free Trial</span>
+                  <span>Start For 100% Free </span>
                   <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
                 </Link>
               </div>
@@ -57,7 +57,7 @@ export const HeroSection: React.FC = () => {
             <div className="pt-3 border-t border-slate-200/80 flex flex-wrap items-center gap-4 text-xs font-semibold text-slate-600">
               <div className="flex items-center gap-1.5">
                 <CheckCircle2 className="w-4 h-4 text-[#1e3a8a] shrink-0" />
-                <span>7,000+ Courses & Labs</span>
+                <span>All kinds of Courses & Labs</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <CheckCircle2 className="w-4 h-4 text-[#1e3a8a] shrink-0" />
@@ -68,7 +68,7 @@ export const HeroSection: React.FC = () => {
 
           {/* Right Column - Graphic Arc Illustration & Student Portrait */}
           <div className="lg:col-span-5 relative flex justify-center items-end min-h-[300px] sm:min-h-[360px]">
-         
+
 
             {/* Student Portrait Image */}
             <div className="relative z-10 w-full max-w-[320px] sm:max-w-[360px] flex justify-center ">
@@ -81,12 +81,12 @@ export const HeroSection: React.FC = () => {
 
             {/* Floating Glassmorphism Cards */}
             <div className="absolute top-2 left-0 sm:-left-2 z-20 bg-white/90 backdrop-blur-md p-2.5 rounded-xl shadow-lg border border-white/80 hidden sm:flex items-center gap-2.5 transform -rotate-2 hover:rotate-0 transition-transform">
-              <div className="w-8 h-8 rounded-lg bg-amber-500 text-white flex items-center justify-center shadow-md">
-                <Star className="w-4 h-4 fill-white text-white" />
+              <div className="w-8 h-8 rounded-lg bg-[#1e3a8a] text-white flex items-center justify-center shadow-md">
+                <GraduationCap className="w-4 h-4 text-white" />
               </div>
               <div>
-                <div className="text-xs font-black text-slate-900">4.9 / 5.0 Rating</div>
-                <div className="text-[10px] text-slate-500 font-medium">Over 250k+ Reviews</div>
+                <div className="text-xs font-black text-slate-900">African Lecturers</div>
+                <div className="text-[10px] text-slate-500 font-medium">Expert Local & Global Instructors</div>
               </div>
             </div>
 

@@ -137,10 +137,14 @@ export default function CoursePage({ params }: { params: Promise<{ id: string }>
 
   const handleToggleLessonProgress = async (lessonId: string) => {
     const currentStatus = progressMap[lessonId] || "NOT_STARTED";
-    const nextStatus = currentStatus === "COMPLETED" ? "IN_PROGRESS" : "COMPLETED";
+    const nextStatus: "NOT_STARTED" | "IN_PROGRESS" | "COMPLETED" =
+      currentStatus === "COMPLETED" ? "IN_PROGRESS" : "COMPLETED";
 
     // 1. Immediately update local React state and persist to localStorage
-    const updatedMap = { ...progressMap, [lessonId]: nextStatus };
+    const updatedMap: Record<string, "NOT_STARTED" | "IN_PROGRESS" | "COMPLETED"> = {
+      ...progressMap,
+      [lessonId]: nextStatus,
+    };
     setProgressMap(updatedMap);
     if (typeof window !== "undefined") {
       localStorage.setItem(`edtech_lesson_progress_${moduleId}`, JSON.stringify(updatedMap));
