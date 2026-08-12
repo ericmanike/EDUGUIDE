@@ -10,7 +10,6 @@ import {
   Trash2,
   RefreshCw,
   X,
-  Clock,
   PlayCircle,
 } from "lucide-react";
 import {
@@ -39,7 +38,7 @@ export default function CurriculumModulesPage() {
     loadModules();
   }, []);
 
-  const loadModules = async () => {
+  async function loadModules() {
     setIsLoading(true);
     try {
       const data = await fetchModules();
@@ -50,7 +49,7 @@ export default function CurriculumModulesPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -110,9 +109,9 @@ export default function CurriculumModulesPage() {
     setEditingModule(mod);
     setForm({
       title: mod.title,
-      topic: mod.topic || "",
+      topic: mod.topic,
       description: mod.description || "",
-      durationMinutes: mod.durationMinutes || 60,
+      durationMinutes: mod.durationMinutes,
     });
     setShowModal(true);
   };

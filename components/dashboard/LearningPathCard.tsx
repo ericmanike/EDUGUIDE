@@ -54,7 +54,7 @@ export const LearningPathCard: React.FC<LearningPathCardProps> = ({
             </div>
             {path.isActive && (
               <Badge variant="green" icon={<CheckCircle2 className="w-3 h-3" />} className="shadow-xs font-bold">
-                Active Path
+                Active Course
               </Badge>
             )}
           </div>
@@ -76,10 +76,7 @@ export const LearningPathCard: React.FC<LearningPathCardProps> = ({
             <Clock className="w-3.5 h-3.5 text-[#fb923c]" />
             <span>{path.estimatedHours} Hours</span>
           </div>
-          <div className="flex items-center gap-1.5">
-            <BookOpen className="w-3.5 h-3.5 text-slate-700" />
-            <span>{path.totalModules} Modules</span>
-          </div>
+         
         </div>
 
         {/* Skills Pills */}
@@ -105,7 +102,7 @@ export const LearningPathCard: React.FC<LearningPathCardProps> = ({
             icon={<ArrowRight className="w-3.5 h-3.5" />}
             onClick={() => onSelectPath && onSelectPath(path.id)}
           >
-            {path.isActive ? "Continue Path" : "Enroll Path"}
+            {path.isActive ? "Continue Course" : "Enroll In Course"}
           </Button>
         </CardFooter>
       </div>

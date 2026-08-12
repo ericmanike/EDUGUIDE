@@ -39,7 +39,7 @@ export default function CurriculumLayout({
       icon: LayoutDashboard,
     },
     {
-      label: "Learning Paths",
+      label: "Courses",
       href: "/dashboard/curriculum/paths",
       exact: false,
       icon: Layers,
@@ -57,7 +57,7 @@ export default function CurriculumLayout({
       icon: PlayCircle,
     },
     {
-      label: "Path Mappings",
+      label: "Mappings",
       href: "/dashboard/curriculum/mappings",
       exact: false,
       icon: LinkIcon,

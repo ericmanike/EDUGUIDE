@@ -66,7 +66,7 @@ export const PathVisualizer: React.FC<PathVisualizerProps> = ({ activePath }) =>
             duration: `${Math.round((m.durationMinutes || 120) / 60) || 2} Hours`,
             status: idx === 0 ? "completed" : idx === 1 ? "current" : "locked",
             description: m.description || "Core database curriculum module.",
-            topics: [m.topic || "Core", "Module Hands-on Lab"],
+            topics: [m.topic || "Core"],
           }));
           setNodes(mapped);
           setSelectedNode(mapped[0]);

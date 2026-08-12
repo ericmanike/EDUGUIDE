@@ -229,63 +229,6 @@ export async function fetchUsers(): Promise<User[]> {
   }
 }
 
-export const DEFAULT_LEARNING_PATHS: LearningPath[] = [
-  {
-    id: "web-dev",
-    title: "Full-Stack Web Development Track",
-    description: "Master modern React, Next.js, Node.js, databases, and enterprise architecture.",
-    level: "BEGINNER",
-    estimatedHours: 120,
-    totalModules: 8,
-    skillsCovered: ["React & Next.js", "TypeScript", "Node.js & APIs", "SQL & Postgres"],
-  },
-  {
-    id: "ai-data",
-    title: "AI & Data Science Track",
-    description: "Build Machine Learning models, Neural Networks, Python analytics & LLM pipelines.",
-    level: "INTERMEDIATE",
-    estimatedHours: 140,
-    totalModules: 10,
-    skillsCovered: ["Python & PyTorch", "Data Wrangling", "Machine Learning", "LLM Fine-Tuning"],
-  },
-  {
-    id: "cloud-devops",
-    title: "Cloud Architecture & DevOps Track",
-    description: "Deploy scalable microservices with Docker, Kubernetes, AWS, and CI/CD pipelines.",
-    level: "INTERMEDIATE",
-    estimatedHours: 100,
-    totalModules: 7,
-    skillsCovered: ["Docker & Kubernetes", "AWS & Terraform", "CI/CD Pipelines", "System Design"],
-  },
-  {
-    id: "mobile-dev",
-    title: "Mobile App Development Track",
-    description: "Craft performant iOS & Android mobile applications using React Native & Flutter.",
-    level: "BEGINNER",
-    estimatedHours: 90,
-    totalModules: 6,
-    skillsCovered: ["React Native", "iOS & Android", "State Management", "Mobile APIs"],
-  },
-  {
-    id: "cybersecurity",
-    title: "Cybersecurity & Ethical Hacking Track",
-    description: "Learn penetration testing, network defense, cryptography, and cloud auditing.",
-    level: "ADVANCED",
-    estimatedHours: 110,
-    totalModules: 8,
-    skillsCovered: ["Network Defense", "Penetration Testing", "Cryptography", "Security Compliance"],
-  },
-  {
-    id: "uiux-design",
-    title: "UI/UX & Product Design Track",
-    description: "Design intuitive user interfaces, user research, wireframing, and Figma design systems.",
-    level: "BEGINNER",
-    estimatedHours: 80,
-    totalModules: 5,
-    skillsCovered: ["Figma Systems", "User Research", "Wireframing", "Interactive Prototypes"],
-  },
-];
-
 export async function fetchLearningPaths(): Promise<LearningPath[]> {
   try {
     const res = await fetch(`${API_BASE_URL}/learning-paths`, {
@@ -293,16 +236,12 @@ export async function fetchLearningPaths(): Promise<LearningPath[]> {
       headers: getAuthHeaders(),
       cache: "no-store",
     });
-    if (res.ok) {
-      const data = await res.json();
-      if (Array.isArray(data) && data.length > 0) {
-        return data;
-      }
-    }
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return await res.json();
   } catch (error) {
     console.error("Failed to fetch learning paths from backend:", error);
+    return [];
   }
-  return DEFAULT_LEARNING_PATHS;
 }
 
 export async function fetchModules(): Promise<CourseModule[]> {
@@ -382,8 +321,7 @@ export async function loginUser(email: string, pass: string): Promise<User> {
       } catch (e) {
         console.log("Backend response:", res , "Error message" , e);
       }
-
-    
+      throw new Error(errorMessage);
     }
 
     const data = await res.json();
@@ -399,7 +337,7 @@ export async function loginUser(email: string, pass: string): Promise<User> {
     };
 
     return user;
-  } catch (error: any) {
+  } catch (error) {
     console.error("Login request failed:", error);
     throw error;
   }
@@ -429,7 +367,7 @@ export async function registerUser(userData: {
       try {
         const errText = await res.text();
         if (errText) errorMessage = errText;
-      } catch (e) {}
+      } catch {}
       throw new Error(errorMessage);
     }
 
@@ -445,7 +383,7 @@ export async function registerUser(userData: {
       role: userData.role || "STUDENT",
     };
     return newUser;
-  } catch (error: any) {
+  } catch (error) {
     console.error("Registration request failed:", error);
     throw error;
   }
@@ -460,9 +398,12 @@ export interface UserLearningPath {
   pathId?: string;
   matchScore?: number;
   progressPercentage?: number;
+  active?: boolean;
+  /** @deprecated use `active` — kept for backward compatibility */
   isActive?: boolean;
   enrolledAt?: string;
   createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface PathModule {
@@ -684,7 +625,7 @@ export function getStoredAIRecommendations() {
   try {
     const raw = localStorage.getItem("edtech_ai_recommendations");
     return raw ? JSON.parse(raw) : null;
-  } catch (e) {
+  } catch {
     return null;
   }
 }
@@ -1024,7 +965,7 @@ export async function enrollInLearningPath(pathIdOrSlug: string): Promise<boolea
                 status: "IN_PROGRESS",
               }),
             });
-          } catch (e) {}
+          } catch {}
         }
 
         // Fetch lessons in module & upsert user_lesson_progress records
@@ -1123,6 +1064,21 @@ export async function fetchUserLearningPaths(userId: string): Promise<UserLearni
       }
     }
 
+    return [];
+  }
+}
+
+export async function fetchAllUserLearningPaths(): Promise<UserLearningPath[]> {
+  try {
+    const res = await fetch(`${API_BASE_URL}/user-learning-paths`, {
+      method: "GET",
+      headers: getAuthHeaders(),
+      cache: "no-store",
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return await res.json();
+  } catch (error) {
+    console.error("Failed to fetch all user learning paths:", error);
     return [];
   }
 }

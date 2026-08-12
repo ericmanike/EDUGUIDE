@@ -69,9 +69,10 @@ function LessonsContent() {
 
   useEffect(() => {
     loadModulesAndLessons();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedModuleId]);
 
-  const loadModulesAndLessons = async () => {
+  async function loadModulesAndLessons() {
     setIsLoading(true);
     try {
       const modulesData = await fetchModules();
@@ -90,7 +91,7 @@ function LessonsContent() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }
 
   const openCreateModal = (modId?: string) => {
     const targetMod = modId || selectedModuleId || (modules.length > 0 ? modules[0].id : "");
@@ -118,8 +119,8 @@ function LessonsContent() {
       moduleId: lesson.moduleId,
       title: lesson.title,
       videoUrl: lesson.videoUrl || "",
-      durationMinutes: lesson.durationMinutes || 15,
-      sequenceOrder: lesson.sequenceOrder || 1,
+      durationMinutes: lesson.durationMinutes ?? 0,
+      sequenceOrder: lesson.sequenceOrder,
       summary: lesson.summary || "",
       resourcesUrl: lesson.resourcesUrl || "",
     });
@@ -179,7 +180,7 @@ function LessonsContent() {
         const created = await createLesson({
           moduleId: form.moduleId,
           title: form.title,
-          videoUrl: form.videoUrl || "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+          videoUrl: form.videoUrl,
           durationMinutes: Number(form.durationMinutes),
           sequenceOrder: Number(form.sequenceOrder),
           summary: form.summary,
@@ -275,7 +276,7 @@ function LessonsContent() {
           title: lesson.title,
         });
       }
-    } catch (err) {
+    } catch {
       toast.info(`Opening stream URL for "${lesson.title}"`);
       setSignedUrlModal({
         open: true,

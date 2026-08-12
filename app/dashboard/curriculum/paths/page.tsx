@@ -9,8 +9,6 @@ import {
   Trash2,
   RefreshCw,
   X,
-  Clock,
-  Sparkles,
 } from "lucide-react";
 import {
   fetchLearningPaths,
@@ -38,7 +36,7 @@ export default function CurriculumPathsPage() {
     loadPaths();
   }, []);
 
-  const loadPaths = async () => {
+  async function loadPaths() {
     setIsLoading(true);
     try {
       const data = await fetchLearningPaths();
@@ -49,7 +47,7 @@ export default function CurriculumPathsPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -110,8 +108,8 @@ export default function CurriculumPathsPage() {
     setForm({
       title: path.title,
       description: path.description || "",
-      level: path.level || "BEGINNER",
-      estimatedHours: path.estimatedHours || 40,
+      level: path.level,
+      estimatedHours: path.estimatedHours,
     });
     setShowModal(true);
   };

@@ -15,7 +15,6 @@ import { Badge } from "@/components/ui/Badge";
 import {
   Route,
   Award,
-  Clock,
   Sparkles,
   TrendingUp,
 } from "lucide-react";
@@ -24,6 +23,7 @@ import {
   fetchUserLearningPaths,
   getCurrentUser,
   enrollInLearningPath,
+  UserLearningPath,
 } from "@/lib/api";
 import { DashboardSkeleton } from "@/components/dashboard/DashboardSkeleton";
 
@@ -43,7 +43,7 @@ export const OverviewView: React.FC = () => {
         }
 
         const apiPaths = await fetchLearningPaths();
-        let userPaths: any[] = [];
+        let userPaths: UserLearningPath[] = [];
         if (currentUser?.id) {
           userPaths = await fetchUserLearningPaths(currentUser.id);
         }
@@ -59,7 +59,12 @@ export const OverviewView: React.FC = () => {
               title: ap.title,
               description: ap.description || "Custom backend learning path.",
               matchScore: ap.matchScore || 95,
-              level: (ap.level as any) || "Intermediate",
+              level: ((): "Beginner" | "Intermediate" | "Advanced" => {
+                const up = (ap.level || "").trim().toUpperCase();
+                if (up === "INTERMEDIATE") return "Intermediate";
+                if (up === "ADVANCED") return "Advanced";
+                return "Beginner";
+              })(),
               estimatedHours: ap.estimatedHours || 40,
               totalModules: ap.totalModules || 10,
               completedModules: ap.completedModules || 0,
@@ -95,9 +100,6 @@ export const OverviewView: React.FC = () => {
     await enrollInLearningPath(id);
   };
 
-  if (isLoading) {
-    return <DashboardSkeleton />;
-  }
 
   const activePath = paths.find((p) => p.isActive) || paths[0];
   const calculatedProgress = activePath && activePath.totalModules > 0
@@ -109,7 +111,9 @@ export const OverviewView: React.FC = () => {
     ? `${totalCompletedModules} / ${totalAllModules} Modules`
     : `${paths.length} Active Tracks`;
 
-  return (
+  return isLoading ? (
+    <DashboardSkeleton />
+  ) : (
     <div className="space-y-8">
       {/* Welcome Banner Card */}
       <div className="relative overflow-hidden p-8 rounded-2xl bg-gradient-to-r from-slate-900 via-[#1e3a8a] to-slate-900 border border-slate-800 shadow-xl shadow-slate-900/10">

@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/Badge";
 import { LearningPathCard, LearningPathData } from "@/components/dashboard/LearningPathCard";
 import { PathProgressBarChart } from "@/components/dashboard/AnalyticsCharts";
 import { SlidersHorizontal } from "lucide-react";
-import { fetchLearningPaths, fetchUserLearningPaths, getCurrentUser, enrollInLearningPath } from "@/lib/api";
+import { fetchLearningPaths, fetchUserLearningPaths, getCurrentUser, enrollInLearningPath, UserLearningPath } from "@/lib/api";
 import { DashboardSkeleton } from "@/components/dashboard/DashboardSkeleton";
 
 export const PathsView: React.FC = () => {
@@ -19,23 +19,30 @@ export const PathsView: React.FC = () => {
       try {
         const currentUser = getCurrentUser();
         const apiData = await fetchLearningPaths();
-        let userPaths: any[] = [];
+        let userPaths: UserLearningPath[] = [];
         if (currentUser?.id) {
           userPaths = await fetchUserLearningPaths(currentUser.id);
         }
 
         if (apiData && apiData.length > 0) {
-          const activeUserPath = userPaths.find((up) => up.isActive);
+          const activeUserPath = userPaths.find((up) => up.isActive || up.active);
           const activePathId = activeUserPath?.path?.id || activeUserPath?.pathId;
 
           const formatted: LearningPathData[] = apiData.map((ap, idx) => {
             const isCurrentlyActive = activePathId ? ap.id === activePathId : idx === 0;
+            const formatLevel = (lvl?: string): "Beginner" | "Intermediate" | "Advanced" => {
+              const up = (lvl || "").trim().toUpperCase();
+              if (up === "INTERMEDIATE") return "Intermediate";
+              if (up === "ADVANCED") return "Advanced";
+              return "Beginner";
+            };
+
             return {
               id: ap.id,
               title: ap.title,
               description: ap.description || "Custom learning path.",
               matchScore: ap.matchScore || 95,
-              level: (ap.level as any) || "",
+              level: formatLevel(ap.level),
               estimatedHours: ap.estimatedHours || 40,
               totalModules: ap.totalModules || 10,
               completedModules: ap.completedModules || 0,
@@ -54,9 +61,6 @@ export const PathsView: React.FC = () => {
     loadPaths();
   }, []);
 
-  if (isLoading) {
-    return <DashboardSkeleton />;
-  }
 
   const filteredPaths = paths.filter((p) => {
     if (filter === "Active") return p.isActive;
@@ -72,7 +76,9 @@ export const PathsView: React.FC = () => {
     await enrollInLearningPath(id);
   };
 
-  return (
+  return isLoading ? (
+    <DashboardSkeleton />
+  ) : (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
