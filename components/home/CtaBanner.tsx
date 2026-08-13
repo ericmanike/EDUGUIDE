@@ -35,7 +35,7 @@ export const CtaBanner: React.FC = () => {
             {/* Actions */}
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 pt-2">
               <Link
-                href="/auth/signUp?plan=plus"
+                href="/onboarding"
                 className="inline-flex items-center justify-center bg-white hover:bg-slate-100 text-[#0056D2] font-black text-base px-8 py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5 group"
               >
                 <span>Start 7-day Free Trial</span>
@@ -43,7 +43,7 @@ export const CtaBanner: React.FC = () => {
               </Link>
 
               <Link
-                href="/auth/signUp?plan=annual"
+                href="/onboarding"
                 className="inline-flex items-center justify-center bg-white/10 hover:bg-white/20 text-white font-bold text-sm sm:text-base px-6 py-4 rounded-xl border border-white/30 backdrop-blur-sm transition-all"
               >
                 Save 44% with Annual Plan ($160/year)

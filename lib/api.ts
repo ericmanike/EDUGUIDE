@@ -557,13 +557,7 @@ export async function deletePathModule(id: string): Promise<boolean> {
 }
 
 export function getStoredAIRecommendations() {
-  if (typeof window === "undefined") return null;
-  try {
-    const raw = localStorage.getItem("edtech_ai_recommendations");
-    return raw ? JSON.parse(raw) : null;
-  } catch {
-    return null;
-  }
+  return null;
 }
 
 export async function fetchAllLessons(): Promise<Lesson[]> {
@@ -920,30 +914,6 @@ export async function enrollInLearningPath(pathIdOrSlug: string): Promise<boolea
       console.warn("Module & lesson progress initialization notice:", e);
     }
 
-    // 4. Save persistent client-side progress state in localStorage
-    if (typeof window !== "undefined") {
-      const enrollmentObj = {
-        userId,
-        pathId: resolvedPathId,
-        pathSlug: pathIdOrSlug,
-        enrolledAt: new Date().toISOString(),
-        isActive: true,
-        progressPercentage: 0,
-      };
-      localStorage.setItem("edtech_active_enrollment", JSON.stringify(enrollmentObj));
-
-      const existingProgressRaw = localStorage.getItem("edtech_user_progress");
-      const progressMap = existingProgressRaw ? JSON.parse(existingProgressRaw) : {};
-      progressMap[resolvedPathId] = {
-        pathId: resolvedPathId,
-        enrolled: true,
-        progressPercentage: 0,
-        completedModules: 0,
-        updatedAt: new Date().toISOString(),
-      };
-      localStorage.setItem("edtech_user_progress", JSON.stringify(progressMap));
-    }
-
     return true;
   } catch (error) {
     console.error("Failed to enroll in learning path:", error);
@@ -967,23 +937,6 @@ export async function fetchUserLearningPaths(userId: string): Promise<UserLearni
     return backendPaths;
   } catch (error) {
     console.error("Failed to fetch user learning paths:", error);
-
-    if (typeof window !== "undefined") {
-      const localEnrollmentRaw = localStorage.getItem("edtech_active_enrollment");
-      if (localEnrollmentRaw) {
-        const localObj = JSON.parse(localEnrollmentRaw);
-        return [
-          {
-            userId: localObj.userId,
-            pathId: localObj.pathId,
-            isActive: true,
-            progressPercentage: localObj.progressPercentage || 0,
-            createdAt: localObj.enrolledAt,
-          },
-        ];
-      }
-    }
-
     return [];
   }
 }

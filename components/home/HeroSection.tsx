@@ -44,7 +44,7 @@ export const HeroSection: React.FC = () => {
             <div className="space-y-3 pt-1">
               <div>
                 <Link
-                  href="/auth/signUp?plan=plus"
+                  href="/onboarding"
                   className="inline-flex items-center justify-center bg-[#1e3a8a] hover:bg-[#1d4ed8] text-white text-sm md:text-base font-bold px-6 py-3 rounded-xl shadow-md shadow-[#1e3a8a]/30 hover:shadow-lg hover:shadow-[#1e3a8a]/40 transition-all duration-200 transform hover:-translate-y-0.5 active:translate-y-0 group"
                 >
                   <span>Start For 100% Free </span>

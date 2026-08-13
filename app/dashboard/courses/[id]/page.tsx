@@ -42,19 +42,6 @@ export default function CoursePage({ params }: { params: Promise<{ id: string }>
     async function loadCourseContent() {
       setIsLoading(true);
 
-      // Restore cached lesson progress from localStorage immediately
-      const storageKey = `edtech_lesson_progress_${moduleId}`;
-      let cachedProgress: Record<string, "NOT_STARTED" | "IN_PROGRESS" | "COMPLETED"> = {};
-      if (typeof window !== "undefined") {
-        try {
-          const raw = localStorage.getItem(storageKey) || localStorage.getItem("edtech_global_lesson_progress");
-          if (raw) {
-            cachedProgress = JSON.parse(raw);
-            setProgressMap(cachedProgress);
-          }
-        } catch (e) {}
-      }
-
       try {
         const [allModules, moduleLessons] = await Promise.all([
           fetchModules(),
@@ -81,7 +68,7 @@ export default function CoursePage({ params }: { params: Promise<{ id: string }>
         const userId = currentUser?.id || "u-guest";
 
         const userProgressList = await fetchUserLessonProgressByModule(userId, moduleId);
-        const pMap: Record<string, "NOT_STARTED" | "IN_PROGRESS" | "COMPLETED"> = { ...cachedProgress };
+        const pMap: Record<string, "NOT_STARTED" | "IN_PROGRESS" | "COMPLETED"> = {};
 
         if (userProgressList && userProgressList.length > 0) {
           userProgressList.forEach((up: UserLessonProgress) => {
@@ -102,12 +89,6 @@ export default function CoursePage({ params }: { params: Promise<{ id: string }>
         }
 
         setProgressMap(pMap);
-
-        // Update local storage cache
-        if (typeof window !== "undefined") {
-          localStorage.setItem(storageKey, JSON.stringify(pMap));
-          localStorage.setItem("edtech_global_lesson_progress", JSON.stringify(pMap));
-        }
       } catch (err) {
         console.error("Failed to load course page data:", err);
       } finally {
@@ -124,14 +105,7 @@ export default function CoursePage({ params }: { params: Promise<{ id: string }>
     const userId = currentUser?.id || "u-guest";
     const prog = await fetchUserLessonProgress(userId, lessonId);
     if (prog) {
-      setProgressMap((prev) => {
-        const updated = { ...prev, [lessonId]: prog.status };
-        if (typeof window !== "undefined") {
-          localStorage.setItem(`edtech_lesson_progress_${moduleId}`, JSON.stringify(updated));
-          localStorage.setItem("edtech_global_lesson_progress", JSON.stringify(updated));
-        }
-        return updated;
-      });
+      setProgressMap((prev) => ({ ...prev, [lessonId]: prog.status }));
     }
   };
 
@@ -140,16 +114,12 @@ export default function CoursePage({ params }: { params: Promise<{ id: string }>
     const nextStatus: "NOT_STARTED" | "IN_PROGRESS" | "COMPLETED" =
       currentStatus === "COMPLETED" ? "IN_PROGRESS" : "COMPLETED";
 
-    // 1. Immediately update local React state and persist to localStorage
+    // 1. Update React state immediately
     const updatedMap: Record<string, "NOT_STARTED" | "IN_PROGRESS" | "COMPLETED"> = {
       ...progressMap,
       [lessonId]: nextStatus,
     };
     setProgressMap(updatedMap);
-    if (typeof window !== "undefined") {
-      localStorage.setItem(`edtech_lesson_progress_${moduleId}`, JSON.stringify(updatedMap));
-      localStorage.setItem("edtech_global_lesson_progress", JSON.stringify(updatedMap));
-    }
 
     // 2. Persist to backend database via REST API
     const currentUser = getCurrentUser();
@@ -164,14 +134,7 @@ export default function CoursePage({ params }: { params: Promise<{ id: string }>
     // 3. Refetch specific lesson progress via GET /api/user-lesson-progress/user/{userId}/lesson/{lessonId}
     const updatedProg = await fetchUserLessonProgress(userId, lessonId);
     if (updatedProg) {
-      setProgressMap((prev) => {
-        const synced = { ...prev, [lessonId]: updatedProg.status };
-        if (typeof window !== "undefined") {
-          localStorage.setItem(`edtech_lesson_progress_${moduleId}`, JSON.stringify(synced));
-          localStorage.setItem("edtech_global_lesson_progress", JSON.stringify(synced));
-        }
-        return synced;
-      });
+      setProgressMap((prev) => ({ ...prev, [lessonId]: updatedProg.status }));
     }
   };
 

@@ -45,8 +45,6 @@ export interface OnboardingData {
   trackName: string;
   skillLevel: "BEGINNER" | "INTERMEDIATE" | "ADVANCED";
   diagnosticAnswers: Record<string, number>; // questionId -> score (1-5)
-  weeklyHours: number;
-  learningStyles: string[];
   diagnosticScore: number; // calculated 0 - 100
   aiRecommendation?: AIRecommendationResult | null;
 }
@@ -119,12 +117,6 @@ function mapLearningPathToTrack(lp: LearningPath): TrackOption {
   };
 }
 
-const LEARNING_STYLE_OPTIONS = [
-  { id: "projects", label: "Hands-on Interactive Projects", icon: Code2, desc: "Learn by building real software" },
-  { id: "challenges", label: "Algorithmic Challenges & Quizzes", icon: Target, desc: "Test knowledge with active recall" },
-  { id: "guided", label: "Structured Video & Guided Paths", icon: BookOpen, desc: "Follow step-by-step masterclasses" },
-  { id: "ai-tutor", label: "AI Tutor & Real-Time Mentorship", icon: BrainCircuit, desc: "Get instant code feedback" },
-];
 
 export function OnboardingWizard() {
   const router = useRouter();
@@ -180,8 +172,6 @@ export function OnboardingWizard() {
   const [currentBranch, setCurrentBranch] = useState<"gatekeeper" | "foundational" | "advanced">("gatekeeper");
 
   const [diagnosticAnswers, setDiagnosticAnswers] = useState<Record<string, number>>({});
-  const [weeklyHours, setWeeklyHours] = useState<number>(5);
-  const [selectedStyles, setSelectedStyles] = useState<string[]>(["projects", "ai-tutor"]);
 
   // AI Recommendation State
   const [aiRecommendation, setAiRecommendation] = useState<AIRecommendationResult | null>(null);
@@ -298,12 +288,8 @@ export function OnboardingWizard() {
           description: t.description,
           skills: t.skills,
         })),
-        selectedTrackId: selectedTrack,
-        selectedTrackTitle: activeTrackDetails?.title,
         skillLevel: getRecommendedLevel(),
         diagnosticAnswers,
-        weeklyHours,
-        learningStyles: selectedStyles,
         diagnosticScore: diagnosticPercentage,
         questions: diagnosticQuestions,
       };
@@ -336,16 +322,9 @@ export function OnboardingWizard() {
   };
 
   const handlePrevStep = () => {
-    if (currentStep > 1) {
-      setCurrentStep(1);
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }
-  };
-
-  const toggleLearningStyle = (styleId: string) => {
-    setSelectedStyles((prev) =>
-      prev.includes(styleId) ? prev.filter((id) => id !== styleId) : [...prev, styleId]
-    );
+    setCurrentStep(1);
+    setActiveQuestionIndex(0);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handleFinishOnboarding = async () => {
@@ -366,14 +345,11 @@ export function OnboardingWizard() {
       trackName: trackNameWithLevel,
       skillLevel: finalLevel,
       diagnosticAnswers,
-      weeklyHours,
-      learningStyles: selectedStyles,
       diagnosticScore: diagnosticPercentage,
       aiRecommendation,
     };
 
     if (typeof window !== "undefined") {
-      localStorage.setItem("edtech_onboarding", JSON.stringify(onboardingSummary));
       document.cookie = `edtech_onboarded=true; path=/; max-age=31536000; SameSite=Lax`;
     }
 
@@ -710,14 +686,7 @@ export function OnboardingWizard() {
               {/* Final CTA Button */}
               <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-6 border-t border-slate-100">
                 <button
-                  onClick={
-                    (e) => {
-                       window.location.reload()
-                      handlePrevStep();
-                     ;
-                    }
-                    
-                  }
+                  onClick={handlePrevStep}
                   className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-100 font-bold text-xs transition-all cursor-pointer"
                 >
                   <ArrowLeft className="w-4 h-4" />

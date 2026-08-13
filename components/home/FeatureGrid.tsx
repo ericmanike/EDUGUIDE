@@ -90,7 +90,7 @@ export const FeatureGrid: React.FC = () => {
                 </div>
 
                 <Link
-                  href="/dashboard"
+                  href="/onboarding"
                   className="w-full inline-flex items-center justify-center gap-2 bg-[#1e3a8a] hover:bg-[#1d4ed8] text-white text-xs sm:text-sm font-bold py-2.5 px-4 rounded-xl transition-all shadow-sm hover:shadow-md group/btn"
                 >
                   <span>Start Now</span>

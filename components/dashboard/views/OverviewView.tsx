@@ -48,7 +48,7 @@ export const OverviewView: React.FC = () => {
         }
 
         if (apiPaths && apiPaths.length > 0) {
-          const activeUserPath = userPaths.find((up) => up.isActive);
+          const activeUserPath = userPaths.find((up) => up.isActive || up.active);
           const activePathId = activeUserPath?.path?.id || activeUserPath?.pathId;
 
           const formatted: LearningPathData[] = apiPaths.map((ap, idx) => {
@@ -108,7 +108,7 @@ export const OverviewView: React.FC = () => {
   const totalAllModules = paths.reduce((sum, p) => sum + (p.totalModules || 0), 0);
   const calculatedMastery = totalAllModules > 0
     ? `${totalCompletedModules} / ${totalAllModules} Modules`
-    : `${paths.length} Active Tracks`;
+    : `${paths.length}`;
 
   return isLoading ? (
     <DashboardSkeleton />
