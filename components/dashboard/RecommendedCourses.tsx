@@ -106,12 +106,12 @@ export const RecommendedCourses: React.FC<RecommendedCoursesProps> = ({
               }
             });
 
-            // 1. Fetch modules for the active path
+            // Fetch modules strictly for the active path — no cross-path fallback
             if (activePathId) {
               const pMods = await fetchPathModulesByPath(activePathId);
               if (pMods && pMods.length > 0) {
                 const activePathLevel = pathLevelMap[activePathId] || "";
-                const enrolledModuleMap = new Map<string, CourseModule>();
+                const activeModuleMap = new Map<string, CourseModule>();
 
                 pMods.forEach((pm) => {
                   const mId = pm.module?.id || pm.moduleId;
@@ -121,7 +121,7 @@ export const RecommendedCourses: React.FC<RecommendedCoursesProps> = ({
                     if (pmLevel) moduleLevelMap[mId] = pmLevel;
 
                     if (pm.module?.id) {
-                      enrolledModuleMap.set(pm.module.id, {
+                      activeModuleMap.set(pm.module.id, {
                         id: pm.module.id,
                         title: pm.module.title,
                         topic: pm.module.topic || "Core",
@@ -130,66 +130,15 @@ export const RecommendedCourses: React.FC<RecommendedCoursesProps> = ({
                       });
                     } else if (pm.moduleId) {
                       const matched = allModules.find((m) => m.id === pm.moduleId);
-                      if (matched) enrolledModuleMap.set(matched.id, matched);
+                      if (matched) activeModuleMap.set(matched.id, matched);
                     }
                   }
                 });
 
-                if (enrolledModuleMap.size > 0) {
-                  activeModules = Array.from(enrolledModuleMap.values());
-                }
+                activeModules = Array.from(activeModuleMap.values());
               }
             }
-
-            // 2. Fallback to all enrolled paths if active path has no mapped modules
-            if (activeModules.length === 0) {
-              const enrolledPathIds = userPaths
-                .map((up) => up.path?.id || up.pathId)
-                .filter(Boolean) as string[];
-
-              const pathModulesArrays = await Promise.all(
-                enrolledPathIds.map((pId) => fetchPathModulesByPath(pId))
-              );
-
-              const enrolledModuleMap = new Map<string, CourseModule>();
-              pathModulesArrays.forEach((pMods, idx) => {
-                const parentPathId = enrolledPathIds[idx];
-                const parentLevel = pathLevelMap[parentPathId] || "";
-
-                pMods?.forEach((pm) => {
-                  const mId = pm.module?.id || pm.moduleId;
-                  const pmLevel = pm.path?.level ? formatPathLevel(pm.path.level) : parentLevel;
-
-                  if (mId) {
-                    if (pmLevel) moduleLevelMap[mId] = pmLevel;
-
-                    if (pm.module?.id) {
-                      enrolledModuleMap.set(pm.module.id, {
-                        id: pm.module.id,
-                        title: pm.module.title,
-                        topic: pm.module.topic || "Core",
-                        description: pm.module.description || "",
-                        durationMinutes: pm.module.durationMinutes || 120,
-                      });
-                    } else if (pm.moduleId) {
-                      const matched = allModules.find((m) => m.id === pm.moduleId);
-                      if (matched) enrolledModuleMap.set(matched.id, matched);
-                    }
-                  }
-                });
-              });
-
-              if (enrolledModuleMap.size > 0) {
-                activeModules = Array.from(enrolledModuleMap.values());
-              } else {
-                activeModules = allModules;
-              }
-            }
-          } else {
-            activeModules = allModules;
           }
-        } else {
-          activeModules = allModules;
         }
 
         if (activeModules && activeModules.length > 0) {
@@ -237,7 +186,7 @@ export const RecommendedCourses: React.FC<RecommendedCoursesProps> = ({
             <span>Active Course Modules</span>
           </h3>
           <p className="text-xs text-slate-500 font-medium">
-            Explore all the modules of your active courses
+            Explore modules of your active courses
           </p>
         </div>
         <Button

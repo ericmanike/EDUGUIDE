@@ -956,6 +956,7 @@ export async function enrollInLearningPath(pathIdOrSlug: string): Promise<boolea
   }
 }
 
+
 export async function fetchUserLearningPaths(userId: string): Promise<UserLearningPath[]> {
   try {
     const res = await fetch(`${API_BASE_URL}/user-learning-paths/user/${userId}`, {

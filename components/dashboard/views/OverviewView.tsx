@@ -3,11 +3,6 @@
 import React, { useState, useEffect } from "react";
 import { StatCard } from "@/components/ui/StatCard";
 import {
-  LearningPathCard,
-  LearningPathData,
-} from "@/components/dashboard/LearningPathCard";
-import { RecommendedCourses } from "@/components/dashboard/RecommendedCourses";
-import {
   WeeklyActivityChart,
 } from "@/components/dashboard/AnalyticsCharts";
 import { Badge } from "@/components/ui/Badge";
@@ -15,21 +10,25 @@ import {
   Route,
   Award,
   Sparkles,
-  TrendingUp,
 } from "lucide-react";
 import {
-  fetchLearningPaths,
   fetchActiveUserLearningPaths,
+  fetchPathModulesByPath,
+  fetchUserModuleProgress,
   getCurrentUser,
-  enrollInLearningPath,
-  UserLearningPath,
+  UserModuleProgress,
 } from "@/lib/api";
 import { DashboardSkeleton } from "@/components/dashboard/DashboardSkeleton";
 
+function isModuleCompleted(ump: UserModuleProgress): boolean {
+  return ump.status === "COMPLETED" || ump.progressPercentage >= 100 || !!ump.completedAt;
+}
+
 export const OverviewView: React.FC = () => {
-  const [paths, setPaths] = useState<LearningPathData[]>([]);
   const [activeTitle, setActiveTitle] = useState("");
   const [userName, setUserName] = useState("Student");
+  const [courseProgress, setCourseProgress] = useState(0);
+  const [moduleStats, setModuleStats] = useState({ completed: 0, total: 0 });
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
@@ -41,40 +40,39 @@ export const OverviewView: React.FC = () => {
           setUserName(currentUser.name);
         }
 
-        const apiPaths = await fetchLearningPaths();
-        let activeUserPaths: UserLearningPath[] = [];
         if (currentUser?.id) {
-          activeUserPaths = await fetchActiveUserLearningPaths(currentUser.id);
-        }
-
-        if (apiPaths && apiPaths.length > 0) {
+          // 1. Find the enrolled/active course
+          const activeUserPaths = await fetchActiveUserLearningPaths(currentUser.id);
           const activeUserPath = activeUserPaths[0];
           const activePathId = activeUserPath?.path?.id || activeUserPath?.pathId;
 
-          const formatted: LearningPathData[] = apiPaths.map((ap, idx) => {
-            const isCurrentlyActive = activePathId ? ap.id === activePathId : idx === 0;
-            return {
-              id: ap.id,
-              title: ap.title,
-              description: ap.description || "Custom backend learning path.",
-              matchScore: ap.matchScore || 95,
-              level: ((): "Beginner" | "Intermediate" | "Advanced" => {
-                const up = (ap.level || "").trim().toUpperCase();
-                if (up === "INTERMEDIATE") return "Intermediate";
-                if (up === "ADVANCED") return "Advanced";
-                return "Beginner";
-              })(),
-              estimatedHours: ap.estimatedHours || 40,
-              totalModules: ap.totalModules || 10,
-              completedModules: ap.completedModules || 0,
-              skillsCovered: ap.skillsCovered || [],
-              isActive: isCurrentlyActive,
-            };
-          });
+          if (activeUserPath?.path?.title) {
+            setActiveTitle(activeUserPath.path.title);
+          }
+          setCourseProgress(activeUserPath?.progressPercentage || 0);
 
-          setPaths(formatted);
-          const activeItem = formatted.find((p) => p.isActive) || formatted[0];
-          if (activeItem) setActiveTitle(activeItem.title);
+          // 2. Use that pathId to find the active course's modules and how many are complete
+          if (activePathId) {
+            const [pathModules, moduleProgressList] = await Promise.all([
+              fetchPathModulesByPath(activePathId),
+              fetchUserModuleProgress(currentUser.id),
+            ]);
+
+            const activeModuleIds = new Set(
+              pathModules
+                .map((pm) => pm.module?.id || pm.moduleId)
+                .filter((id): id is string => !!id)
+            );
+
+            const completedCount = moduleProgressList.filter((ump) => {
+              const mId = ump.module?.id || ump.moduleId;
+              return !!mId && activeModuleIds.has(mId) && isModuleCompleted(ump);
+            }).length;
+
+            setModuleStats({ completed: completedCount, total: activeModuleIds.size });
+          } else {
+            setModuleStats({ completed: 0, total: 0 });
+          }
         }
       } catch (error) {
         console.error("Failed to load user data/paths:", error);
@@ -86,29 +84,8 @@ export const OverviewView: React.FC = () => {
     loadData();
   }, []);
 
-  const handleSelectPath = async (id: string) => {
-    setPaths((prev) =>
-      prev.map((p) => {
-        if (p.id === id) {
-          setActiveTitle(p.title);
-          return { ...p, isActive: true };
-        }
-        return { ...p, isActive: false };
-      })
-    );
-    await enrollInLearningPath(id);
-  };
-
-
-  const activePath = paths.find((p) => p.isActive) || paths[0];
-  const calculatedProgress = activePath && activePath.totalModules > 0
-    ? `${Math.round((activePath.completedModules / activePath.totalModules) * 100)}%`
-    : "0%";
-  const totalCompletedModules = paths.reduce((sum, p) => sum + (p.completedModules || 0), 0);
-  const totalAllModules = paths.reduce((sum, p) => sum + (p.totalModules || 0), 0);
-  const calculatedMastery = totalAllModules > 0
-    ? `${totalCompletedModules} / ${totalAllModules} Modules`
-    : `${paths.length}`;
+  const calculatedProgress = `${Math.round(courseProgress)}%`;
+  const calculatedMastery = `${moduleStats.completed} / ${moduleStats.total} Modules`;
 
   return isLoading ? (
     <DashboardSkeleton />
@@ -140,7 +117,7 @@ export const OverviewView: React.FC = () => {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <StatCard
           title="Active Course"
-          value={activeTitle || (paths.length > 0 ? paths[0].title : "No Active Course")}
+          value={activeTitle || "No Active Course"}
           icon={<Route className="w-4 h-4 text-[#1e3a8a]" />}
           variant="white"
         />
