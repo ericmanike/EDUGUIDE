@@ -4,13 +4,16 @@ import React, { useState, useEffect } from "react";
 import { Badge } from "@/components/ui/Badge";
 import { LearningPathCard, LearningPathData } from "@/components/dashboard/LearningPathCard";
 import { SlidersHorizontal } from "lucide-react";
-import { fetchLearningPaths, fetchUserLearningPaths, getCurrentUser, enrollInLearningPath, UserLearningPath } from "@/lib/api";
+import { fetchLearningPaths, fetchActiveUserLearningPaths, getCurrentUser, enrollInLearningPath, UserLearningPath } from "@/lib/api";
 import { DashboardSkeleton } from "@/components/dashboard/DashboardSkeleton";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 export const PathsView: React.FC = () => {
   const [paths, setPaths] = useState<LearningPathData[]>([]);
   const [filter, setFilter] = useState<string>("All");
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [enrollingId, setEnrollingId] = useState<string | null>(null);
 
   useEffect(() => {
     const loadPaths = async () => {
@@ -18,13 +21,13 @@ export const PathsView: React.FC = () => {
       try {
         const currentUser = getCurrentUser();
         const apiData = await fetchLearningPaths();
-        let userPaths: UserLearningPath[] = [];
+        let activeUserPaths: UserLearningPath[] = [];
         if (currentUser?.id) {
-          userPaths = await fetchUserLearningPaths(currentUser.id);
+          activeUserPaths = await fetchActiveUserLearningPaths(currentUser.id);
         }
 
         if (apiData && apiData.length > 0) {
-          const activeUserPath = userPaths.find((up) => up.isActive || up.active);
+          const activeUserPath = activeUserPaths[0];
           const activePathId = activeUserPath?.path?.id || activeUserPath?.pathId;
 
           const formatted: LearningPathData[] = apiData.map((ap, idx) => {
@@ -69,16 +72,29 @@ export const PathsView: React.FC = () => {
   });
 
   const handleSelect = async (id: string) => {
-    setPaths((prev) =>
-      prev.map((p) => ({ ...p, isActive: p.id === id }))
-    );
-    await enrollInLearningPath(id);
+    const path = paths.find((p) => p.id === id);
+    setEnrollingId(id);
+    try {
+      const success = await enrollInLearningPath(id);
+      if (success) {
+        setPaths((prev) =>
+          prev.map((p) => ({ ...p, isActive: p.id === id }))
+        );
+        toast.success(`Enrolled in ${path?.title || "learning path"}!`);
+      } else {
+        toast.error(`Failed to enroll in ${path?.title || "learning path"}. Please try again.`);
+      }
+    } finally {
+      setEnrollingId(null);
+    }
   };
 
   return isLoading ? (
     <DashboardSkeleton />
   ) : (
     <div className="space-y-6">
+      <ToastContainer position="top-right" autoClose={3000} />
+
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
@@ -127,6 +143,7 @@ export const PathsView: React.FC = () => {
             key={path.id}
             path={path}
             onSelectPath={handleSelect}
+            isEnrolling={enrollingId === path.id}
             onViewNodes={() => alert(`Opening roadmap details for ${path.title}`)}
           />
         ))}

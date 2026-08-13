@@ -234,10 +234,10 @@ export const RecommendedCourses: React.FC<RecommendedCoursesProps> = ({
       <div className="flex items-center justify-between">
         <div>
           <h3 className="text-lg font-bold text-slate-900 tracking-tight flex items-center gap-2">
-            <span>Enrolled Course Modules</span>
+            <span>Active Course Modules</span>
           </h3>
           <p className="text-xs text-slate-500 font-medium">
-            Modules belonging to your enrolled courses & learning tracks
+            Explore all the modules of your active courses
           </p>
         </div>
         <Button

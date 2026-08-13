@@ -19,7 +19,7 @@ import {
 } from "lucide-react";
 import {
   fetchLearningPaths,
-  fetchUserLearningPaths,
+  fetchActiveUserLearningPaths,
   getCurrentUser,
   enrollInLearningPath,
   UserLearningPath,
@@ -42,13 +42,13 @@ export const OverviewView: React.FC = () => {
         }
 
         const apiPaths = await fetchLearningPaths();
-        let userPaths: UserLearningPath[] = [];
+        let activeUserPaths: UserLearningPath[] = [];
         if (currentUser?.id) {
-          userPaths = await fetchUserLearningPaths(currentUser.id);
+          activeUserPaths = await fetchActiveUserLearningPaths(currentUser.id);
         }
 
         if (apiPaths && apiPaths.length > 0) {
-          const activeUserPath = userPaths.find((up) => up.isActive || up.active);
+          const activeUserPath = activeUserPaths[0];
           const activePathId = activeUserPath?.path?.id || activeUserPath?.pathId;
 
           const formatted: LearningPathData[] = apiPaths.map((ap, idx) => {
@@ -164,41 +164,8 @@ export const OverviewView: React.FC = () => {
       </section>
 
     
-      {/* Recommended Learning Paths Section */}
-      <section className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className="text-lg font-bold text-slate-900 tracking-tight">
-              Recommended Learning Paths
-            </h3>
-            <p className="text-xs text-slate-500">
-              Custom-tailored learning routes generated for your career goal
-            </p>
-          </div>
-          <Badge variant="indigo" icon={<TrendingUp className="w-3 h-3" />}>
-            {paths.length} Recommended Tracks
-          </Badge>
-        </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-          {paths.map((path) => (
-            <LearningPathCard
-              key={path.id}
-              path={path}
-              onSelectPath={handleSelectPath}
-              onViewNodes={() => {
-                const el = document.getElementById("interactive-roadmap");
-                if (el) el.scrollIntoView({ behavior: "smooth" });
-              }}
-            />
-          ))}
-        </div>
-      </section>
-
-      {/* Course Modules Section */}
-      <section>
-        <RecommendedCourses />
-      </section>
+  
     </div>
   );
 };

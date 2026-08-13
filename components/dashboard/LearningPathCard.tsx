@@ -2,7 +2,7 @@ import React from "react";
 import { Card, CardHeader, CardTitle, CardFooter } from "../ui/Card";
 import { Badge } from "../ui/Badge";
 import { Button } from "../ui/Button";
-import { Clock, BookOpen, ArrowRight, CheckCircle2 } from "lucide-react";
+import { Clock, BookOpen, ArrowRight, CheckCircle2, Loader2 } from "lucide-react";
 
 export interface LearningPathData {
   id: string;
@@ -21,12 +21,14 @@ interface LearningPathCardProps {
   path: LearningPathData;
   onSelectPath?: (id: string) => void;
   onViewNodes?: (path: LearningPathData) => void;
+  isEnrolling?: boolean;
 }
 
 export const LearningPathCard: React.FC<LearningPathCardProps> = ({
   path,
   onSelectPath,
   onViewNodes,
+  isEnrolling = false,
 }) => {
   const progressPercent = Math.round(
     (path.completedModules / path.totalModules) * 100
@@ -99,10 +101,11 @@ export const LearningPathCard: React.FC<LearningPathCardProps> = ({
             variant={path.isActive ? "primary" : "slate"}
             size="sm"
             className="w-full"
-            icon={<ArrowRight className="w-3.5 h-3.5" />}
+            icon={isEnrolling ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <ArrowRight className="w-3.5 h-3.5" />}
+            disabled={isEnrolling}
             onClick={() => onSelectPath && onSelectPath(path.id)}
           >
-            {path.isActive ? "Continue Course" : "Enroll In Course"}
+            {isEnrolling ? "Enrolling..." : path.isActive ? "Continue Course" : "Enroll Now"}
           </Button>
         </CardFooter>
       </div>

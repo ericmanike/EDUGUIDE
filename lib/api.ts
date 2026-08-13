@@ -832,6 +832,23 @@ export async function fetchUserModuleProgressStats(
    USER LEARNING PATH & ENROLLMENT APIs
    ========================================================================== */
 
+export async function updateUserLearningPath(
+  id: string,
+  data: Partial<{ active: boolean; matchScore: number; progressPercentage: number }>
+): Promise<boolean> {
+  try {
+    const res = await fetch(`${API_BASE_URL}/user-learning-paths/${id}`, {
+      method: "PUT",
+      headers: getAuthHeaders(),
+      body: JSON.stringify(data),
+    });
+    return res.ok;
+  } catch (error) {
+    console.error(`Failed to update user learning path ${id}:`, error);
+    return false;
+  }
+}
+
 export async function enrollInLearningPath(pathIdOrSlug: string): Promise<boolean> {
   try {
     const user = getCurrentUser();
@@ -855,21 +872,39 @@ export async function enrollInLearningPath(pathIdOrSlug: string): Promise<boolea
       }
     }
 
-    // 2. Post enrollment record to user_learning_paths table
+    // 2. Enforce single active path: look up this user's existing enrollments,
+    // deactivate any other active row, and activate (or create) the target row.
     if (user?.id) {
       try {
-        await fetch(`${API_BASE_URL}/user-learning-paths`, {
-          method: "POST",
-          headers: getAuthHeaders(),
-          body: JSON.stringify({
-            userId: user.id,
-            pathId: resolvedPathId,
-            isActive: true,
-            progressPercentage: 0,
-          }),
-        });
+        const existingRows = await fetchUserLearningPaths(user.id);
+        const targetRow = existingRows.find(
+          (row) => row.path?.id === resolvedPathId || row.pathId === resolvedPathId
+        );
+
+        const deactivations = existingRows
+          .filter((row) => row.id && row.id !== targetRow?.id && (row.active || row.isActive))
+          .map((row) => updateUserLearningPath(row.id as string, { active: false }));
+        await Promise.all(deactivations);
+
+        if (targetRow?.id) {
+          const activated = await updateUserLearningPath(targetRow.id, { active: true });
+          if (!activated) return false;
+        } else {
+          const res = await fetch(`${API_BASE_URL}/user-learning-paths`, {
+            method: "POST",
+            headers: getAuthHeaders(),
+            body: JSON.stringify({
+              userId: user.id,
+              pathId: resolvedPathId,
+              active: true,
+              progressPercentage: 0,
+            }),
+          });
+          if (!res.ok) return false;
+        }
       } catch (err) {
-        console.warn("Backend user-learning-paths post notice:", err);
+        console.error("Failed to activate user learning path:", err);
+        return false;
       }
     }
 
@@ -937,6 +972,21 @@ export async function fetchUserLearningPaths(userId: string): Promise<UserLearni
     return backendPaths;
   } catch (error) {
     console.error("Failed to fetch user learning paths:", error);
+    return [];
+  }
+}
+
+export async function fetchActiveUserLearningPaths(userId: string): Promise<UserLearningPath[]> {
+  try {
+    const res = await fetch(`${API_BASE_URL}/user-learning-paths/user/${userId}/active`, {
+      method: "GET",
+      headers: getAuthHeaders(),
+      cache: "no-store",
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return await res.json();
+  } catch (error) {
+    console.error(`Failed to fetch active user learning paths for ${userId}:`, error);
     return [];
   }
 }

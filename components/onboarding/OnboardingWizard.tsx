@@ -702,7 +702,7 @@ export function OnboardingWizard() {
                     <span>Please wait..</span>
                   ) : (
                     <>
-                      Enroll in Course
+                      Enroll Now
                       <ArrowRight className="w-5 h-5" />
                     </>
                   )}

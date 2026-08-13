@@ -25,7 +25,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, onCloseMobile })
 
   const navItems = [
     { id: "dashboard", label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-    { id: "paths", label: "For You Courses ", href: "/dashboard/paths", icon: Route },
+    { id: "paths", label: "My Courses ", href: "/dashboard/paths", icon: Route },
     { id: "explore", label: "Explorer", href: "/dashboard/explore", icon: Compass },
     { id: "courses", label: "Course Modules", href: "/dashboard/courses", icon: BookOpen },
     { id: "analytics", label: "Progress Analytics", href: "/dashboard/analytics", icon: TrendingUp },
