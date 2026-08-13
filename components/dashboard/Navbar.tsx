@@ -98,9 +98,9 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleMobileMenu }) => {
         {/* Help & Support */}
         <button
           title="Help & Support"
-          className="p-1.5 sm:p-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-600 transition-all cursor-pointer border border-slate-200/60"
+          className="flex items-center justify-center p-1.5 sm:p-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-600 transition-all cursor-pointer border border-slate-200/60 shrink-0"
         >
-          <HelpCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+          <HelpCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
         </button>
 
         {/* Interactive Profile Dropdown Pill */}

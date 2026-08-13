@@ -52,7 +52,7 @@ export const Button: React.FC<ButtonProps> = ({
       disabled={disabled}
       {...props}
     >
-      {icon && <span className="shrink-0">{icon}</span>}
+      {icon && <span className="shrink-0 inline-flex items-center justify-center">{icon}</span>}
       <span>{children}</span>
     </button>
   );

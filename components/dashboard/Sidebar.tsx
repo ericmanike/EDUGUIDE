@@ -91,11 +91,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, onCloseMobile })
 
                     <div className="relative z-10 flex items-center gap-3.5">
                       <Icon
-                        className={`w-5 h-5 transition-colors ${
+                        className={`w-5 h-5 shrink-0 transition-colors ${
                           isActive ? "text-[#fb923c]" : "text-slate-400"
                         }`}
                       />
-                      <span>{item.label}</span>
+                      <span className="leading-none">{item.label}</span>
                     </div>
                   </motion.div>
                 </Link>

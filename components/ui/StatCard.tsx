@@ -8,6 +8,7 @@ interface StatCardProps {
   changeType?: "positive" | "negative" | "neutral";
   icon?: React.ReactNode;
   variant?: "white" | "indigo-accent" | "orange-accent";
+  className?: string;
 }
 
 export const StatCard: React.FC<StatCardProps> = ({
@@ -16,6 +17,7 @@ export const StatCard: React.FC<StatCardProps> = ({
   change,
   changeType = "positive",
   icon,
+  className = "",
 }) => {
   const changeColors = {
     positive: "text-emerald-600 font-bold",
@@ -24,13 +26,13 @@ export const StatCard: React.FC<StatCardProps> = ({
   };
 
   return (
-    <Card variant="white" hoverEffect className="relative overflow-hidden border border-slate-100/90 shadow-sm hover:shadow-md transition-all p-3.5 sm:p-4 rounded-2xl">
-      <div className="flex items-center justify-between">
-        <div className="space-y-0.5">
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+    <Card variant="white" hoverEffect className={`relative overflow-hidden border border-slate-100/90 shadow-sm hover:shadow-md transition-all p-4 sm:p-5 rounded-2xl flex items-center ${className}`}>
+      <div className="flex items-center justify-between w-full gap-3">
+        <div className="space-y-1 min-w-0 flex-1">
+          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400 truncate">
             {title}
           </p>
-          <h4 className="text-base sm:text-lg font-black tracking-tight text-slate-900">
+          <h4 className="text-base sm:text-lg font-black tracking-tight text-slate-900 truncate">
             {value}
           </h4>
           {change && (
@@ -39,7 +41,7 @@ export const StatCard: React.FC<StatCardProps> = ({
             </div>
           )}
         </div>
-        <div className="p-2 rounded-xl bg-blue-50/80 text-[#1e3a8a] border border-blue-100/60 shrink-0">
+        <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-blue-50/80 text-[#1e3a8a] border border-blue-100/60 shrink-0">
           {icon}
         </div>
       </div>

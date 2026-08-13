@@ -33,7 +33,7 @@ export const Badge: React.FC<BadgeProps> = ({
 
   return (
     <span className={`${base} ${variants[variant]} ${sizes[size]} ${className}`}>
-      {icon && <span className="shrink-0">{icon}</span>}
+      {icon && <span className="shrink-0 inline-flex items-center justify-center">{icon}</span>}
       {children}
     </span>
   );

@@ -1,15 +1,16 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Link from "next/link";
 import { StatCard } from "@/components/ui/StatCard";
-import {
-  WeeklyActivityChart,
-} from "@/components/dashboard/AnalyticsCharts";
+
 import { Badge } from "@/components/ui/Badge";
+import { useRouter } from "next/navigation";
 import {
   Route,
   Award,
   Sparkles,
+  ArrowRight,
 } from "lucide-react";
 import {
   fetchActiveUserLearningPaths,
@@ -85,17 +86,17 @@ export const OverviewView: React.FC = () => {
   }, []);
 
   const calculatedProgress = `${Math.round(courseProgress)}%`;
-  const calculatedMastery = `${moduleStats.completed} / ${moduleStats.total} Modules`;
+  const calculatedMastery = `${moduleStats.total}`;
 
   return isLoading ? (
     <DashboardSkeleton />
   ) : (
     <div className="space-y-8">
       {/* Welcome Banner Card */}
-      <div className="relative overflow-hidden p-8 rounded-2xl bg-gradient-to-r from-slate-900 via-[#1e3a8a] to-slate-900 border border-slate-800 shadow-xl shadow-slate-900/10">
+      <div className="relative overflow-hidden p-8 min-h-[220px] rounded-2xl bg-gradient-to-r from-slate-900 via-[#1e3a8a] to-slate-900 border border-slate-800 shadow-xl shadow-slate-900/10 flex items-center">
         <div className="absolute top-0 right-0 -mr-16 -mt-16 w-80 h-80 bg-blue-500/15 rounded-full blur-3xl pointer-events-none" />
 
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 relative z-10">
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 relative z-10 w-full">
           <div className="space-y-2">
             <div className="flex items-center gap-2">
               <Badge variant="indigo">
@@ -118,28 +119,44 @@ export const OverviewView: React.FC = () => {
         <StatCard
           title="Active Course"
           value={activeTitle || "No Active Course"}
-          icon={<Route className="w-4 h-4 text-[#1e3a8a]" />}
+          icon={<Route className="w-5 h-5 text-[#1e3a8a]" />}
           variant="white"
+          className="min-h-[105px]"
         />
         <StatCard
           title="Course Progress"
           value={calculatedProgress}
-          icon={<Award className="w-4 h-4 text-[#1e3a8a]" />}
+          icon={<Award className="w-5 h-5 text-[#1e3a8a]" />}
           variant="white"
+          className="min-h-[105px]"
         />
         <StatCard
-          title=" Active Modules"
+          title="Course Modules"
           value={calculatedMastery}
-          icon={<Sparkles className="w-4 h-4 text-[#1e3a8a]" />}
+          icon={<Sparkles className="w-5 h-5 text-[#1e3a8a]" />}
           variant="white"
+          className="min-h-[105px]"
         />
       </div>
 
-      {/* Analytics Grid */}
-      <section>
-        <WeeklyActivityChart />
-      </section>
+   
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-2">
+        <Link
+          href="/dashboard/courses"
+          className="inline-flex items-center justify-center gap-2.5 bg-[#1e3a8a] hover:bg-[#1d4ed8] text-white px-6 py-3 rounded-[10px] font-bold text-sm shadow-md shadow-[#1e3a8a]/20 transition-all cursor-pointer group"
+        >
+          <span>Start Learning</span>
+          <ArrowRight className="w-4 h-4 shrink-0 group-hover:translate-x-1 transition-transform" />
+        </Link>
 
+        <Link
+          href="/dashboard/explore"
+          className="inline-flex items-center justify-center gap-2.5 bg-[#1e3a8a] hover:bg-[#1d4ed8] text-white px-6 py-3 rounded-[10px] font-bold text-sm shadow-md shadow-[#1e3a8a]/20 transition-all cursor-pointer group"
+        >
+          <span>Explore All Courses</span>
+          <ArrowRight className="w-4 h-4 shrink-0 group-hover:translate-x-1 transition-transform" />
+        </Link>
+      </div>
     
 
   

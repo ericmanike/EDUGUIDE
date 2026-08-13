@@ -7,7 +7,7 @@ import {
 } from "@/components/dashboard/AnalyticsCharts";
 import { StatCard } from "@/components/ui/StatCard";
 import { Badge } from "@/components/ui/Badge";
-import { TrendingUp, Route, Award, Sparkles, Target } from "lucide-react";
+import { TrendingUp, Route, Award, Sparkles } from "lucide-react";
 import {
   fetchActiveUserLearningPaths,
   fetchPathModulesByPath,
@@ -23,7 +23,6 @@ function isModuleCompleted(ump: UserModuleProgress): boolean {
 export const AnalyticsView: React.FC = () => {
   const [activeTitle, setActiveTitle] = useState("No Active Course");
   const [courseProgress, setCourseProgress] = useState(0);
-  const [matchScore, setMatchScore] = useState(0);
   const [moduleStats, setModuleStats] = useState({ completed: 0, total: 0 });
 
   useEffect(() => {
@@ -41,7 +40,6 @@ export const AnalyticsView: React.FC = () => {
           setActiveTitle(activeUserPath.path.title);
         }
         setCourseProgress(activeUserPath?.progressPercentage || 0);
-        setMatchScore(activeUserPath?.matchScore || 0);
 
         // 2. Get the full progress stats for that course's modules
         if (activePathId) {
@@ -89,30 +87,27 @@ export const AnalyticsView: React.FC = () => {
       </div>
 
       {/* Metric Cards Banner */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <StatCard
           title="Active Course"
           value={activeTitle}
           icon={<Route className="w-5 h-5 text-[#1e3a8a]" />}
           variant="white"
+          className="min-h-[140px] flex items-center"
         />
         <StatCard
           title="Course Progress"
           value={`${Math.round(courseProgress)}%`}
           icon={<Award className="w-5 h-5 text-[#1e3a8a]" />}
           variant="white"
+          className="min-h-[140px] flex items-center"
         />
         <StatCard
           title="Active Modules"
           value={`${moduleStats.completed} / ${moduleStats.total} Modules`}
           icon={<Sparkles className="w-5 h-5 text-[#1e3a8a]" />}
           variant="white"
-        />
-        <StatCard
-          title="Match Score"
-          value={`${Math.round(matchScore)}%`}
-          icon={<Target className="w-5 h-5 text-emerald-600" />}
-          variant="white"
+          className="min-h-[140px] flex items-center"
         />
       </div>
 
