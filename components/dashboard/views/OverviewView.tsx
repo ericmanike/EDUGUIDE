@@ -16,8 +16,10 @@ import {
   fetchActiveUserLearningPaths,
   fetchPathModulesByPath,
   fetchUserModuleProgress,
+  fetchUserPathProgressStats,
   getCurrentUser,
   UserModuleProgress,
+  PathProgressStats,
 } from "@/lib/api";
 import { DashboardSkeleton } from "@/components/dashboard/DashboardSkeleton";
 
@@ -30,6 +32,7 @@ export const OverviewView: React.FC = () => {
   const [userName, setUserName] = useState("Student");
   const [courseProgress, setCourseProgress] = useState(0);
   const [moduleStats, setModuleStats] = useState({ completed: 0, total: 0 });
+  const [pathStats, setPathStats] = useState<PathProgressStats | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
@@ -42,37 +45,74 @@ export const OverviewView: React.FC = () => {
         }
 
         if (currentUser?.id) {
-          // 1. Find the enrolled/active course
-          const activeUserPaths = await fetchActiveUserLearningPaths(currentUser.id);
+          // 1. Always fetch active paths AND user module progress in parallel
+          const [activeUserPaths, moduleProgressList] = await Promise.all([
+            fetchActiveUserLearningPaths(currentUser.id),
+            fetchUserModuleProgress(currentUser.id),
+          ]);
+
           const activeUserPath = activeUserPaths[0];
           const activePathId = activeUserPath?.path?.id || activeUserPath?.pathId;
 
           if (activeUserPath?.path?.title) {
             setActiveTitle(activeUserPath.path.title);
           }
-          setCourseProgress(activeUserPath?.progressPercentage || 0);
 
-          // 2. Use that pathId to find the active course's modules and how many are complete
+          // 2. Fetch path progress stats & path modules if active path exists
           if (activePathId) {
-            const [pathModules, moduleProgressList] = await Promise.all([
+            const [pathModules, stats] = await Promise.all([
               fetchPathModulesByPath(activePathId),
-              fetchUserModuleProgress(currentUser.id),
+              fetchUserPathProgressStats(currentUser.id, activePathId),
             ]);
 
-            const activeModuleIds = new Set(
-              pathModules
-                .map((pm) => pm.module?.id || pm.moduleId)
-                .filter((id): id is string => !!id)
-            );
+            console.log("Fetched user path progress stats:", stats);
+            setPathStats(stats);
 
-            const completedCount = moduleProgressList.filter((ump) => {
-              const mId = ump.module?.id || ump.moduleId;
-              return !!mId && activeModuleIds.has(mId) && isModuleCompleted(ump);
-            }).length;
+            if (stats) {
+              if (stats.pathTitle) {
+                setActiveTitle(stats.pathTitle);
+              }
+              if (typeof stats.completionPercentage === "number") {
+                setCourseProgress(stats.completionPercentage);
+              }
+              if (typeof stats.completedModules === "number" && typeof stats.totalModules === "number") {
+                setModuleStats({
+                  completed: stats.completedModules,
+                  total: stats.totalModules,
+                });
+              } else {
+                const activeModuleIds = new Set(
+                  pathModules
+                    .map((pm) => pm.module?.id || pm.moduleId)
+                    .filter((id): id is string => !!id)
+                );
 
-            setModuleStats({ completed: completedCount, total: activeModuleIds.size });
+                const completedCount = moduleProgressList.filter((ump) => {
+                  const mId = ump.module?.id || ump.moduleId;
+                  return !!mId && activeModuleIds.has(mId) && isModuleCompleted(ump);
+                }).length;
+
+                setModuleStats({ completed: completedCount, total: activeModuleIds.size });
+              }
+            } else {
+              setCourseProgress(activeUserPath?.progressPercentage || 0);
+              const activeModuleIds = new Set(
+                pathModules
+                  .map((pm) => pm.module?.id || pm.moduleId)
+                  .filter((id): id is string => !!id)
+              );
+
+              const completedCount = moduleProgressList.filter((ump) => {
+                const mId = ump.module?.id || ump.moduleId;
+                return !!mId && activeModuleIds.has(mId) && isModuleCompleted(ump);
+              }).length;
+
+              setModuleStats({ completed: completedCount, total: activeModuleIds.size });
+            }
           } else {
-            setModuleStats({ completed: 0, total: 0 });
+            setCourseProgress(activeUserPath?.progressPercentage || 0);
+            const totalCompleted = moduleProgressList.filter(isModuleCompleted).length;
+            setModuleStats({ completed: totalCompleted, total: moduleProgressList.length });
           }
         }
       } catch (error) {
@@ -140,10 +180,10 @@ export const OverviewView: React.FC = () => {
       </div>
 
    
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-2">
-        <Link
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-end ">
+    <Link
           href="/dashboard/courses"
-          className="inline-flex items-center justify-center gap-2.5 bg-[#1e3a8a] hover:bg-[#1d4ed8] text-white px-6 py-3 rounded-[10px] font-bold text-sm shadow-md shadow-[#1e3a8a]/20 transition-all cursor-pointer group"
+          className="flex items-center justify-center gap-2.5 bg-[#1e3a8a] hover:bg-[#1d4ed8] text-white px-4 py-3 rounded-[10px] font-bold text-sm shadow-md shadow-[#1e3a8a]/20 transition-all cursor-pointer group"
         >
           <span>Start Learning</span>
           <ArrowRight className="w-4 h-4 shrink-0 group-hover:translate-x-1 transition-transform" />
@@ -151,7 +191,7 @@ export const OverviewView: React.FC = () => {
 
         <Link
           href="/dashboard/explore"
-          className="inline-flex items-center justify-center gap-2.5 bg-[#1e3a8a] hover:bg-[#1d4ed8] text-white px-6 py-3 rounded-[10px] font-bold text-sm shadow-md shadow-[#1e3a8a]/20 transition-all cursor-pointer group"
+          className="flex items-center justify-center gap-2.5 bg-[#1e3a8a] hover:bg-[#1d4ed8] text-white px-4 py-3 rounded-[10px] font-bold text-sm shadow-md shadow-[#1e3a8a]/20 transition-all cursor-pointer group"
         >
           <span>Explore All Courses</span>
           <ArrowRight className="w-4 h-4 shrink-0 group-hover:translate-x-1 transition-transform" />

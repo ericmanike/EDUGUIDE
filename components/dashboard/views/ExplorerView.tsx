@@ -9,6 +9,7 @@ import { Compass, Search, Sparkles } from "lucide-react";
 import {
   fetchLearningPaths,
   fetchUserLearningPaths,
+  fetchPathModulesByPath,
   getCurrentUser,
   enrollInLearningPath,
   LearningPath,
@@ -82,6 +83,28 @@ export const ExplorerView: React.FC = () => {
   }, []);
 
   const handleEnroll = async (id: string) => {
+    const targetPath = paths.find((p) => p.id === id);
+
+    // 1. If course is already active ("Continue Course"), redirect directly to course page instead of re-enrolling
+    if (targetPath?.isActive) {
+      try {
+        const pathModules = await fetchPathModulesByPath(id);
+        const targetModuleId = pathModules && pathModules.length > 0
+          ? (pathModules[0].module?.id || pathModules[0].moduleId || pathModules[0].id)
+          : null;
+
+        if (targetModuleId) {
+          router.push(`/dashboard/courses/${targetModuleId}`);
+        } else {
+          router.push(`/dashboard/courses`);
+        }
+      } catch {
+        router.push(`/dashboard/courses`);
+      }
+      return;
+    }
+
+    // 2. Otherwise, enroll in the new learning path
     setPaths((prev) => prev.map((p) => ({ ...p, isActive: p.id === id })));
     await enrollInLearningPath(id);
   };

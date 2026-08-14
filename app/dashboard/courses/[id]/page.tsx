@@ -37,6 +37,7 @@ export default function CoursePage({ params }: { params: Promise<{ id: string }>
   const [progressMap, setProgressMap] = useState<Record<string, "NOT_STARTED" | "IN_PROGRESS" | "COMPLETED">>({});
   const [activeLessonId, setActiveLessonId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isUpdatingAll, setIsUpdatingAll] = useState<boolean>(false);
 
   useEffect(() => {
     async function loadCourseContent() {
@@ -71,8 +72,11 @@ export default function CoursePage({ params }: { params: Promise<{ id: string }>
         const pMap: Record<string, "NOT_STARTED" | "IN_PROGRESS" | "COMPLETED"> = {};
 
         if (userProgressList && userProgressList.length > 0) {
-          userProgressList.forEach((up: UserLessonProgress) => {
-            pMap[up.lessonId] = up.status;
+          userProgressList.forEach((up: any) => {
+            const lId = up.lessonId || (up.lesson && up.lesson.id);
+            if (lId && up.status) {
+              pMap[lId] = up.status;
+            }
           });
         }
 
@@ -81,9 +85,18 @@ export default function CoursePage({ params }: { params: Promise<{ id: string }>
           const individualProgresses = await Promise.all(
             moduleLessons.map((lesson) => fetchUserLessonProgress(userId, lesson.id))
           );
-          individualProgresses.forEach((prog) => {
-            if (prog && prog.lessonId) {
-              pMap[prog.lessonId] = prog.status;
+          individualProgresses.forEach((prog: any, idx) => {
+            const targetLessonId = moduleLessons[idx].id;
+            if (prog && prog.status) {
+              const lId = prog.lessonId || (prog.lesson && prog.lesson.id) || targetLessonId;
+              pMap[lId] = prog.status;
+            } else {
+              // Check localStorage fallback backup
+              const localStatus = localStorage.getItem(`edtech_progress_${userId}_${targetLessonId}`) || 
+                                  localStorage.getItem(`edtech_progress_${targetLessonId}`);
+              if (localStatus === "COMPLETED" || localStatus === "IN_PROGRESS" || localStatus === "NOT_STARTED") {
+                pMap[targetLessonId] = localStatus;
+              }
             }
           });
         }
@@ -114,27 +127,57 @@ export default function CoursePage({ params }: { params: Promise<{ id: string }>
     const nextStatus: "NOT_STARTED" | "IN_PROGRESS" | "COMPLETED" =
       currentStatus === "COMPLETED" ? "IN_PROGRESS" : "COMPLETED";
 
-    // 1. Update React state immediately
-    const updatedMap: Record<string, "NOT_STARTED" | "IN_PROGRESS" | "COMPLETED"> = {
-      ...progressMap,
+    // 1. Update React state immediately (Optimistic UI Update)
+    setProgressMap((prev) => ({
+      ...prev,
       [lessonId]: nextStatus,
-    };
-    setProgressMap(updatedMap);
+    }));
 
-    // 2. Persist to backend database via REST API
+    // 2. Persist to backend REST endpoints & local storage fallback
     const currentUser = getCurrentUser();
     const userId = currentUser?.id || "u-guest";
 
-    await upsertUserLessonProgress({
+    const updatedProg = await upsertUserLessonProgress({
       userId,
       lessonId,
       status: nextStatus,
     });
 
-    // 3. Refetch specific lesson progress via GET /api/user-lesson-progress/user/{userId}/lesson/{lessonId}
-    const updatedProg = await fetchUserLessonProgress(userId, lessonId);
-    if (updatedProg) {
+    // 3. Keep state locked to updated status
+    if (updatedProg && updatedProg.status) {
       setProgressMap((prev) => ({ ...prev, [lessonId]: updatedProg.status }));
+    }
+  };
+
+  const handleMarkAllComplete = async () => {
+    if (lessons.length === 0 || isUpdatingAll) return;
+    setIsUpdatingAll(true);
+
+    const currentUser = getCurrentUser();
+    const userId = currentUser?.id || "u-guest";
+
+    // 1. Optimistically update local progress map state
+    const nextMap: Record<string, "NOT_STARTED" | "IN_PROGRESS" | "COMPLETED"> = { ...progressMap };
+    lessons.forEach((lesson) => {
+      nextMap[lesson.id] = "COMPLETED";
+    });
+    setProgressMap(nextMap);
+
+    // 2. Persist progress for all module lessons to backend via REST API
+    try {
+      await Promise.all(
+        lessons.map((lesson) =>
+          upsertUserLessonProgress({
+            userId,
+            lessonId: lesson.id,
+            status: "COMPLETED",
+          })
+        )
+      );
+    } catch (error) {
+      console.error("Failed to mark all lessons as complete:", error);
+    } finally {
+      setIsUpdatingAll(false);
     }
   };
 
@@ -159,24 +202,38 @@ export default function CoursePage({ params }: { params: Promise<{ id: string }>
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-10">
       {/* Back button & Header */}
-      <div className="flex items-center gap-4">
-        <Link 
-          href="/dashboard/courses"
-          className="p-2.5 rounded-xl bg-white border border-slate-200 shadow-sm hover:shadow-md hover:bg-slate-50 transition-all text-slate-500 hover:text-slate-900"
-        >
-          <ChevronLeft className="w-5 h-5" />
-        </Link>
-        <div>
-          <div className="flex items-center gap-2 mb-1.5">
-            <Badge variant="indigo">{moduleData?.topic || "Course Module"}</Badge>
-            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-              {lessons.length} Video Lessons
-            </span>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <Link 
+            href="/dashboard/courses"
+            className="p-2.5 rounded-xl bg-white border border-slate-200 shadow-sm hover:shadow-md hover:bg-slate-50 transition-all text-slate-500 hover:text-slate-900"
+          >
+            <ChevronLeft className="w-5 h-5" />
+          </Link>
+          <div>
+            <div className="flex items-center gap-2 mb-1.5">
+              <Badge variant="indigo">{moduleData?.topic || "Course Module"}</Badge>
+              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                {lessons.length} Video Lessons
+              </span>
+            </div>
+            <h1 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight">
+              {moduleData?.title || "Interactive Learning Node"}
+            </h1>
           </div>
-          <h1 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight">
-            {moduleData?.title || "Interactive Learning Node"}
-          </h1>
         </div>
+
+        {lessons.length > 0 && (
+          <Button
+            variant={completionPercentage === 100 ? "outline" : "primary"}
+            size="sm"
+            disabled={isUpdatingAll || completionPercentage === 100}
+            onClick={handleMarkAllComplete}
+            icon={isUpdatingAll ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
+          >
+            {isUpdatingAll ? "Updating..." : completionPercentage === 100 ? "All Completed" : "Mark All Complete"}
+          </Button>
+        )}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
@@ -264,12 +321,28 @@ export default function CoursePage({ params }: { params: Promise<{ id: string }>
         {/* Sidebar (Syllabus) */}
         <div className="bg-white rounded-2xl border border-slate-100 shadow-sm flex flex-col h-[calc(100vh-140px)] sticky top-24">
           <div className="p-5 border-b border-slate-100 bg-slate-50/80 rounded-t-2xl">
-            <div className="flex items-center gap-2 mb-2">
-              <LayoutList className="w-4 h-4 text-indigo-600" />
-              <h3 className="text-sm font-black text-slate-900 uppercase tracking-wider">Module Syllabus</h3>
+            <div className="flex items-center justify-between gap-2 mb-2">
+              <div className="flex items-center gap-2">
+                <LayoutList className="w-4 h-4 text-indigo-600" />
+                <h3 className="text-sm font-black text-slate-900 uppercase tracking-wider">Module Syllabus</h3>
+              </div>
+              {lessons.length > 0 && (
+                <button
+                  onClick={handleMarkAllComplete}
+                  disabled={isUpdatingAll || completionPercentage === 100}
+                  className="text-xs font-bold text-indigo-600 hover:text-indigo-800 disabled:text-slate-400 disabled:cursor-not-allowed transition-colors inline-flex items-center gap-1"
+                >
+                  {isUpdatingAll ? (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  ) : (
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                  )}
+                  {completionPercentage === 100 ? "All Done" : "Complete All"}
+                </button>
+              )}
             </div>
             <div className="flex items-center justify-between text-xs font-bold mt-3 mb-2">
-              <span className="text-slate-700">{completedCount} / {lessons.length} Completed</span>
+              <span className="text-slate-700">{completedCount} / {lessons.length}</span>
               <span className="text-indigo-600">{completionPercentage}%</span>
             </div>
             {/* Progress Bar */}
@@ -306,20 +379,27 @@ export default function CoursePage({ params }: { params: Promise<{ id: string }>
                       <div className="absolute left-0 top-0 bottom-0 w-1 bg-indigo-600 rounded-l-xl" />
                     )}
 
-                    <div className="mt-0.5 shrink-0">
+                    <div 
+                      className="mt-0.5 shrink-0 hover:scale-110 transition-transform cursor-pointer"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleToggleLessonProgress(lesson.id);
+                      }}
+                      title={isCompleted ? "Mark as Incomplete" : "Mark as Complete"}
+                    >
                       {isCompleted ? (
-                        <CheckCircle2 className="w-5 h-5 text-emerald-500" />
+                        <CheckCircle2 className="w-5 h-5 text-emerald-500 hover:text-emerald-600" />
                       ) : isActive ? (
                         <div className="relative w-5 h-5 flex items-center justify-center">
                           <div className="absolute inset-0 bg-indigo-400 rounded-full animate-ping opacity-20" />
                           <PlayCircle className="w-5 h-5 text-indigo-600 fill-indigo-100 relative z-10" />
                         </div>
                       ) : (
-                        <Circle className="w-5 h-5 text-slate-300" />
+                        <Circle className="w-5 h-5 text-slate-300 hover:text-indigo-600" />
                       )}
                     </div>
                     <div className="flex-1 pr-2 min-w-0">
-                      <h4 className={`text-sm font-bold leading-tight mb-1 truncate ${
+                      <h4 className={`text-sm font-bold leading-snug mb-1 break-words ${
                         isActive ? "text-indigo-950" : "text-slate-700"
                       }`}>
                         {lesson.title}

@@ -188,7 +188,7 @@ function LessonsContent() {
         });
 
         if (!created || !created.id) {
-          toast.error("Failed to create lesson.");
+          toast.error("Failed to create lesson. Please verify module selection and required fields.");
           return;
         }
 
@@ -380,7 +380,16 @@ function LessonsContent() {
               lessons
                 .sort((a, b) => (a.sequenceOrder || 0) - (b.sequenceOrder || 0))
                 .map((lesson) => {
-                  const parentMod = modules.find((m) => m.id === lesson.moduleId);
+                  const targetModId = lesson.moduleId || (lesson.module && typeof lesson.module === "object" ? lesson.module.id : "");
+                  const parentMod = modules.find((m) => m.id === targetModId);
+                  const displayModuleTitle = parentMod
+                    ? parentMod.title
+                    : lesson.module && typeof lesson.module === "object" && lesson.module.title
+                    ? lesson.module.title
+                    : targetModId
+                    ? `Module ${targetModId.slice(0, 6)}`
+                    : "General Module";
+
                   return (
                     <tr key={lesson.id} className="hover:bg-slate-50/80 transition-colors">
                       <td className="p-4 text-center">
@@ -411,7 +420,7 @@ function LessonsContent() {
                       </td>
                       <td className="p-4">
                         <span className="inline-flex px-2.5 py-1 rounded-lg text-[10px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-100">
-                          {parentMod ? parentMod.title : "Module " + lesson.moduleId?.slice(0, 6)}
+                          {displayModuleTitle}
                         </span>
                       </td>
                       <td className="p-4 font-semibold text-slate-700">

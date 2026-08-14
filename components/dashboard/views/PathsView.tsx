@@ -4,12 +4,14 @@ import React, { useState, useEffect } from "react";
 import { Badge } from "@/components/ui/Badge";
 import { LearningPathCard, LearningPathData } from "@/components/dashboard/LearningPathCard";
 import { SlidersHorizontal } from "lucide-react";
-import { fetchLearningPaths, fetchActiveUserLearningPaths, getCurrentUser, enrollInLearningPath, UserLearningPath } from "@/lib/api";
+import { useRouter } from "next/navigation";
+import { fetchLearningPaths, fetchActiveUserLearningPaths, fetchPathModulesByPath, getCurrentUser, enrollInLearningPath, UserLearningPath } from "@/lib/api";
 import { DashboardSkeleton } from "@/components/dashboard/DashboardSkeleton";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 export const PathsView: React.FC = () => {
+  const router = useRouter();
   const [paths, setPaths] = useState<LearningPathData[]>([]);
   const [filter, setFilter] = useState<string>("All");
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -73,6 +75,30 @@ export const PathsView: React.FC = () => {
 
   const handleSelect = async (id: string) => {
     const path = paths.find((p) => p.id === id);
+
+    // 1. If course is already active ("Continue Course"), redirect directly to course page instead of re-enrolling
+    if (path?.isActive) {
+      setEnrollingId(id);
+      try {
+        const pathModules = await fetchPathModulesByPath(id);
+        const targetModuleId = pathModules && pathModules.length > 0
+          ? (pathModules[0].module?.id || pathModules[0].moduleId || pathModules[0].id)
+          : null;
+
+        if (targetModuleId) {
+          router.push(`/dashboard/courses/${targetModuleId}`);
+        } else {
+          router.push(`/dashboard/courses`);
+        }
+      } catch {
+        router.push(`/dashboard/courses`);
+      } finally {
+        setEnrollingId(null);
+      }
+      return;
+    }
+
+    // 2. Otherwise, enroll in the new learning path
     setEnrollingId(id);
     try {
       const success = await enrollInLearningPath(id);

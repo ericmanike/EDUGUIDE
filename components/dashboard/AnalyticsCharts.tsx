@@ -22,9 +22,12 @@ import {
   fetchActiveUserLearningPaths,
   fetchPathModulesByPath,
   fetchUserModuleProgress,
+  fetchUserPathProgressStats,
+  fetchAllUserLessonProgress,
   getCurrentUser,
   fetchModules,
   UserModuleProgress,
+  PathProgressStats,
 } from "@/lib/api";
 
 export const WeeklyActivityChart: React.FC = () => {
@@ -218,15 +221,6 @@ const MODULE_STATUS_COLORS = {
   notStarted: "#e2e8f0",
 };
 
-interface PathProgressStats {
-  pathTitle: string;
-  totalModules: number;
-  completedModules: number;
-  inProgressModules: number;
-  notStartedModules: number;
-  completionPercentage: number;
-}
-
 function classifyModuleStatus(ump?: UserModuleProgress): "completed" | "inProgress" | "notStarted" {
   if (!ump) return "notStarted";
   if (ump.status === "COMPLETED" || ump.progressPercentage >= 100 || !!ump.completedAt) return "completed";
@@ -250,41 +244,53 @@ export const PathProgressBarChart: React.FC = () => {
         const activePathId = activeUserPath?.path?.id || activeUserPath?.pathId;
 
         if (activePathId) {
-          const [pathModules, moduleProgressList] = await Promise.all([
-            fetchPathModulesByPath(activePathId),
-            fetchUserModuleProgress(currentUser.id),
-          ]);
+          const pathStats = await fetchUserPathProgressStats(currentUser.id, activePathId);
+          if (pathStats) {
+            setStats(pathStats);
+          } else {
+            // Client fallback if backend endpoint is unavailable
+            const [moduleProgressList, pathModules] = await Promise.all([
+              fetchUserModuleProgress(currentUser.id),
+              fetchPathModulesByPath(activePathId),
+            ]);
 
-          const progressByModuleId = new Map<string, UserModuleProgress>();
-          moduleProgressList.forEach((ump) => {
-            const mId = ump.module?.id || ump.moduleId;
-            if (mId) progressByModuleId.set(mId, ump);
-          });
+            const activeModuleIds = new Set(
+              pathModules
+                .map((pm) => pm.module?.id || pm.moduleId)
+                .filter((id): id is string => !!id)
+            );
 
-          const activeModuleIds = pathModules
-            .map((pm) => pm.module?.id || pm.moduleId)
-            .filter((id): id is string => !!id);
+            const completedModulesCount = moduleProgressList.filter((ump) => {
+              const mId = ump.module?.id || ump.moduleId;
+              return (
+                !!mId &&
+                activeModuleIds.has(mId) &&
+                (ump.status === "COMPLETED" || ump.progressPercentage >= 100 || !!ump.completedAt)
+              );
+            }).length;
 
-          let completedModules = 0;
-          let inProgressModules = 0;
-          let notStartedModules = 0;
+            const inProgressModulesCount = moduleProgressList.filter((ump) => {
+              const mId = ump.module?.id || ump.moduleId;
+              return (
+                !!mId &&
+                activeModuleIds.has(mId) &&
+                ump.status === "IN_PROGRESS"
+              );
+            }).length;
 
-          activeModuleIds.forEach((mId) => {
-            const status = classifyModuleStatus(progressByModuleId.get(mId));
-            if (status === "completed") completedModules++;
-            else if (status === "inProgress") inProgressModules++;
-            else notStartedModules++;
-          });
+            const totalMods = activeModuleIds.size;
+            const notStartedMods = Math.max(0, totalMods - completedModulesCount - inProgressModulesCount);
 
-          const totalModules = activeModuleIds.length;
-          setStats({
-            pathTitle: activeUserPath?.path?.title || "Active Course",
-            totalModules,
-            completedModules,
-            inProgressModules,
-            notStartedModules,
-            completionPercentage: totalModules > 0 ? (completedModules / totalModules) * 100 : 0,
-          });
+            setStats({
+              pathId: activePathId,
+              pathTitle: activeUserPath?.path?.title || "Active Course",
+              totalModules: totalMods,
+              completedModules: completedModulesCount,
+              inProgressModules: inProgressModulesCount,
+              notStartedModules: notStartedMods,
+              completionPercentage: totalMods > 0 ? (completedModulesCount / totalMods) * 100 : 0,
+            });
+          }
         } else {
           setStats(null);
         }
@@ -299,12 +305,10 @@ export const PathProgressBarChart: React.FC = () => {
 
   const chartData = stats
     ? [
-        {
-          name: stats.pathTitle,
-          Completed: stats.completedModules,
-          "In Progress": stats.inProgressModules,
-          "Not Started": stats.notStartedModules,
-        },
+        { name: "Total Modules", count: stats.totalModules ?? 0, fill: "#1e3a8a" },
+        { name: "Completed", count: stats.completedModules ?? 0, fill: "#10b981" },
+        { name: "In Progress", count: stats.inProgressModules ?? 0, fill: "#fb923c" },
+        { name: "Not Started", count: stats.notStartedModules ?? 0, fill: "#94a3b8" },
       ]
     : [];
 
@@ -314,50 +318,33 @@ export const PathProgressBarChart: React.FC = () => {
         <div className="flex items-center justify-between flex-wrap gap-2">
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <Badge variant="indigo">Active Course</Badge>
+              <Badge variant="indigo">Module Analytics</Badge>
             </div>
-            <CardTitle>Module Completion Breakdown</CardTitle>
-            <CardDescription>
-              {stats
-                ? `${stats.completedModules} of ${stats.totalModules} modules complete`
-                : "Completed, in-progress, and not-started modules for your active course"}
+            <CardTitle>Module Progress Breakdown</CardTitle>
+            <CardDescription >
+              {stats?.pathTitle
+                ? `${stats.completedModules ?? 0} of ${stats.totalModules ?? 0} modules completed`
+                : "Total, completed, in-progress, and not-started modules"}
             </CardDescription>
           </div>
-          {stats && (
-            <Badge variant="green" className="font-black">
-              {Math.round(stats.completionPercentage)}% Complete
-            </Badge>
-          )}
         </div>
       </CardHeader>
 
-      <div className="h-40 w-full mt-2">
+      <div className="h-64 w-full mt-4">
         {isLoading ? (
           <div className="h-full flex items-center justify-center text-slate-400 text-xs font-semibold">
-            Loading active course progress...
+            Loading module stats...
           </div>
-        ) : !stats || stats.totalModules === 0 ? (
+        ) : !stats ? (
           <div className="h-full flex items-center justify-center text-slate-400 text-xs font-semibold">
-            No active course found
+            No active course progress found
           </div>
         ) : (
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart
-              data={chartData}
-              layout="vertical"
-              barSize={26}
-              margin={{ top: 10, right: 20, left: 10, bottom: 0 }}
-            >
-              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" horizontal={false} />
-              <XAxis type="number" stroke="#94a3b8" fontSize={12} tickLine={false} allowDecimals={false} />
-              <YAxis
-                type="category"
-                dataKey="name"
-                stroke="#94a3b8"
-                fontSize={12}
-                tickLine={false}
-                width={120}
-              />
+            <BarChart data={chartData} margin={{ top: 15, right: 20, left: -10, bottom: 25 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+              <XAxis dataKey="name" stroke="#64748b" fontSize={11} tickLine={false} interval={0} />
+              <YAxis stroke="#64748b" fontSize={11} tickLine={false} allowDecimals={false} />
               <Tooltip
                 contentStyle={{
                   backgroundColor: "#ffffff",
@@ -367,26 +354,128 @@ export const PathProgressBarChart: React.FC = () => {
                   fontSize: "12px",
                   boxShadow: "0 10px 25px rgba(0,0,0,0.08)",
                 }}
+                formatter={(value: any) => [`${value} modules`, "Count"]}
               />
-              <Legend wrapperStyle={{ fontSize: "11px" }} />
-              <Bar
-                dataKey="Completed"
-                stackId="modules"
-                fill={MODULE_STATUS_COLORS.completed}
-                radius={[0, 0, 0, 0]}
+              <Bar dataKey="count" radius={[8, 8, 0, 0]} barSize={42}>
+                {chartData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={entry.fill} />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        )}
+      </div>
+    </Card>
+  );
+};
+
+export const LessonProgressBarChart: React.FC = () => {
+  const [stats, setStats] = React.useState<PathProgressStats | null>(null);
+  const [isLoading, setIsLoading] = React.useState<boolean>(true);
+
+  React.useEffect(() => {
+    async function loadStats() {
+      setIsLoading(true);
+      try {
+        const currentUser = getCurrentUser();
+        if (!currentUser?.id) return;
+
+        const activeUserPaths = await fetchActiveUserLearningPaths(currentUser.id);
+        const activeUserPath = activeUserPaths[0];
+        const activePathId = activeUserPath?.path?.id || activeUserPath?.pathId;
+
+        if (activePathId) {
+          const pathStats = await fetchUserPathProgressStats(currentUser.id, activePathId);
+          if (pathStats) {
+            setStats(pathStats);
+          } else {
+            // Client fallback if backend endpoint is unavailable
+            const lessonProgressList = await fetchAllUserLessonProgress(currentUser.id);
+            const completedLessonsCount = lessonProgressList.filter((p) => p.status === "COMPLETED").length;
+            const inProgressLessonsCount = lessonProgressList.filter((p) => p.status === "IN_PROGRESS").length;
+            const totalLess = lessonProgressList.length;
+            const notStartedLess = Math.max(0, totalLess - completedLessonsCount - inProgressLessonsCount);
+
+            setStats({
+              pathId: activePathId,
+              pathTitle: activeUserPath?.path?.title || "Active Course",
+              totalLessons: totalLess,
+              completedLessons: completedLessonsCount,
+              inProgressLessons: inProgressLessonsCount,
+              notStartedLessons: notStartedLess,
+              completionPercentage: 0,
+            });
+          }
+        } else {
+          setStats(null);
+        }
+      } catch (e) {
+        console.warn("Could not load lesson progress bar chart:", e);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    loadStats();
+  }, []);
+
+  const chartData = stats
+    ? [
+        { name: "Total Lessons", count: stats.totalLessons ?? 0, fill: "#3b82f6" },
+        { name: "Completed", count: stats.completedLessons ?? 0, fill: "#10b981" },
+        { name: "In Progress", count: stats.inProgressLessons ?? 0, fill: "#fb923c" },
+        { name: "Not Started", count: stats.notStartedLessons ?? 0, fill: "#94a3b8" },
+      ]
+    : [];
+
+  return (
+    <Card variant="white" className="w-full">
+      <CardHeader>
+        <div className="flex items-center justify-between flex-wrap gap-2">
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <Badge variant="indigo">Lesson Analytics</Badge>
+            </div>
+            <CardTitle>Lesson Progress Breakdown</CardTitle>
+            <CardDescription>
+              {stats?.pathTitle
+                ? `${stats.completedLessons ?? 0} of ${stats.totalLessons ?? 0} lessons completed`
+                : "Total, completed, in-progress, and not-started lessons"}
+            </CardDescription>
+          </div>
+        </div>
+      </CardHeader>
+
+      <div className="h-64 w-full mt-4">
+        {isLoading ? (
+          <div className="h-full flex items-center justify-center text-slate-400 text-xs font-semibold">
+            Loading lesson stats...
+          </div>
+        ) : !stats ? (
+          <div className="h-full flex items-center justify-center text-slate-400 text-xs font-semibold">
+            No active course progress found
+          </div>
+        ) : (
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={chartData} margin={{ top: 15, right: 20, left: -10, bottom: 25 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+              <XAxis dataKey="name" stroke="#64748b" fontSize={11} tickLine={false} interval={0} />
+              <YAxis stroke="#64748b" fontSize={11} tickLine={false} allowDecimals={false} />
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: "#ffffff",
+                  borderColor: "#e2e8f0",
+                  borderRadius: "12px",
+                  color: "#0f172a",
+                  fontSize: "12px",
+                  boxShadow: "0 10px 25px rgba(0,0,0,0.08)",
+                }}
+                formatter={(value: any) => [`${value} lessons`, "Count"]}
               />
-              <Bar
-                dataKey="In Progress"
-                stackId="modules"
-                fill={MODULE_STATUS_COLORS.inProgress}
-                radius={[0, 0, 0, 0]}
-              />
-              <Bar
-                dataKey="Not Started"
-                stackId="modules"
-                fill={MODULE_STATUS_COLORS.notStarted}
-                radius={[0, 6, 6, 0]}
-              />
+              <Bar dataKey="count" radius={[8, 8, 0, 0]} barSize={42}>
+                {chartData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={entry.fill} />
+                ))}
+              </Bar>
             </BarChart>
           </ResponsiveContainer>
         )}

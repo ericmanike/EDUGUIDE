@@ -29,10 +29,10 @@ export const StatCard: React.FC<StatCardProps> = ({
     <Card variant="white" hoverEffect className={`relative overflow-hidden border border-slate-100/90 shadow-sm hover:shadow-md transition-all p-4 sm:p-5 rounded-2xl flex items-center ${className}`}>
       <div className="flex items-center justify-between w-full gap-3">
         <div className="space-y-1 min-w-0 flex-1">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400 truncate">
+          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
             {title}
           </p>
-          <h4 className="text-base sm:text-lg font-black tracking-tight text-slate-900 truncate">
+          <h4 className="text-base sm:text-lg font-black tracking-tight text-slate-900 leading-snug break-words">
             {value}
           </h4>
           {change && (
