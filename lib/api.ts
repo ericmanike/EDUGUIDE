@@ -222,30 +222,22 @@ export function getAuthHeaders(): Record<string, string> {
   return headers;
 }
 
-/**
- * Retrieve current user directly from decoded JWT token claims (no localStorage)
- */
-export function getCurrentUser(): User {
+export function getCurrentUser(): User | null {
   if (typeof window !== "undefined") {
     const token = getToken();
     if (token) {
       const decoded = decodeJwtToken(token);
-      if (decoded && decoded.exp && decoded.exp * 1000 > Date.now()) {
+      if (decoded && (!decoded.exp || decoded.exp * 1000 > Date.now())) {
         return {
-          id: decoded.id || "u-student",
-          email: decoded.email || decoded.sub || "student@fastlearn.edu",
-          name: decoded.name || (decoded.email ? decoded.email.split("@")[0] : "Student"),
+          id: decoded.id || decoded.sub || "",
+          email: decoded.email || decoded.sub || "",
+          name: decoded.name || (decoded.email ? decoded.email.split("@")[0] : ""),
           role: decoded.role || "STUDENT",
         };
       }
     }
   }
-  return {
-    id: "u-guest",
-    email: "student@fastlearn.edu",
-    name: "Student",
-    role: "STUDENT",
-  };
+  return null;
 }
 
 
@@ -1165,7 +1157,8 @@ export async function updateUserLearningPath(
 export async function enrollInLearningPath(pathIdOrSlug: string): Promise<boolean> {
   try {
     const user = getCurrentUser();
-    const userId = user?.id || "u-guest";
+    const userId = user?.id;
+    if (!userId) return false;
 
     // 1. Resolve target learning path ID from backend catalog
     let resolvedPathId = pathIdOrSlug;

@@ -3,8 +3,20 @@
 import React from "react";
 import Link from "next/link";
 import { ArrowRight, Sparkles, CheckCircle2, ShieldCheck } from "lucide-react";
+import { getCurrentUser } from "@/lib/api";
 
 export const CtaBanner: React.FC = () => {
+  const [ctaHref, setCtaHref] = React.useState<string>("/auth/signUp");
+
+  React.useEffect(() => {
+    const user = getCurrentUser();
+    if (user?.id) {
+      setCtaHref("/dashboard");
+    } else {
+      setCtaHref("/auth/signUp");
+    }
+  }, []);
+
   return (
     <section id="pricing" className="py-16 sm:py-20 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -35,7 +47,7 @@ export const CtaBanner: React.FC = () => {
             {/* Actions */}
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 pt-2">
               <Link
-                href="/onboarding"
+                href={ctaHref}
                 className="inline-flex items-center justify-center bg-white hover:bg-slate-100 text-[#0056D2] font-black text-base px-8 py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5 group"
               >
                 <span>Start 7-day Free Trial</span>
@@ -43,7 +55,7 @@ export const CtaBanner: React.FC = () => {
               </Link>
 
               <Link
-                href="/onboarding"
+                href={ctaHref}
                 className="inline-flex items-center justify-center bg-white/10 hover:bg-white/20 text-white font-bold text-sm sm:text-base px-6 py-4 rounded-xl border border-white/30 backdrop-blur-sm transition-all"
               >
                 Save 44% with Annual Plan ($160/year)

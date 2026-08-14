@@ -3,8 +3,20 @@
 import React from "react";
 import Link from "next/link";
 import { ArrowRight, CheckCircle2, ShieldCheck, Star, GraduationCap } from "lucide-react";
+import { getCurrentUser } from "@/lib/api";
 
 export const HeroSection: React.FC = () => {
+  const [ctaHref, setCtaHref] = React.useState<string>("/auth/signUp");
+
+  React.useEffect(() => {
+    const user = getCurrentUser();
+    if (user?.id) {
+      setCtaHref("/dashboard");
+    } else {
+      setCtaHref("/auth/signUp");
+    }
+  }, []);
+
   return (
     <section className="relative overflow-hidden bg-gradient-to-br from-[#f2f6ff] via-[#f8fafe] to-[#e8f0fe] py-6 sm:py-10 lg:py-12 border-b border-blue-100/60">
       {/* Decorative SVG Light Effect */}
@@ -44,7 +56,7 @@ export const HeroSection: React.FC = () => {
             <div className="space-y-3 pt-1">
               <div>
                 <Link
-                  href="/onboarding"
+                  href={ctaHref}
                   className="inline-flex items-center justify-center bg-[#1e3a8a] hover:bg-[#1d4ed8] text-white text-sm md:text-base font-bold px-6 py-3 rounded-xl shadow-md shadow-[#1e3a8a]/30 hover:shadow-lg hover:shadow-[#1e3a8a]/40 transition-all duration-200 transform hover:-translate-y-0.5 active:translate-y-0 group"
                 >
                   <span>Start For 100% Free </span>

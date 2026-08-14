@@ -13,8 +13,20 @@ import {
   Layers,
   ArrowRight,
 } from "lucide-react";
+import { getCurrentUser } from "@/lib/api";
 
 export const FeatureGrid: React.FC = () => {
+  const [ctaHref, setCtaHref] = React.useState<string>("/auth/signUp");
+
+  React.useEffect(() => {
+    const user = getCurrentUser();
+    if (user?.id) {
+      setCtaHref("/dashboard");
+    } else {
+      setCtaHref("/auth/signUp");
+    }
+  }, []);
+
   const features = [
     {
       icon: <InfinityIcon className="w-6 h-6 text-[#1e3a8a]" />,
@@ -90,7 +102,7 @@ export const FeatureGrid: React.FC = () => {
                 </div>
 
                 <Link
-                  href="/onboarding"
+                  href={ctaHref}
                   className="w-full inline-flex items-center justify-center gap-2 bg-[#1e3a8a] hover:bg-[#1d4ed8] text-white text-xs sm:text-sm font-bold py-2.5 px-4 rounded-xl transition-all shadow-sm hover:shadow-md group/btn"
                 >
                   <span>Start Now</span>

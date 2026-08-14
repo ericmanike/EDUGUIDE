@@ -26,15 +26,17 @@ function decodeJwtPayload(token: string): JwtTokenPayload | null {
 export function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
-  // Protect Curriculum Manager routes (/dashboard/curriculum*) from non-ADMIN users
-  if (pathname.startsWith("/dashboard/curriculum")) {
+  // Protect ALL dashboard routes (/dashboard*) from unauthenticated users
+  if (pathname.startsWith("/dashboard")) {
     const token =
       request.cookies.get("token")?.value ||
-      request.cookies.get("edtech_token")?.value;
+      request.cookies.get("edtech_token")?.value ||
+      request.cookies.get("jwt")?.value ||
+      request.cookies.get("accessToken")?.value;
 
     if (!token) {
-      // Redirect unauthenticated user to login
-      const loginUrl = new URL("/auth/login", request.url);
+      // Redirect unauthenticated user to login page
+      const loginUrl = new URL("/auth/signIn", request.url);
       loginUrl.searchParams.set("redirect", pathname);
       return NextResponse.redirect(loginUrl);
     }
@@ -43,17 +45,18 @@ export function middleware(request: NextRequest) {
 
     // Check token expiration
     if (payload?.exp && payload.exp * 1000 < Date.now()) {
-      const loginUrl = new URL("/auth/login", request.url);
+      const loginUrl = new URL("/auth/signIn", request.url);
       loginUrl.searchParams.set("redirect", pathname);
       return NextResponse.redirect(loginUrl);
     }
 
-    // Protect curriculum manager from non-ADMINs (students)
-    if (payload?.role !== "ADMIN") {
-      // Redirect non-admin users to student dashboard
-      const dashboardUrl = new URL("/dashboard", request.url);
-      dashboardUrl.searchParams.set("unauthorized", "curriculum");
-      return NextResponse.redirect(dashboardUrl);
+    // Protect curriculum manager & admin routes from non-ADMIN users
+    if (pathname.startsWith("/dashboard/curriculum") || pathname.startsWith("/dashboard/admin")) {
+      if (payload?.role !== "ADMIN") {
+        const dashboardUrl = new URL("/dashboard", request.url);
+        dashboardUrl.searchParams.set("unauthorized", "admin");
+        return NextResponse.redirect(dashboardUrl);
+      }
     }
   }
 
@@ -61,5 +64,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/dashboard/curriculum/:path*"],
+  matcher: ["/dashboard/:path*"],
 };

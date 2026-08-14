@@ -1,15 +1,39 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useRouter, usePathname } from "next/navigation";
 import { Navbar } from "@/components/dashboard/Navbar";
 import { Sidebar } from "@/components/dashboard/Sidebar";
+import { getToken, getCurrentUser } from "@/lib/api";
+import { DashboardSkeleton } from "@/components/dashboard/DashboardSkeleton";
 
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const router = useRouter();
+  const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    const token = getToken();
+    const currentUser = getCurrentUser();
+
+    // Verify token and active user login state
+    if (!token || currentUser?.id === "u-guest") {
+      setIsAuthenticated(false);
+      router.replace(`/auth/signIn?redirect=${encodeURIComponent(pathname || "/dashboard")}`);
+    } else {
+      setIsAuthenticated(true);
+    }
+  }, [router, pathname]);
+
+  // Render loading skeleton while verifying authentication status
+  if (isAuthenticated === null || !isAuthenticated) {
+    return <DashboardSkeleton />;
+  }
 
   return (
     <div className="min-h-screen bg-white font-sans text-slate-900 flex flex-col">

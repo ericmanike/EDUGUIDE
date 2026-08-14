@@ -36,13 +36,6 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
 
       {/* 3. Footer */}
       <div className="mt-6 flex flex-col items-center gap-3.5 text-center text-xs">
-        <Link
-          href="/help"
-          className="inline-flex items-center gap-1.5 font-medium text-slate-500 hover:text-slate-700 transition-colors"
-        >
-          <HelpCircle className="h-4 w-4 text-slate-400" strokeWidth={2} />
-          Need help? Watch how to log in
-        </Link>
         <span className="text-[11px] text-slate-400 font-medium">
           © {new Date().getFullYear()} SkillsBank Africa
         </span>
